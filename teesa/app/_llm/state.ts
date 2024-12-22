@@ -14,12 +14,14 @@ export class LlmMessage {
 class LlmState {
   private secretWord: string;
   private history: LlmMessage[];
+  private gameEnded: boolean;
 
   private mutex: Mutex;
 
   constructor() {
     this.secretWord = this.selectRandomWord();
     this.history = [];
+    this.gameEnded = false
     this.mutex = new Mutex();
   }
 
@@ -42,6 +44,17 @@ class LlmState {
       this.history.push(assistantMessage);
     });
   }
+
+  async getGameEnded(): Promise<boolean> {
+    return this.gameEnded;
+  }
+
+  async setGameEnded(): Promise<any> {
+    await this.mutex.runExclusive(() => {
+      this.gameEnded = true;
+    });
+  }
+
 }
 
 export const llmState = new LlmState();
