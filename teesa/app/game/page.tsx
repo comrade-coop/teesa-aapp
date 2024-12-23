@@ -13,6 +13,7 @@ import { LlmChatMessage } from './_components/llm-chat-message';
 import { v4 as uuidv4 } from 'uuid';
 import MessageTabs from './_components/message-tabs';
 import { usePrivy } from '@privy-io/react-auth';
+import { RulesPanel } from './_components/rules-panel';
 
 export default function Page() {
   const { ready, authenticated, user } = usePrivy();
@@ -98,9 +99,20 @@ export default function Page() {
 
   const systemMessage = (
     <>
-      <p className="mb-2 font-bold text-md">Welcome to Teesa!</p>
-      <p>I've selected a random word. Try to guess it by asking <span className='font-bold'>yes/no</span> questions.</p>
-      <p>You can ask questions about the word or make a guess.</p>
+      <h2 className="text-xl font-bold mb-4 text-white">How to Play</h2>
+      <div className="space-y-4">
+        <p>Welcome to Teesa! I've selected a random word for you to guess.</p>
+        <div>
+          <p className="font-semibold mb-2">Rules:</p>
+          <ul className="list-disc list-inside space-y-2">
+            <li>Ask <span className="font-bold">yes/no</span> questions about the word</li>
+            <li>Questions should be about characteristics or properties</li>
+            <li>Make a direct guess at any time</li>
+            <li>No asking about spelling or word length</li>
+            <li>No repeating questions</li>
+          </ul>
+        </div>
+      </div>
     </>
   );
 
@@ -113,24 +125,27 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col w-full max-w-lg pt-4 mx-auto stretch h-full">
+    <div className="flex flex-col md:flex-row w-full h-full gap-4 p-4">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col h-full max-w-2xl mx-auto w-full">
+        <MessageTabs
+          showAllMessages={showAllMessages}
+          onTabChange={handleTabChange} />
 
-      <SystemMessage
-        message={systemMessage} />
+        <MessagesList
+          messages={getMessagesForList()} />
 
-      <MessageTabs
-        showAllMessages={showAllMessages}
-        onTabChange={handleTabChange} />
+        <ChatInput
+          className='mt-auto'
+          gameEnded={false}
+          canSendMessages={true}
+          onChatMessage={hadleChatMessage} />
+      </div>
 
-      <MessagesList
-        messages={getMessagesForList()} />
-
-      <ChatInput
-        className='mt-auto'
-        gameEnded={false}
-        canSendMessages={true}
-        onChatMessage={hadleChatMessage} />
-
+      {/* Rules Panel */}
+      <RulesPanel>
+        {systemMessage}
+      </RulesPanel>
     </div>
   );
 }

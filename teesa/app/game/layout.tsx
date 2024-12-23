@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PrivyIoProvider from "./privy-provider";
 
 export const metadata: Metadata = {
-  title: "Teesa aapp",
+  title: "Teesa app",
   description: "AI powered word guessing game",
 };
 
@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <PrivyIoProvider>
-      <div className="absolute w-full top-0 bottom-0 px-4 md:px-0">
+      <div className="fixed inset-0 overflow-hidden">
         {children}
       </div>
     </PrivyIoProvider>
