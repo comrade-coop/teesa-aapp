@@ -36,13 +36,33 @@ Make sure you have the following installed:
    ```
    (Replace `nano` with your preferred text editor.)
 
-4. Build the Docker image:
+### Development Mode
+
+To run the application in development mode with hot reloading:
+
+1. Build the development Docker image:
+
+   ```bash
+   docker build --target dev --pull --rm -f "Dockerfile" -t teesa-app-dev:latest "."
+   ```
+
+2. Run the development container with volume mounting for hot reloading:
+
+   ```bash
+   docker run -p 3000:3000 -v ./teesa:/app -v /app/node_modules teesa-app-dev:latest
+   ```
+
+The application will be available at `http://localhost:3000` with hot reloading enabled.
+
+### Production Mode
+
+1. Build the production Docker image:
 
    ```bash
    docker build --pull --rm -f "Dockerfile" -t teesa-app-deploy:latest "."
    ```
 
-5. Run the Docker container:
+2. Run the production container:
 
    ```bash
    docker run -p 3000:3000 teesa-app-deploy:latest

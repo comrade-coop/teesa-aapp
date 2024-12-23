@@ -17,6 +17,22 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
+# Development image for hot reloading
+FROM base AS dev
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY teesa/ ./
+
+ENV NODE_ENV=development
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+ENV NEXT_TELEMETRY_DISABLED=1
+
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["npm", "run", "dev"]
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -63,4 +79,5 @@ ENV PORT=3000
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
+
 CMD ["node", "server.js"]
