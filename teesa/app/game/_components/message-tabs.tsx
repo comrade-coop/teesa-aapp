@@ -18,15 +18,15 @@ export default function MessageTabs({
   }
 
   return (
-    <div className={cn("w-fit mt-2 mx-auto inline-flex items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground", className)}>
+    <div className={cn("w-fit mt-2 mx-auto inline-flex items-center justify-center rounded-lg bg-slate-800/50 border border-blue-500/30 p-1 text-slate-300", className)}>
       <Button
         variant="ghost"
         size="sm"
         onClick={() => handleClick(true)}
-        className={`relative rounded-md px-3 transition-none ${
+        className={`relative rounded-md px-3 transition-all ${
           showAllMessages 
-            ? "bg-slate-800 text-white shadow-sm hover:bg-slate-800 hover:text-white" 
-            : "text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
+            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-sm hover:opacity-90" 
+            : "text-slate-300 hover:text-white"
         }`}
       >
         All messages
@@ -35,10 +35,10 @@ export default function MessageTabs({
         variant="ghost"
         size="sm"
         onClick={() => handleClick(false)}
-        className={`relative rounded-md px-3 transition-none ${
+        className={`relative rounded-md px-3 transition-all ${
           !showAllMessages 
-            ? "bg-slate-800 text-white shadow-sm hover:bg-slate-800 hover:text-white" 
-            : "text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
+            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-sm hover:opacity-90" 
+            : "text-slate-300 hover:text-white"
         }`}
       >
         My messages
