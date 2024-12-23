@@ -106,10 +106,10 @@ export default function Page() {
 
   const getMessagesForList = () => {
     if(showAllMessages) {
-      return messages.sort(s => s.timestamp);
+      return messages.sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    return messages.filter(m => m.userId == userId).sort(s => s.timestamp);
+    return messages.filter(m => m.userId == userId).sort((a, b) => a.timestamp - b.timestamp);
   };
 
   return (
