@@ -10,26 +10,26 @@ body {
 
 /* Add custom scrollbar styling */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.3); /* dark blue with transparency */
+  background: hsl(var(--secondary) / 0.3);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.5); /* blue with transparency */
-  border-radius: 5px;
+  background: hsl(var(--primary) / 0.3);
+  border-radius: var(--radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.7); /* slightly more opaque on hover */
+  background: hsl(var(--primary) / 0.5);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.5) rgba(15, 23, 42, 0.3);
+  scrollbar-color: hsl(var(--primary) / 0.3) hsl(var(--secondary) / 0.3);
 }
 
 @layer base {
