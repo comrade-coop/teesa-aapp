@@ -12,12 +12,15 @@ import { getMessages } from './_data/get-messages';
 import { LlmChatMessage } from './_components/llm-chat-message';
 import { v4 as uuidv4 } from 'uuid';
 import MessageTabs from './_components/message-tabs';
+import { usePrivy } from '@privy-io/react-auth';
 
 export default function Page() {
-  const [userId] = useState<string>(uuidv4());
+  const { ready, authenticated, user } = usePrivy();
   const [messages, setMessages] = useState<MessageUiStateModel[]>([]);
   const [lastTimestamp, setLastTimestamp] = useState<number | undefined>(undefined);
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
+
+  const userId = (ready && authenticated) ? user?.wallet?.address : undefined;
 
   useEffect((() => {
     getNewMessages();
@@ -68,6 +71,10 @@ export default function Page() {
   };
 
   async function hadleChatMessage(message: string) {
+    if(!userId) {
+      return;
+    }
+
     setShowAllMesssages(false);
 
     const id = uuidv4();
