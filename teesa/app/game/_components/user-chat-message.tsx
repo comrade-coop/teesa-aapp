@@ -1,15 +1,16 @@
 import { Card, CardContent } from "@/components/card"
-import { getLocaleClient, timestampToFormatedDate } from "@/lib/utils"
+import { timestampToFormatedDate } from "@/lib/utils"
 import { User } from 'lucide-react'
 
 export function UserChatMessage({
   timestamp,
+  locale,
   message
 }: {
   timestamp: number,
+  locale: string,
   message: string
 }) {
-  const locale = getLocaleClient();
   const formatedDate = timestampToFormatedDate(locale, timestamp);
 
   return (
@@ -24,7 +25,7 @@ export function UserChatMessage({
           </div>
         </CardContent>
       </Card>
-      
+
       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center ml-4">
         <User className="w-6 h-6 text-muted-foreground" />
       </div>

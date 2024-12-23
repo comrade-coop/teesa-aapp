@@ -1,18 +1,11 @@
 import { Card, CardContent } from "@/components/card"
-import { getLocaleServer } from "@/lib/server-utils";
-import { timestampToFormatedDate } from "@/lib/utils";
-import { Diameter } from 'lucide-react'
+import { Diameter, ShieldCheck } from 'lucide-react'
 
-export async function LlmChatMessage({
-  timestamp,
-  message
+export function LlmChatMessage({
+  message,
 }: {
-  timestamp: number,
   message: string
 }) {
-  const locale = await getLocaleServer();
-  const formatedDate = timestampToFormatedDate(locale, timestamp);
-
   return (
     <div className="flex items-start mb-8 flex-row">
       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mr-4">
@@ -21,9 +14,10 @@ export async function LlmChatMessage({
       <Card className="flex-1 bg-slate-100">
         <CardContent className="p-3">
           <p className="text-sm mb-2">{message}</p>
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end">
+            <ShieldCheck className="w-6 h-6 text-muted-foreground me-1" />
             <span className="text-xs text-muted-foreground">
-              {formatedDate}
+              TEE secured
             </span>
           </div>
         </CardContent>

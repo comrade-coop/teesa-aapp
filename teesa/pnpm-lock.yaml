@@ -29,6 +29,9 @@ importers:
       '@privy-io/react-auth':
         specifier: ^1.98.3
         version: 1.98.3(@solana/web3.js@1.98.0(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.1)(bs58@5.0.0)(bufferutil@4.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.2)(use-sync-external-store@1.4.0(react@19.0.0))(utf-8-validate@5.0.10)(zod@3.24.1)
+      '@radix-ui/react-slot':
+        specifier: ^1.1.1
+        version: 1.1.1(@types/react@19.0.1)(react@19.0.0)
       ai:
         specifier: ^4.0.21
         version: 4.0.21(react@19.0.0)(zod@3.24.1)
@@ -1182,6 +1185,24 @@ packages:
       '@solana/web3.js':
         optional: true
       permissionless:
+        optional: true
+
+  '@radix-ui/react-compose-refs@1.1.1':
+    resolution: {integrity: sha512-Y9VzoRDSJtgFMUCoiZBDVo084VQ5hfpXxVE+NgkdNsjiDBByiImMZKKhxMwCbdHvhlENG6a833CbFkOQvTricw==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@radix-ui/react-slot@1.1.1':
+    resolution: {integrity: sha512-RApLLOcINYJA+dMVbOju7MYv1Mb2EBp2nH4HdDzXTSyaR5optlm6Otrz1euW3HbdOR8UmmFK06TD+A9frYWv+g==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
         optional: true
 
   '@react-aria/focus@3.19.0':
@@ -5339,6 +5360,19 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@radix-ui/react-compose-refs@1.1.1(@types/react@19.0.1)(react@19.0.0)':
+    dependencies:
+      react: 19.0.0
+    optionalDependencies:
+      '@types/react': 19.0.1
+
+  '@radix-ui/react-slot@1.1.1(@types/react@19.0.1)(react@19.0.0)':
+    dependencies:
+      '@radix-ui/react-compose-refs': 1.1.1(@types/react@19.0.1)(react@19.0.0)
+      react: 19.0.0
+    optionalDependencies:
+      '@types/react': 19.0.1
+
   '@react-aria/focus@3.19.0(react@19.0.0)':
     dependencies:
       '@react-aria/interactions': 3.22.5(react@19.0.0)
@@ -7308,7 +7342,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.4)
+      retry-axios: 2.6.0(axios@1.7.4(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -8302,7 +8336,7 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  retry-axios@2.6.0(axios@1.7.4):
+  retry-axios@2.6.0(axios@1.7.4(debug@4.4.0)):
     dependencies:
       axios: 1.7.4(debug@4.4.0)
 

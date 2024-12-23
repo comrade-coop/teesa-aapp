@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 
-export type MessageUiStateModel = {
+export interface MessageUiStateModel {
   id: string;
-  role: 'user' | 'assistant';
+  userId: string;
+  timestamp: number;
   display: ReactNode;
 };

@@ -56,10 +56,18 @@ function getSystemRules(includeCharacter = false) {
 async function getHistoryForPrompt() {
   const history = await llmState.getHistory();
 
-  return history.map(h => ({
-    role: h.role,
-    content: h.content
-  }));
+  return history.flatMap(h => {
+    const userMessage = {
+      role: 'user',
+      content: h.userMessage
+    };
+    const llmMessage = {
+      role: 'assistant',
+      content: h.llmMessage
+    };
+
+    return [userMessage, llmMessage];
+  });
 }
 
 async function fixSpelling(text: string): Promise<string> {
@@ -171,7 +179,6 @@ async function getAnswer(question: string): Promise<boolean> {
   `;
 
   const explanation = await sendMessage(explanationPrompt, getSystemRules());
-  // console.log(`Explanation: ${explanation}`);
 
   // Step 2: get a final yes/no
   const yesNoPrompt = `
@@ -232,7 +239,7 @@ async function getIncorrectGuessResponse(): Promise<string> {
   return sendMessage(prompt, getSystemRules(true));
 }
 
-export async function processUserInput(userId: string, timestamp: number, input: string): Promise<[number, string]> {
+export async function processUserInput(userId: string, messageId: string, timestamp: number, input: string): Promise<string> {
   const userInput = (await fixSpelling(input)).trim();
   const inputType = await getInputType(userInput);
 
@@ -252,23 +259,15 @@ export async function processUserInput(userId: string, timestamp: number, input:
     response = await getRandomResponse(userInput);
   }
 
-  const userMessage = new LlmMessage(
-    userId,
-    timestamp,
-    'user',
-    input
-  );
+  const message: LlmMessage = {
+    id: messageId,
+    userId: userId,
+    timestamp: timestamp,
+    userMessage: input,
+    llmMessage: response
+  };
 
-  const responseTimestamp = getTimestamp();
+  llmState.addToHistory(message);
 
-  const responseMessage = new LlmMessage(
-    userId,
-    responseTimestamp,
-    'assistant',
-    response
-  );
-
-  llmState.addToHistory(userMessage, responseMessage);
-
-  return [responseTimestamp, response];
+  return response;
 }

@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/card"
 import { Placeholder } from "@/components/placeholder"
 import { Diameter } from "lucide-react"
 
-export function UserChatMessagePlaceholder() {
+export function LlmChatMessagePlaceholder() {
   return (
     <div className="flex items-start mb-8 flex-row">
       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mr-4">

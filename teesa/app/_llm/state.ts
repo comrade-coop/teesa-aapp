@@ -2,13 +2,12 @@ import 'server-only'
 import { Mutex } from 'async-mutex';
 import { wordsList } from './words-list';
 
-export class LlmMessage {
-  constructor(
-    public userId: string,
-    public timestamp: number,
-    public role: 'user' | 'assistant',
-    public content: string
-  ) { }
+export interface LlmMessage {
+  id: string;
+  userId: string;
+  timestamp: number;
+  userMessage: string;
+  llmMessage: string
 }
 
 class LlmState {
@@ -38,10 +37,9 @@ class LlmState {
     return this.history;
   }
 
-  async addToHistory(userMessage: LlmMessage, assistantMessage: LlmMessage): Promise<any> {
+  async addToHistory(message: LlmMessage): Promise<any> {
     await this.mutex.runExclusive(() => {
-      this.history.push(userMessage);
-      this.history.push(assistantMessage);
+      this.history.push(message);
     });
   }
 
