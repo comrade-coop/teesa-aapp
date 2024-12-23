@@ -1,0 +1,1 @@
+`docker build --pull --rm -f "Dockerfile" -t teesa-aapp-deploy:latest "."`
