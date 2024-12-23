@@ -8,6 +8,30 @@ body {
   min-height: 100vh;
 }
 
+/* Add custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3); /* dark blue with transparency */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5); /* blue with transparency */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7); /* slightly more opaque on hover */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.5) rgba(15, 23, 42, 0.3);
+}
+
 @layer base {
   :root {
     --background: 222 47% 11%;
