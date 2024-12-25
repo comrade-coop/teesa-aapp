@@ -1,24 +1,25 @@
 import { cn, isNullOrWhiteSpace } from '@/lib/utils';
-import { usePrivy } from '@privy-io/react-auth';
 import { SendHorizonal } from 'lucide-react';
 
 export function ChatInput({
   className,
   gameEnded,
-  canSendMessages,
+  isLoggedIn,
+  loading,
+  onLogin,
   onChatMessage
 }: {
   className?: string,
   gameEnded: boolean,
-  canSendMessages: boolean,
-  onChatMessage: any
+  isLoggedIn: boolean,
+  loading: boolean,
+  onLogin: () => void,
+  onChatMessage: (message: string) => void
 }) {
-  const { ready, authenticated, login } = usePrivy();
-
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if(!canSendMessages) {
+    if(!loading) {
       return;
     }
 
@@ -36,7 +37,7 @@ export function ChatInput({
   const loginButton = (
     <button
       className="mb-4 w-full p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase rounded-full shadow-xl hover:opacity-90 transition-opacity"
-      onClick={login}>
+      onClick={onLogin}>
       Connect Wallet
     </button>
   );
@@ -51,7 +52,6 @@ export function ChatInput({
         />
         <button
           type="submit"
-          disabled={!canSendMessages}
           className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 rounded-full shadow-lg disabled:bg-slate-700 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors"
         >
           <SendHorizonal className="w-5 h-5" />
@@ -71,8 +71,8 @@ export function ChatInput({
   return <div
     className={cn("", className)}
   >
-    {(!gameEnded && ready && !authenticated) && loginButton}
-    {(!gameEnded && ready && authenticated) && chatForm}
+    {(!isLoggedIn && !gameEnded) && loginButton}
+    {(isLoggedIn && !gameEnded) && chatForm}
     {gameEnded && gameEndedMessage}
   </div>
 }

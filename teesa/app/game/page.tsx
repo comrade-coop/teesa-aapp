@@ -7,7 +7,6 @@ import { getLocaleClient, getTimestamp } from '@/lib/utils';
 import { MessagesList } from './_components/messages-list';
 import { useEffect, useState } from 'react';
 import { ChatInput } from './_components/chat-input';
-import { SystemMessage } from './_components/system-message';
 import { getMessages } from './_data/get-messages';
 import { LlmChatMessage } from './_components/llm-chat-message';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,7 +15,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { RulesPanel } from './_components/rules-panel';
 
 export default function Page() {
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated, user, login } = usePrivy();
   const [messages, setMessages] = useState<MessageUiStateModel[]>([]);
   const [lastTimestamp, setLastTimestamp] = useState<number | undefined>(undefined);
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
@@ -135,11 +134,13 @@ export default function Page() {
         <MessagesList
           messages={getMessagesForList()} />
 
-        <ChatInput
+        {ready && <ChatInput
           className='mt-auto'
           gameEnded={false}
-          canSendMessages={true}
-          onChatMessage={hadleChatMessage} />
+          isLoggedIn={authenticated}
+          loading={false}
+          onLogin={login}
+          onChatMessage={hadleChatMessage} />}
       </div>
 
       {/* Rules Panel */}
