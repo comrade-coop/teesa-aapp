@@ -1,5 +1,5 @@
 import { cn, isNullOrWhiteSpace } from '@/lib/utils';
-import { SendHorizonal } from 'lucide-react';
+import { Loader2, SendHorizonal } from 'lucide-react';
 
 export function ChatInput({
   className,
@@ -19,7 +19,7 @@ export function ChatInput({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if(loading) {
+    if (loading) {
       return;
     }
 
@@ -27,7 +27,7 @@ export function ChatInput({
     const message = form.message.value;
     form.reset();
 
-    if(isNullOrWhiteSpace(message)) {
+    if (isNullOrWhiteSpace(message)) {
       return;
     }
 
@@ -52,10 +52,20 @@ export function ChatInput({
         />
         <button
           type="submit"
+          disabled={loading}
           className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 rounded-full shadow-lg disabled:bg-slate-700 disabled:cursor-not-allowed hover:bg-blue-500 transition-colors"
         >
-          <SendHorizonal className="w-5 h-5" />
-          <span className="sr-only">Send message</span>
+          {loading ?
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="sr-only">Loading...</span>
+            </>
+            :
+            <>
+              <SendHorizonal className="w-5 h-5" />
+              <span className="sr-only">Send message</span>
+            </>
+          }
         </button>
       </form>
     </div>

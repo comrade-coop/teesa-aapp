@@ -19,6 +19,7 @@ export default function Page() {
   const [messages, setMessages] = useState<MessageUiStateModel[]>([]);
   const [lastTimestamp, setLastTimestamp] = useState<number | undefined>(undefined);
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
+  const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
 
   const userId = (ready && authenticated) ? user?.wallet?.address : undefined;
 
@@ -145,7 +146,7 @@ export default function Page() {
           className='mt-auto'
           gameEnded={false}
           isLoggedIn={authenticated}
-          loading={false}
+          loading={paymentProcessing}
           onLogin={login}
           onChatMessage={hadleChatMessage} />}
       </div>
