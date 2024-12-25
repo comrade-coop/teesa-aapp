@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 import MessageTabs from './_components/message-tabs';
 import { usePrivy } from '@privy-io/react-auth';
 import { RulesPanel } from './_components/rules-panel';
+import { processPayment, ProcessPaymentResult } from './_data/process-payment';
+import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
 
 export default function Page() {
   const { ready, authenticated, user, login } = usePrivy();
@@ -21,7 +23,7 @@ export default function Page() {
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
   const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
 
-  const userId = (ready && authenticated) ? user?.wallet?.address : undefined;
+  const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
   useEffect((() => {
     getNewMessages();
@@ -72,21 +74,38 @@ export default function Page() {
   };
 
   async function hadleChatMessage(message: string) {
-    if(!userId) {
+    if(!walletAddress) {
       return;
     }
 
     setShowAllMesssages(false);
 
+    setPaymentProcessing(true);
+    const paymentResult = await processPayment(walletAddress);
+    setPaymentProcessing(false);
+
+    if(paymentResult != ProcessPaymentResult.Success) {
+      setMessages(previousMessages => [
+        ...previousMessages,
+        {
+          id: uuidv4(),
+          userId: walletAddress,
+          timestamp: getTimestamp(),
+          display: <PaymentErrorChatMessage error={paymentResult} />
+        }
+      ]);
+      return;
+    }
+
     const id = uuidv4();
     const timestamp = getTimestamp();
-    const response = await sendMessage(userId, id, timestamp, message);
+    const response = await sendMessage(walletAddress, id, timestamp, message);
 
     setMessages(previousMessages => [
       ...previousMessages,
       {
         id: id,
-        userId: userId,
+        userId: walletAddress,
         timestamp: timestamp,
         display: response
       }
@@ -123,7 +142,7 @@ export default function Page() {
       return messages.sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    return messages.filter(m => m.userId == userId).sort((a, b) => a.timestamp - b.timestamp);
+    return messages.filter(m => m.userId == walletAddress).sort((a, b) => a.timestamp - b.timestamp);
   };
 
   return (
