@@ -10,5 +10,5 @@ export async function processPayment(walletAddress: string): Promise<ProcessPaym
   await new Promise(resolve => setTimeout(resolve, 1000));
   console.log("Payment processed successfully");
 
-  return ProcessPaymentResult.FailedOtherError;
+  return ProcessPaymentResult.Success;
 }

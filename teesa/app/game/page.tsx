@@ -15,6 +15,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { RulesPanel } from './_components/rules-panel';
 import { processPayment, ProcessPaymentResult } from './_data/process-payment';
 import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
+import { getGameEnded } from './_data/get-game-ended';
 
 export default function Page() {
   const { ready, authenticated, user, login } = usePrivy();
@@ -22,10 +23,12 @@ export default function Page() {
   const [lastTimestamp, setLastTimestamp] = useState<number | undefined>(undefined);
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
   const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
+  const [gameEnded, setGameEnded] = useState<boolean>(false);
 
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
   useEffect((() => {
+    getGameEndedState();
     getNewMessages();
 
     const timeoutId = setTimeout(() => {
@@ -36,11 +39,17 @@ export default function Page() {
   }), []);
 
   useEffect(() => {
-    if (!showAllMessages || !lastTimestamp) {
+    // Skip on first loading
+    if (!lastTimestamp) {
       return;
     }
 
-    getNewMessages();
+    getGameEndedState();
+
+    // Get new messages only if we are not showing all messages
+    if(showAllMessages) {
+      getNewMessages();
+    }
 
     const timeoutId = setTimeout(() => {
       setLastTimestamp(getTimestamp());
@@ -48,6 +57,11 @@ export default function Page() {
 
     return () => clearTimeout(timeoutId);
   }, [lastTimestamp, showAllMessages]);
+
+  async function getGameEndedState() {
+    const gameEnded = await getGameEnded();
+    setGameEnded(gameEnded);
+  }
 
   async function getNewMessages() {
     const newMessages = await getMessages();
@@ -163,7 +177,7 @@ export default function Page() {
 
         {ready && <ChatInput
           className='mt-auto'
-          gameEnded={false}
+          gameEnded={gameEnded}
           isLoggedIn={authenticated}
           loading={paymentProcessing}
           onLogin={login}

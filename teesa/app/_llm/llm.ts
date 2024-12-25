@@ -251,6 +251,7 @@ export async function processUserInput(userId: string, messageId: string, timest
     const guessedWord = await extractGuess(userInput);
 
     if (await checkGuess(guessedWord)) {
+      llmState.setGameEnded();
       response = SUCCESS_MESSAGE;
     } else {
       response = await getIncorrectGuessResponse();
