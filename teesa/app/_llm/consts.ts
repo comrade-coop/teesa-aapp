@@ -1,0 +1,1 @@
+export const SUCCESS_MESSAGE = 'SUCCESS_MESSAGE';

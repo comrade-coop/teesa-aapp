@@ -1,9 +1,7 @@
 import 'server-only'
 import { LlmMessage, llmState } from './state';
 import { sendMessage } from './langchain';
-import { getTimestamp } from '@/lib/utils';
-
-export const SUCCESS_MESSAGE = 'SUCCESS_MESSAGE';
+import { SUCCESS_MESSAGE } from './consts';
 
 const baseRules = `
 Your name is Teesa.
