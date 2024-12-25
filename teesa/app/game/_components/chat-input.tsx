@@ -19,7 +19,7 @@ export function ChatInput({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if(!loading) {
+    if(loading) {
       return;
     }
 

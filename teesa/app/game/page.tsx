@@ -115,6 +115,8 @@ export default function Page() {
     </>
   );
 
+  const showMessages = (ready && authenticated) || showAllMessages;
+
   const getMessagesForList = () => {
     if(showAllMessages) {
       return messages.sort((a, b) => a.timestamp - b.timestamp);
@@ -131,8 +133,13 @@ export default function Page() {
           showAllMessages={showAllMessages}
           onTabChange={handleTabChange} />
 
-        <MessagesList
+        {showMessages ?
+         <MessagesList
           messages={getMessagesForList()} />
+        :
+        <div className="flex flex-col items-center justify-center h-full">
+          <p className="text-white">Connect your wallet to start playing</p>
+        </div>}
 
         {ready && <ChatInput
           className='mt-auto'
