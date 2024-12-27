@@ -1,4 +1,4 @@
-import { SUCCESS_MESSAGE } from "@/app/_llm/consts"
+import { SUCCESS_MESSAGE } from "../../_core/game-const"
 import { Card, CardContent } from "@/components/card"
 import { Diameter, ShieldCheck } from 'lucide-react'
 

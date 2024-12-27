@@ -1,6 +1,6 @@
 'use server';
 
-import { llmState } from "@/app/_llm/state";
+import { llmState } from '../../_core/game-state';
 
 export async function getMessages() {
     const messages = await llmState.getHistory();

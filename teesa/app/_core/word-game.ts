@@ -1,7 +1,7 @@
 import 'server-only'
-import { LlmMessage, llmState } from './state';
-import { sendMessage } from './langchain';
-import { SUCCESS_MESSAGE } from './consts';
+import { LlmMessage, llmState } from './game-state';
+import { sendMessage } from './llm-client';
+import { SUCCESS_MESSAGE } from './game-const';
 
 const baseRules = `
 Your name is Teesa.
