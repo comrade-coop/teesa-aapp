@@ -1,12 +1,15 @@
 import { Card, CardContent } from "@/components/card"
 import { Placeholder } from "@/components/placeholder"
-import { Diameter } from "lucide-react"
 
 export function LlmChatMessagePlaceholder() {
   return (
     <div className="flex items-start mb-8 flex-row">
-      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mr-4">
-        <Diameter className="w-6 h-6 text-muted-foreground" />
+      <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4 border border-blue-500/30 overflow-hidden">
+        <img 
+          src="/teesa.png" 
+          alt="Teesa"
+          className="w-full h-full object-cover"
+        />
       </div>
 
       <Card className="flex-1">

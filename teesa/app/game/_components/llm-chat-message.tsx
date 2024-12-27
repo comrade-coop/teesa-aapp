@@ -1,6 +1,6 @@
 import { SUCCESS_MESSAGE } from "../../_core/game-const"
 import { Card, CardContent } from "@/components/card"
-import { Diameter, ShieldCheck } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 
 export function LlmChatMessage({
   message,
@@ -9,8 +9,12 @@ export function LlmChatMessage({
 }) {
   return (
     <div className="flex items-start mb-8 flex-row">
-      <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4 border border-blue-500/30">
-        <Diameter className="w-6 h-6 text-blue-400" />
+      <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4 border border-blue-500/30 overflow-hidden">
+        <img 
+          src="/teesa.png" 
+          alt="Teesa"
+          className="w-full h-full object-cover"
+        />
       </div>
       <Card className="flex-1 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
         <CardContent className="p-3">
