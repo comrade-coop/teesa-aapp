@@ -10,7 +10,7 @@ export interface LlmMessage {
   llmMessage: string
 }
 
-class LlmState {
+class GameState {
   private secretWord: string;
   private history: LlmMessage[];
   private gameEnded: boolean;
@@ -55,4 +55,4 @@ class LlmState {
 
 }
 
-export const llmState = new LlmState();
+export const gameState = new GameState();

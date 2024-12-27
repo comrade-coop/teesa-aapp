@@ -1,7 +1,7 @@
 'use server';
 
-import { llmState } from '../../_core/game-state';
+import { gameState } from '@/app/_core/game-state';
 
 export async function getGameEnded(): Promise<boolean> {
-  return llmState.getGameEnded();
+  return gameState.getGameEnded();
 }
