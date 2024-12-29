@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/card";
-import { ProcessPaymentResult } from "../_models/process-payment-result";
+import { ProcessPaymentResult } from "../_actions/process-payment";
 import { AlertCircle } from "lucide-react";
 
 export function PaymentErrorChatMessage({
@@ -16,8 +16,6 @@ export function PaymentErrorChatMessage({
               switch (error) {
                 case ProcessPaymentResult.FailedInsufficientFunds:
                   return "Insufficient funds to process payment. Please ensure you have enough funds and try again.";
-                case ProcessPaymentResult.FailedPaymentProcessingError:
-                  return "There was an error processing your payment. Please try again later.";
                 case ProcessPaymentResult.FailedWalletNotFound:
                   return "Wallet not found. Please make sure you have selected the correct wallet and try again.";
                 default:

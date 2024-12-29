@@ -1,17 +1,37 @@
-'use server';
-
+import { ethers } from 'ethers';
+import GameContract from '../../_contracts/Game.json';
 import { ConnectedWallet } from "@privy-io/react-auth";
-import { ProcessPaymentResult } from "../_models/process-payment-result";
+
+export enum ProcessPaymentResult {
+  Success,
+  FailedInsufficientFunds,
+  FailedWalletNotFound,
+  FailedOtherError
+}
 
 export async function processPayment(walletAddress: string, wallets: ConnectedWallet[]): Promise<ProcessPaymentResult> {
   const wallet = wallets.find(wallet => wallet.address == walletAddress);
-  if(!wallet) {
+  if (!wallet) {
     return ProcessPaymentResult.FailedWalletNotFound;
   }
 
-  console.log("Processing payment...");
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  console.log("Payment processed successfully");
+  const provider = await wallet.getEthersProvider();
+  const signer = provider.getSigner();
+  const gameContract = new ethers.Contract(process.env.NEXT_PUBLIC_GAME_CONTRACT_ADDRESS!, GameContract.abi, signer);
 
-  return ProcessPaymentResult.Success;
+  try {
+    const balance = await provider.getBalance(walletAddress);
+    const currentPrice = await gameContract.getCurrentPrice();
+
+    if(balance.lt(currentPrice)) {
+      return ProcessPaymentResult.FailedInsufficientFunds;
+    }
+
+    const tx = await gameContract.pay({ value: currentPrice });
+    await tx.wait();
+    return ProcessPaymentResult.Success;
+  } catch (error) {
+    console.log('Error processing payment:', error);
+    return ProcessPaymentResult.FailedOtherError;
+  }
 }

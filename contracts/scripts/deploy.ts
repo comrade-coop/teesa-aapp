@@ -6,12 +6,51 @@ type Network = 'hardhat-local' | 'sepolia' | 'base';
 
 async function deploy(network: Network) {
   try {
+    // Remove artifacts, cache, and ignition deployments
+    console.log('Removing artifacts, cache, and ignition deployments...');
+    try {
+      execSync('npx hardhat clean', { encoding: 'utf-8', stdio: 'inherit' });
+      execSync('rm -rf ./ignition/deployments/*', { encoding: 'utf-8', stdio: 'inherit' });
+      console.log('Clear successful! ✅');
+    } catch (error) {
+      console.error('Clear failed! ❌');
+      throw error;
+    }
+
+    // Compile contracts first
+    console.log('Compiling contracts...');
+    try {
+      execSync('npx hardhat compile', { encoding: 'utf-8', stdio: 'inherit' });
+      console.log('Compilation successful! ✅');
+    } catch (error) {
+      console.error('Compilation failed! ❌');
+      throw error;
+    }
+
+    // Run tests
+    console.log('\nRunning tests...');
+    try {
+      execSync('npx hardhat test', { encoding: 'utf-8', stdio: 'inherit' });
+      console.log('Tests passed successfully! ✅');
+    } catch (error) {
+      console.error('Tests failed! ❌');
+      throw error;
+    }
+
     // Deploy contract using Ignition
-    console.log(`Deploying to ${network}...`);
-    const output = execSync(
-      `echo y | npx hardhat ignition deploy ./ignition/modules/Game.ts --network ${network}`,
-      { encoding: 'utf-8' }
-    );
+    console.log(`\nDeploying to ${network}...`);
+    let output: string;
+    try {
+      output = execSync(
+        `echo y | npx hardhat ignition deploy ./ignition/modules/Game.ts --network ${network}`,
+        { encoding: 'utf-8' }
+      );
+      console.log(output);
+      console.log('Deployment command executed successfully! ✅');
+    } catch (error) {
+      console.error('Deployment failed! ❌');
+      throw error;
+    }
     
     // Extract contract address from output
     const addressMatch = output.match(/GameModule#Game - (0x[a-fA-F0-9]{40})/);

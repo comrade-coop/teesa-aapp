@@ -38,7 +38,7 @@ contract Game is ReentrancyGuard {
         require(_teamAddresses.length > 0, "Must provide at least one team address");
 
         teamAddresses = _teamAddresses;
-        currentPrice = 10 ether;
+        currentPrice = 0.001 ether;
         owner = msg.sender;
         deploymentTime = block.timestamp;
     }
@@ -79,7 +79,7 @@ contract Game is ReentrancyGuard {
         emit PrizePoolIncreased(prizePool);
 
         uint256 newPrice = (currentPrice * 10078) / 10000;
-        uint256 maxPrice = 4500 ether;
+        uint256 maxPrice = 1 ether;
         currentPrice = newPrice > maxPrice ? maxPrice : newPrice;
         emit PaymentReceived(msg.sender, msg.value);
     }

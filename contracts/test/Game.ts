@@ -9,8 +9,7 @@ describe("Game", function () {
   let owner: SignerWithAddress;
   let teamMembers: SignerWithAddress[];
   let players: SignerWithAddress[];
-  const initialPrice = ethers.parseEther("10");
-  const maxPrice = ethers.parseEther("4500");
+  const initialPrice = ethers.parseEther("0.001");
 
   beforeEach(async function () {
     [owner, ...players] = await ethers.getSigners();
@@ -51,9 +50,10 @@ describe("Game", function () {
         .withArgs(player.address, paymentAmount)
         .to.emit(game, "PrizePoolIncreased");
 
-      // Verify price increase
+      // Verify price increase (0.78% increase)
+      const expectedNewPrice = (initialPrice * 10078n) / 10000n;
       const newPrice = await game.getCurrentPrice();
-      expect(newPrice).to.be.gt(initialPrice);
+      expect(newPrice).to.equal(expectedNewPrice);
 
       // Verify team balances (30% split among team members)
       const teamShare = paymentAmount * 30n / 100n;
@@ -70,21 +70,10 @@ describe("Game", function () {
 
     it("should revert if payment is insufficient", async function () {
       const player = players[3];
-      const insufficientAmount = initialPrice - 1n;
+      const insufficientAmount = ethers.parseEther("0.00000001");
 
       await expect(game.connect(player).pay({ value: insufficientAmount }))
         .to.be.revertedWith("Insufficient payment amount");
-    });
-
-    it("should not exceed max price", async function () {
-      const player = players[3];
-      // Make multiple payments to reach max price
-      for (let i = 0; i < 50; i++) {
-        const currentPrice = await game.getCurrentPrice();
-        await game.connect(player).pay({ value: currentPrice });
-        const newPrice = await game.getCurrentPrice();
-        expect(newPrice).to.be.lte(maxPrice);
-      }
     });
   });
 

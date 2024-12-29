@@ -16,7 +16,7 @@ import { RulesPanel } from './_components/rules-panel';
 import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
 import { getGameEnded } from './_actions/get-game-ended';
 import { processPayment } from './_actions/process-payment';
-import { ProcessPaymentResult } from './_models/process-payment-result';
+import { ProcessPaymentResult } from './_actions/process-payment';
 
 export default function Page() {
   const { ready, authenticated, user, login } = usePrivy();
