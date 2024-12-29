@@ -10,7 +10,7 @@ import { ChatInput } from './_components/chat-input';
 import { getMessages } from './_actions/get-messages';
 import { LlmChatMessage } from './_components/llm-chat-message';
 import { v4 as uuidv4 } from 'uuid';
-import MessageTabs from './_components/message-tabs';
+import { MessageTabs } from './_components/message-tabs';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { RulesPanel } from './_components/rules-panel';
 import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
