@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from "@/components/button"
 import { cn } from '@/lib/utils'
 
-export default function MessageTabs({
+export function MessageTabs({
   className,
   showAllMessages,
   onTabChange
