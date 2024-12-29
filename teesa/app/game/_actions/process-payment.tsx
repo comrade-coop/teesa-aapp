@@ -27,8 +27,9 @@ export async function processPayment(walletAddress: string, wallets: ConnectedWa
       return ProcessPaymentResult.FailedInsufficientFunds;
     }
 
-    const tx = await gameContract.pay({ value: currentPrice });
-    await tx.wait();
+    const paymentTransaction = await gameContract.pay({ value: currentPrice });
+    await paymentTransaction.wait();
+
     return ProcessPaymentResult.Success;
   } catch (error) {
     console.log('Error processing payment:', error);
