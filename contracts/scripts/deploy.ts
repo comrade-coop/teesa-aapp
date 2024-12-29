@@ -28,13 +28,13 @@ async function deploy(network: Network) {
       envContent = fs.readFileSync(envPath, 'utf-8');
     }
 
-    if (envContent.includes('GAME_CONTRACT_ADDRESS=')) {
+    if (envContent.includes('NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=')) {
       envContent = envContent.replace(
-        /GAME_CONTRACT_ADDRESS=.*/,
-        `GAME_CONTRACT_ADDRESS=${contractAddress}`
+        /NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=.*/,
+        `NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=${contractAddress}`
       );
     } else {
-      envContent += `\nGAME_CONTRACT_ADDRESS=${contractAddress}`;
+      envContent += `\NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=${contractAddress}`;
     }
 
     fs.writeFileSync(envPath, envContent.trim());
