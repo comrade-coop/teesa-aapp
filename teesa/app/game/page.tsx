@@ -1,25 +1,26 @@
 'use client';
 
-import { sendMessage } from './_data/send-message';
+import { sendMessage } from './_actions/send-message';
 import { MessageUiStateModel } from './_models/message-ui-state-model';
 import { UserChatMessage } from './_components/user-chat-message';
 import { getLocaleClient, getTimestamp } from '@/lib/utils';
 import { MessagesList } from './_components/messages-list';
 import { useEffect, useState } from 'react';
 import { ChatInput } from './_components/chat-input';
-import { getMessages } from './_data/get-messages';
+import { getMessages } from './_actions/get-messages';
 import { LlmChatMessage } from './_components/llm-chat-message';
 import { v4 as uuidv4 } from 'uuid';
 import MessageTabs from './_components/message-tabs';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { RulesPanel } from './_components/rules-panel';
-import { processPayment, ProcessPaymentResult } from './_data/process-payment';
 import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
-import { getGameEnded } from './_data/get-game-ended';
-import { SUCCESS_MESSAGE } from '../../_core/game-const';
+import { getGameEnded } from './_actions/get-game-ended';
+import { processPayment } from './_actions/process-payment';
+import { ProcessPaymentResult } from './_models/process-payment-result';
 
 export default function Page() {
   const { ready, authenticated, user, login } = usePrivy();
+  const { wallets } = useWallets();
   const [messages, setMessages] = useState<MessageUiStateModel[]>([]);
   const [lastTimestamp, setLastTimestamp] = useState<number | undefined>(undefined);
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
@@ -48,7 +49,7 @@ export default function Page() {
     getGameEndedState();
 
     // Get new messages only if we are not showing all messages
-    if(showAllMessages) {
+    if (showAllMessages) {
       getNewMessages();
     }
 
@@ -89,17 +90,17 @@ export default function Page() {
   };
 
   async function hadleChatMessage(message: string) {
-    if(!walletAddress) {
+    if (!walletAddress) {
       return;
     }
 
     setShowAllMesssages(false);
 
     setPaymentProcessing(true);
-    const paymentResult = await processPayment(walletAddress);
+    const paymentResult = await processPayment(walletAddress, wallets);
     setPaymentProcessing(false);
 
-    if(paymentResult != ProcessPaymentResult.Success) {
+    if (paymentResult != ProcessPaymentResult.Success) {
       setMessages(previousMessages => [
         ...previousMessages,
         {
@@ -153,7 +154,7 @@ export default function Page() {
   const showMessages = (ready && authenticated) || showAllMessages;
 
   const getMessagesForList = () => {
-    if(showAllMessages) {
+    if (showAllMessages) {
       return messages.sort((a, b) => a.timestamp - b.timestamp);
     }
 
@@ -169,12 +170,12 @@ export default function Page() {
           onTabChange={handleTabChange} />
 
         {showMessages ?
-         <MessagesList
-          messages={getMessagesForList()} />
-        :
-        <div className="flex flex-col items-center justify-center h-full">
-          <p className="text-white">Connect your wallet to start playing</p>
-        </div>}
+          <MessagesList
+            messages={getMessagesForList()} />
+          :
+          <div className="flex flex-col items-center justify-center h-full">
+            <p className="text-white">Connect your wallet to start playing</p>
+          </div>}
 
         {ready && <ChatInput
           className='mt-auto'
