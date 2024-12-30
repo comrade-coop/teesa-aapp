@@ -14,18 +14,21 @@ contract Game is ReentrancyGuard {
     uint256 public prizePool;
     uint256 public currentPrice;
 
-    struct Payment {
-        uint256 amount;
-        uint256 timestamp;
-    }
-
-    mapping(address => Payment[]) public paymentHistory;
+    mapping(address => uint256) public userTotalPayments;
     address[] private uniqueUsers;
     mapping(address => bool) private isUser;
     address public lastPlayer;
+    uint256 public totalPayments;
+    uint256 public lastPaymentTime;
 
     mapping(address => uint256) public unclaimedShares;
 
+    event Payment(
+        address indexed user,
+        uint256 amount,
+        uint256 timestamp,
+        uint256 newTotal
+    );
     event PaymentReceived(address indexed payer, uint256 amount);
     event PrizePoolIncreased(uint256 newTotal);
     event TeamPaymentSent(address indexed teamMember, uint256 amount);
@@ -41,6 +44,7 @@ contract Game is ReentrancyGuard {
         currentPrice = 0.001 ether;
         owner = msg.sender;
         deploymentTime = block.timestamp;
+        lastPaymentTime = block.timestamp;
     }
 
     function getCurrentPrice() public view returns (uint256) {
@@ -52,29 +56,31 @@ contract Game is ReentrancyGuard {
         require(msg.value >= currentPrice, "Insufficient payment amount");
 
         lastPlayer = msg.sender;
+        lastPaymentTime = block.timestamp;
 
-        // Record the payment
-        paymentHistory[msg.sender].push(
-            Payment({amount: msg.value, timestamp: block.timestamp})
+        userTotalPayments[msg.sender] += msg.value;
+        totalPayments += msg.value;
+
+        emit Payment(
+            msg.sender,
+            msg.value,
+            block.timestamp,
+            userTotalPayments[msg.sender]
         );
 
-        // Track unique players
         if (!isUser[msg.sender]) {
             isUser[msg.sender] = true;
             uniqueUsers.push(msg.sender);
         }
 
-        // Calculate team and prize pool splits
         uint256 teamShare = (msg.value * 30) / 100;
         uint256 prizePoolShare = msg.value - teamShare;
 
-        // Distribute team share
         uint256 sharePerTeamMember = teamShare / teamAddresses.length;
         for (uint256 i = 0; i < teamAddresses.length; i++) {
             teamBalances[teamAddresses[i]] += sharePerTeamMember;
         }
 
-        // Add to prize pool
         prizePool += prizePoolShare;
         emit PrizePoolIncreased(prizePool);
 
@@ -118,40 +124,20 @@ contract Game is ReentrancyGuard {
         emit TeamPaymentSent(msg.sender, amount);
     }
 
-    function getPaymentHistory(address payer) public view returns (Payment[] memory) {
-        return paymentHistory[payer];
+    function getUserTotalPayments(address user) public view returns (uint256) {
+        return userTotalPayments[user];
     }
 
     function distributeIfTimeExpired() public nonReentrant {
         require(!gameEnded, "Game has already ended");
-        require(block.timestamp >= deploymentTime + 30 days, "One month period not elapsed");
+        require(block.timestamp >= lastPaymentTime + 30 days, "30 days since last payment not elapsed");
         require(prizePool > 0, "Prize pool is empty");
 
         gameEnded = true;
 
-        // Calculate shares
         uint256 lastPlayerShare = (prizePool * 10) / 100;
         uint256 remainingPrize = prizePool - lastPlayerShare;
 
-        // Get total payments from all users
-        uint256 totalPayments = 0;
-        address[] memory users = uniqueUsers;
-        uint256[] memory userTotalPayments = new uint256[](users.length);
-
-        for (uint256 i = 0; i < users.length; i++) {
-            address user = users[i];
-            Payment[] memory payments = paymentHistory[user];
-            uint256 userTotal = 0;
-
-            for (uint256 k = 0; k < payments.length; k++) {
-                userTotal += payments[k].amount;
-            }
-
-            userTotalPayments[i] = userTotal;
-            totalPayments += userTotal;
-        }
-
-        // Distribute to the last player
         if (lastPlayer != address(0)) {
             bool success = _sendPrize(payable(lastPlayer), lastPlayerShare);
             if(success) {
@@ -159,10 +145,9 @@ contract Game is ReentrancyGuard {
             }
         }
 
-        // Distribute proportionally to all users
-        for (uint256 i = 0; i < users.length; i++) {
-            address user = users[i];
-            uint256 share = (remainingPrize * userTotalPayments[i]) / totalPayments;
+        for (uint256 i = 0; i < uniqueUsers.length; i++) {
+            address user = uniqueUsers[i];
+            uint256 share = (remainingPrize * userTotalPayments[user]) / totalPayments;
 
             if (share > 0) {
                 bool success = _sendPrize(payable(user), share);
@@ -179,10 +164,8 @@ contract Game is ReentrancyGuard {
         uint256 amount = unclaimedShares[msg.sender];
         require(amount > 0, "No unclaimed share to claim");
 
-        // Zero out the user's unclaimed share before sending
         unclaimedShares[msg.sender] = 0;
 
-        // Attempt the transfer again
         bool success = _sendPrize(payable(msg.sender), amount);
         require(success, "Claim transfer failed");
 
