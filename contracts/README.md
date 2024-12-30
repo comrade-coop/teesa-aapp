@@ -51,5 +51,5 @@ The deployment script will:
 1. Compile the contract
 2. Test the contract
 3. Deploy the contract
-4. Update the `CONTRACT_ADDRESS` in `/teesa/.env`
+4. Update the `NEXT_PUBLIC_GAME_CONTRACT_ADDRESS` in `/teesa/.env`
 5. Copy the contract ABI to `/teesa/app/contracts`
