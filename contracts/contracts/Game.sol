@@ -15,13 +15,13 @@ contract Game is ReentrancyGuard {
     uint256 public currentPrice;
 
     mapping(address => uint256) public userTotalPayments;
-    address[] private uniqueUsers;
-    mapping(address => bool) private isUser;
     address public lastPlayer;
     uint256 public totalPayments;
     uint256 public lastPaymentTime;
 
     mapping(address => uint256) public unclaimedShares;
+    uint256 public perUnitPaymentShare;
+    mapping(address => bool) public userPaymentsClaimed;
 
     error InsufficientPayment();
     error GameHasEnded();
@@ -32,6 +32,10 @@ contract Game is ReentrancyGuard {
     error TimeNotElapsed();
     error NoUnclaimedShare();
     error InvalidTeamAddresses();
+    error AlreadyClaimed();
+    error NoPaymentMade();
+    error GameNotEnded();
+    error NoPrizeToClaim();
 
     event Payment(
         address indexed user,
@@ -79,11 +83,6 @@ contract Game is ReentrancyGuard {
             block.timestamp,
             userTotalPayments[msg.sender]
         );
-
-        if (!isUser[msg.sender]) {
-            isUser[msg.sender] = true;
-            uniqueUsers.push(msg.sender);
-        }
 
         uint256 teamShare = (msg.value * 30) / 100;
         uint256 prizePoolShare = msg.value - teamShare;
@@ -160,24 +159,33 @@ contract Game is ReentrancyGuard {
         uint256 remainingPrize = _prizePool - lastPlayerShare;
 
         if (lastPlayer != address(0)) {
-            if (_sendPrize(payable(lastPlayer), lastPlayerShare)) {
+            if (_sendPrizeShare(payable(lastPlayer), lastPlayerShare)) {
                 emit PrizePoolDistributedAfterTimeExpired(lastPlayer, lastPlayerShare);
             }
         }
 
-        uint256 length = uniqueUsers.length;
-        for (uint256 i = 0; i < length;) {
-            address user = uniqueUsers[i];
-            uint256 userPayments = userTotalPayments[user];
-            
-            if (userPayments > 0) {
-                uint256 share = (remainingPrize * userPayments) / totalPayments;
-                if (share > 0 && _sendPrize(payable(user), share)) {
-                    emit PrizePoolDistributedAfterTimeExpired(user, share);
-                }
-            }
-            unchecked { ++i; }
+        if (totalPayments == 0) revert NoPaymentMade();
+
+        perUnitPaymentShare = (remainingPrize * 1e18) / totalPayments;
+    }
+
+    function claimExpiredPrize() external nonReentrant {
+        if (!gameEnded) revert GameNotEnded();
+        if (userPaymentsClaimed[msg.sender]) revert AlreadyClaimed();
+
+        uint256 userPayment = userTotalPayments[msg.sender];
+        if (userPayment == 0) revert NoPaymentMade();
+
+        userPaymentsClaimed[msg.sender] = true;
+
+        uint256 share = (userPayment * perUnitPaymentShare) / 1e18;
+        if (share == 0) revert NoPrizeToClaim();
+
+        if (!_sendPrizeShare(payable(msg.sender), share)) {
+            revert TransferFailed();
         }
+
+        emit PrizePoolDistributedAfterTimeExpired(msg.sender, share);
     }
 
     function claimFailedShare() external nonReentrant {
@@ -186,15 +194,15 @@ contract Game is ReentrancyGuard {
 
         unclaimedShares[msg.sender] = 0;
 
-        if (!_sendPrize(payable(msg.sender), amount)) revert TransferFailed();
+        if (!_sendPrizeShare(payable(msg.sender), amount)) revert TransferFailed();
 
         emit UnclaimedPrizeShareClaimed(msg.sender, amount);
     }
 
-    function _sendPrize(address payable recipient, uint256 amount) private returns (bool) {
+    function _sendPrizeShare(address payable recipient, uint256 amount) private returns (bool) {
         (bool success, ) = recipient.call{value: amount}("");
         if (!success) {
-            unclaimedShares[recipient] = amount;
+            unclaimedShares[recipient] += amount;
             emit UnclaimedPrizeShareAdded(recipient, amount);
         }
 
