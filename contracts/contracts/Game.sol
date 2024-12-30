@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Game is ReentrancyGuard {
-    address public owner;
-    uint256 public deploymentTime;
+    address public immutable owner;
+    uint256 public immutable deploymentTime;
     bool public gameEnded;
 
-    address[] public teamAddresses;
+    address[] public immutable teamAddresses;
     mapping(address => uint256) public teamBalances;
 
     uint256 public prizePool;
@@ -22,6 +22,16 @@ contract Game is ReentrancyGuard {
     uint256 public lastPaymentTime;
 
     mapping(address => uint256) public unclaimedShares;
+
+    error InsufficientPayment();
+    error GameHasEnded();
+    error EmptyPrizePool();
+    error NotOwner();
+    error NoBalanceToWithdraw();
+    error TransferFailed();
+    error TimeNotElapsed();
+    error NoUnclaimedShare();
+    error InvalidTeamAddresses();
 
     event Payment(
         address indexed user,
@@ -38,7 +48,7 @@ contract Game is ReentrancyGuard {
     event PrizePoolDistributedAfterTimeExpired(address indexed user, uint256 amount);
 
     constructor(address[] memory _teamAddresses) {
-        require(_teamAddresses.length > 0, "Must provide at least one team address");
+        if (_teamAddresses.length == 0) revert InvalidTeamAddresses();
 
         teamAddresses = _teamAddresses;
         currentPrice = 0.001 ether;
@@ -47,19 +57,21 @@ contract Game is ReentrancyGuard {
         lastPaymentTime = block.timestamp;
     }
 
-    function getCurrentPrice() public view returns (uint256) {
+    function getCurrentPrice() external view returns (uint256) {
         return currentPrice;
     }
 
-    function pay() public payable nonReentrant {
-        require(!gameEnded, "Game has ended");
-        require(msg.value >= currentPrice, "Insufficient payment amount");
+    function pay() external payable nonReentrant {
+        if (gameEnded) revert GameHasEnded();
+        if (msg.value < currentPrice) revert InsufficientPayment();
 
         lastPlayer = msg.sender;
         lastPaymentTime = block.timestamp;
 
-        userTotalPayments[msg.sender] += msg.value;
-        totalPayments += msg.value;
+        unchecked {
+            userTotalPayments[msg.sender] += msg.value;
+            totalPayments += msg.value;
+        }
 
         emit Payment(
             msg.sender,
@@ -77,11 +89,17 @@ contract Game is ReentrancyGuard {
         uint256 prizePoolShare = msg.value - teamShare;
 
         uint256 sharePerTeamMember = teamShare / teamAddresses.length;
-        for (uint256 i = 0; i < teamAddresses.length; i++) {
-            teamBalances[teamAddresses[i]] += sharePerTeamMember;
+        uint256 length = teamAddresses.length;
+        for (uint256 i = 0; i < length;) {
+            unchecked {
+                teamBalances[teamAddresses[i]] += sharePerTeamMember;
+                ++i;
+            }
         }
 
-        prizePool += prizePoolShare;
+        unchecked {
+            prizePool += prizePoolShare;
+        }
         emit PrizePoolIncreased(prizePool);
 
         uint256 newPrice = (currentPrice * 10078) / 10000;
@@ -90,14 +108,14 @@ contract Game is ReentrancyGuard {
         emit PaymentReceived(msg.sender, msg.value);
     }
 
-    function getPrizePool() public view returns (uint256) {
+    function getPrizePool() external view returns (uint256) {
         return prizePool;
     }
 
-    function awardPrize(address payable winner) public nonReentrant {
-        require(msg.sender == owner, "Only owner can award prize");
-        require(prizePool > 0, "Prize pool is empty");
-        require(!gameEnded, "Game has already ended");
+    function awardPrize(address payable winner) external nonReentrant {
+        if (msg.sender != owner) revert NotOwner();
+        if (prizePool == 0) revert EmptyPrizePool();
+        if (gameEnded) revert GameHasEnded();
 
         gameEnded = true;
 
@@ -105,69 +123,70 @@ contract Game is ReentrancyGuard {
         prizePool = 0;
 
         (bool success, ) = winner.call{value: prizeAmount}("");
-        require(success, "Prize transfer failed");
+        if (!success) revert TransferFailed();
         emit PrizeAwarded(winner, prizeAmount);
     }
 
-    function withdrawTeamShare() public nonReentrant {
+    function withdrawTeamShare() external nonReentrant {
         uint256 amount = teamBalances[msg.sender];
-        require(amount > 0, "No balance to withdraw");
+        if (amount == 0) revert NoBalanceToWithdraw();
 
         teamBalances[msg.sender] = 0;
 
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         if (!success) {
             teamBalances[msg.sender] = amount;
+            revert TransferFailed();
         }
-        require(success, "Transfer failed");
 
         emit TeamPaymentSent(msg.sender, amount);
     }
 
-    function getUserTotalPayments(address user) public view returns (uint256) {
+    function getUserTotalPayments(address user) external view returns (uint256) {
         return userTotalPayments[user];
     }
 
-    function distributeIfTimeExpired() public nonReentrant {
-        require(!gameEnded, "Game has already ended");
-        require(block.timestamp >= lastPaymentTime + 30 days, "30 days since last payment not elapsed");
-        require(prizePool > 0, "Prize pool is empty");
+    function distributeIfTimeExpired() external nonReentrant {
+        if (gameEnded) revert GameHasEnded();
+        if (block.timestamp < lastPaymentTime + 30 days) revert TimeNotElapsed();
+        if (prizePool == 0) revert EmptyPrizePool();
 
         gameEnded = true;
 
-        uint256 lastPlayerShare = (prizePool * 10) / 100;
-        uint256 remainingPrize = prizePool - lastPlayerShare;
+        uint256 _prizePool = prizePool;
+        prizePool = 0;
+
+        uint256 lastPlayerShare = (_prizePool * 10) / 100;
+        uint256 remainingPrize = _prizePool - lastPlayerShare;
 
         if (lastPlayer != address(0)) {
-            bool success = _sendPrize(payable(lastPlayer), lastPlayerShare);
-            if(success) {
+            if (_sendPrize(payable(lastPlayer), lastPlayerShare)) {
                 emit PrizePoolDistributedAfterTimeExpired(lastPlayer, lastPlayerShare);
             }
         }
 
-        for (uint256 i = 0; i < uniqueUsers.length; i++) {
+        uint256 length = uniqueUsers.length;
+        for (uint256 i = 0; i < length;) {
             address user = uniqueUsers[i];
-            uint256 share = (remainingPrize * userTotalPayments[user]) / totalPayments;
-
-            if (share > 0) {
-                bool success = _sendPrize(payable(user), share);
-                if(success) {
+            uint256 userPayments = userTotalPayments[user];
+            
+            if (userPayments > 0) {
+                uint256 share = (remainingPrize * userPayments) / totalPayments;
+                if (share > 0 && _sendPrize(payable(user), share)) {
                     emit PrizePoolDistributedAfterTimeExpired(user, share);
                 }
             }
+            unchecked { ++i; }
         }
-
-        prizePool = 0;
     }
 
     function claimFailedShare() external nonReentrant {
         uint256 amount = unclaimedShares[msg.sender];
-        require(amount > 0, "No unclaimed share to claim");
+        if (amount == 0) revert NoUnclaimedShare();
 
         unclaimedShares[msg.sender] = 0;
 
-        bool success = _sendPrize(payable(msg.sender), amount);
-        require(success, "Claim transfer failed");
+        if (!_sendPrize(payable(msg.sender), amount)) revert TransferFailed();
 
         emit UnclaimedPrizeShareClaimed(msg.sender, amount);
     }
