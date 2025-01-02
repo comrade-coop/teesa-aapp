@@ -13,6 +13,10 @@ const config: HardhatUserConfig = {
     sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: [process.env.WALLET_PRIVATE_KEY_SEPOLIA!]
+    },
+    base: {
+      url: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [process.env.WALLET_PRIVATE_KEY_BASE!]
     }
   }
 };
