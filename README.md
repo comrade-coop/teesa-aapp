@@ -4,9 +4,9 @@
 
 Follow these instructions to set up, configure, and run the Teesa application in production mode on your local machine or server.
 
-For development mode:
-2. See the README file in the [/contracts](/contracts/README.md) directory for the contract setup
-1. See the README file in the [/teesa](/teesa/README.md) directory for Next.js app setup
+### For development mode:
+1. See the README file in the [/contracts](/contracts/README.md) directory for the contract setup
+2. See the README file in the [/teesa](/teesa/README.md) directory for Next.js app setup
 
 ### Prerequisites
 

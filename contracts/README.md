@@ -28,7 +28,7 @@ This project includes the contract and associated tools for deploying and testin
    ```
 
 2. Update the `.env` file with:
-   - `WALLET_PRIVATE_KEY_HARDHAT_LOCAL`: Private key for deploying to local Hardhat network
+   - `WALLET_PRIVATE_KEY_LOCALHOST`: Private key for deploying to local Hardhat network
    - `WALLET_PRIVATE_KEY_SEPOLIA`: Private key for deploying to Sepolia testnet
    - `WALLET_PRIVATE_KEY_BASE`: Private key for deploying to Base mainnet
    - Generate Alchemy API key and include the following networks:
@@ -41,7 +41,7 @@ This project includes the contract and associated tools for deploying and testin
 
 Run the deployment script:
 ```bash
-npx ts-node scripts/deploy.ts <network>
+npx hardhat deploy-contract <network>
 ```
 Replace `<network>` with desired target (`hardhat`, `sepolia`, `base`)
 

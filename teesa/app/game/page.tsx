@@ -12,22 +12,31 @@ import { LlmChatMessage } from './_components/llm-chat-message';
 import { v4 as uuidv4 } from 'uuid';
 import { MessageTabs } from './_components/message-tabs';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { RulesPanel } from './_components/rules-panel';
+import { SidePanel } from './_components/side-panel';
 import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
 import { getGameEnded } from './_actions/get-game-ended';
 import { processPayment } from './_actions/process-payment';
 import { ProcessPaymentResult } from './_actions/process-payment';
 
 export default function Page() {
-  const { ready, authenticated, user, login } = usePrivy();
+  const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
   const [messages, setMessages] = useState<MessageUiStateModel[]>([]);
   const [lastTimestamp, setLastTimestamp] = useState<number | undefined>(undefined);
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
   const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
-
+  const [winnerAddress, setWinnerAddress] = useState<string | undefined>(undefined);
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
+
+  // Logout and make the user to reconnect their wallet if no wallets are found
+  // We noticed an issue with the Privy.io `useWallets` hook - sometimes returns empty wallets array
+  // This is a workaround to force the user to reconnect their wallet
+  useEffect(() => {
+    if (ready && authenticated && wallets.length == 0) {
+      //logout();
+    }
+  }, [ready, authenticated, wallets]);
 
   useEffect((() => {
     getGameEndedState();
@@ -61,8 +70,9 @@ export default function Page() {
   }, [lastTimestamp, showAllMessages]);
 
   async function getGameEndedState() {
-    const gameEnded = await getGameEnded();
+    const [gameEnded, winnerAddress] = await getGameEnded();
     setGameEnded(gameEnded);
+    setWinnerAddress(winnerAddress);
   }
 
   async function getNewMessages() {
@@ -78,7 +88,7 @@ export default function Page() {
       userId: m.userId,
       timestamp: m.timestamp,
       display: <>
-        <UserChatMessage timestamp={m.timestamp} locale={getLocaleClient()} message={m.userMessage} />
+        <UserChatMessage timestamp={m.timestamp} locale={getLocaleClient()} message={m.userMessage} userAddress={m.userId} />
         <LlmChatMessage message={m.llmMessage} />
       </>
     }));
@@ -180,6 +190,7 @@ export default function Page() {
         {ready && <ChatInput
           className='mt-auto'
           gameEnded={gameEnded}
+          winnerAddress={winnerAddress}
           isLoggedIn={authenticated}
           loading={paymentProcessing}
           onLogin={login}
@@ -187,9 +198,11 @@ export default function Page() {
       </div>
 
       {/* Rules Panel */}
-      <RulesPanel>
+      <SidePanel
+        isLoggedIn={authenticated}
+        onLogout={logout}>
         {systemMessage}
-      </RulesPanel>
+      </SidePanel>
     </div>
   );
 }

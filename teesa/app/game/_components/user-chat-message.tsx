@@ -5,11 +5,13 @@ import { User } from 'lucide-react'
 export function UserChatMessage({
   timestamp,
   locale,
-  message
+  message,
+  userAddress
 }: {
   timestamp: number,
   locale: string,
-  message: string
+  message: string,
+  userAddress: string
 }) {
   const formatedDate = timestampToFormatedDate(locale, timestamp);
 
@@ -17,6 +19,9 @@ export function UserChatMessage({
     <div className="flex items-start mb-8 flex-row">
       <Card className="flex-1 bg-blue-600/10 border border-blue-500/20 backdrop-blur-sm">
         <CardContent className="p-3">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs text-blue-400">{userAddress}</span>
+          </div>
           <p className="text-sm mb-2 text-slate-200">{message}</p>
           <div className="flex justify-end">
             <span className="text-xs text-blue-400">

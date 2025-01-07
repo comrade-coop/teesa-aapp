@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.28;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract Game is ReentrancyGuard {
     address public immutable owner;
     uint256 public immutable deploymentTime;
     bool public gameEnded;
 
-    address[] public immutable teamAddresses;
+    address[] public teamAddresses;
     mapping(address => uint256) public teamBalances;
 
     uint256 public prizePool;
@@ -54,7 +54,10 @@ contract Game is ReentrancyGuard {
     constructor(address[] memory _teamAddresses) {
         if (_teamAddresses.length == 0) revert InvalidTeamAddresses();
 
-        teamAddresses = _teamAddresses;
+        for(uint i = 0; i < _teamAddresses.length; i++) {
+            teamAddresses.push(_teamAddresses[i]);
+        }
+        
         currentPrice = 0.001 ether;
         owner = msg.sender;
         deploymentTime = block.timestamp;

@@ -233,19 +233,21 @@ Channel these traits by:
     return sendMessage(prompt, WordGame.getSystemRules(true));
   }
 
-  public async processUserInput(userId: string, messageId: string, timestamp: number, input: string): Promise<string> {
+  public async processUserInput(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {
     const userInput = (await this.fixSpelling(input)).trim();
     const inputType = await this.getInputType(userInput);
 
+    let wonGame = false;
     let response: string = '';
 
-    if (inputType === 'question') {
+    if (inputType == 'question') {
       response = await this.answerQuestion(userInput);
-    } else if (inputType === 'guess') {
+    } else if (inputType == 'guess') {
       const guessedWord = await this.extractGuess(userInput);
 
       if (await this.checkGuess(guessedWord)) {
-        gameState.setGameEnded();
+        gameState.setGameEnded(userAddress);
+        wonGame = true;
         response = SUCCESS_MESSAGE;
       } else {
         response = await this.getIncorrectGuessResponse();
@@ -256,7 +258,7 @@ Channel these traits by:
 
     const message: LlmMessage = {
       id: messageId,
-      userId: userId,
+      userId: userAddress,
       timestamp: timestamp,
       userMessage: input,
       llmMessage: response
@@ -264,7 +266,7 @@ Channel these traits by:
 
     gameState.addToHistory(message);
 
-    return response;
+    return [wonGame, response];
   }
 }
 

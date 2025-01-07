@@ -1,22 +1,38 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-verify";
+import "./tasks/deploy";
 
 require('dotenv').config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.28",
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
   networks: {
     localhost: {
-      url: "http://127.0.0.1:8545",
-      accounts: [process.env.WALLET_PRIVATE_KEY_HARDHAT_LOCAL!]
+      url: process.env.LOCALHOST_RPC_URL,
+      accounts: [process.env.WALLET_PRIVATE_KEY_LOCALHOST!]
     },
     sepolia: {
-      url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      url: process.env.SEPOLIA_RPC_URL,
       accounts: [process.env.WALLET_PRIVATE_KEY_SEPOLIA!]
     },
     base: {
-      url: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      url: process.env.BASE_RPC_URL,
       accounts: [process.env.WALLET_PRIVATE_KEY_BASE!]
+    }
+  },
+  etherscan: {
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY!,
+      base: process.env.BASESCAN_API_KE!
     }
   }
 };

@@ -4,6 +4,7 @@ import { Loader2, SendHorizonal } from 'lucide-react';
 export function ChatInput({
   className,
   gameEnded,
+  winnerAddress,
   isLoggedIn,
   loading,
   onLogin,
@@ -11,6 +12,7 @@ export function ChatInput({
 }: {
   className?: string,
   gameEnded: boolean,
+  winnerAddress?: string | undefined,
   isLoggedIn: boolean,
   loading: boolean,
   onLogin: () => void,
@@ -74,7 +76,8 @@ export function ChatInput({
   const gameEndedMessage = (
     <div
       className="flex flex-row items-center justify-center mb-4 w-full uppercase p-4 bg-slate-800/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200">
-      Game ended
+      Game ended!
+      {winnerAddress && <span className="ml-2 text-green-500">Winner: {winnerAddress}</span>}
     </div>
   )
 

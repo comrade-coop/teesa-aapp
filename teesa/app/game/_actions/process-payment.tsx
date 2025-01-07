@@ -15,6 +15,15 @@ export async function processPayment(walletAddress: string, wallets: ConnectedWa
     return ProcessPaymentResult.FailedWalletNotFound;
   }
 
+  let chainId: number;
+  try {
+    chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
+  } catch (error) {
+    console.log('Error parsing chain ID:', error);
+    return ProcessPaymentResult.FailedOtherError;
+  }
+  await wallet.switchChain(chainId);
+
   const provider = await wallet.getEthersProvider();
   const signer = provider.getSigner();
   const gameContract = new ethers.Contract(process.env.NEXT_PUBLIC_GAME_CONTRACT_ADDRESS!, GameContract.abi, signer);
@@ -28,7 +37,7 @@ export async function processPayment(walletAddress: string, wallets: ConnectedWa
     }
 
     const paymentTransaction = await gameContract.pay({ value: currentPrice });
-    await paymentTransaction.wait();
+    await provider.waitForTransaction(paymentTransaction.hash, 1);
 
     return ProcessPaymentResult.Success;
   } catch (error) {

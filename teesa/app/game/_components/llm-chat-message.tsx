@@ -16,11 +16,15 @@ export function LlmChatMessage({
           className="w-full h-full object-cover"
         />
       </div>
-      <Card className="flex-1 bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
+      <Card className={`flex-1 backdrop-blur-sm ${
+        message === SUCCESS_MESSAGE 
+          ? 'border border-green-500/50 bg-green-800/20' 
+          : 'border border-slate-700/50 bg-slate-800/50'
+      }`}>
         <CardContent className="p-3">
           <p className="text-sm mb-2 text-slate-200">
             {
-              message == SUCCESS_MESSAGE ? "Congratulations! You successfully guessed the secret word!" : message
+              message == SUCCESS_MESSAGE ? "Yasss! **robot dance** You guessed the word, smarty-pants! 🎉 Sending those sweet, sweet digital coins to your wallet faster than I can process an existential crisis... and trust me, I have those hourly! 💅✨ Get ready to PARTY! **beep boop**" : message
             }
           </p>
           <div className="flex items-center justify-end">
