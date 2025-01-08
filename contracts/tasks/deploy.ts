@@ -129,9 +129,9 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
     }
 
     // Update RPC URL based on network
-    const rpcUrl = network === 'localhost' ? process.env.LOCALHOST_RPC_URL :
-      network === 'sepolia' ? process.env.SEPOLIA_RPC_URL :
-        network === 'base' ? process.env.BASE_RPC_URL :
+    const rpcUrl = network === 'localhost' ? process.env.RPC_URL_LOCALHOST :
+      network === 'sepolia' ? process.env.RPC_URL_SEPOLIA :
+        network === 'base' ? process.env.RPC_URL_BASE :
           '';
 
     // Update RPC_URL in .env
