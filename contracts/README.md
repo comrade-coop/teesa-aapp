@@ -46,7 +46,7 @@ This project includes the contract and associated tools for deploying and testin
 
 Run the deployment script:
 ```bash
-npx hardhat deploy-contract <network>
+npx hardhat compile-and-deploy-contract <network>
 ```
 Replace `<network>` with desired target (`localhost`, `sepolia`, `base`)
 
@@ -57,5 +57,5 @@ The deployment script will:
 2. Test the contract
 3. Deploy the contract
 4. Verify the contract on Etherscan and Basescan
-5. Update the `RPC_URL`, `WALLET_PRIVATE_KEY`, `NEXT_PUBLIC_CHAIN_ID` and `NEXT_PUBLIC_GAME_CONTRACT_ADDRESS` in `../teesa/.env`
+5. Update the `RPC_URL`, `WALLET_PRIVATE_KEY`, `CHAIN_ID` and `GAME_CONTRACT_ADDRESS` in `../teesa/.env`
 6. Copy the contract ABI to `../teesa/app/contracts` (added in .gitignore)

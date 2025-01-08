@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import GameContract from '../../../_contracts/Game.json';
 import { ConnectedWallet } from "@privy-io/react-auth";
+import { getEnvironments } from '../../../_actions/get-environments';
 
 export async function withdrawShare(walletAddress: string, wallets: ConnectedWallet[]): Promise<boolean> {
   const wallet = wallets.find(wallet => wallet.address == walletAddress);
@@ -8,18 +9,13 @@ export async function withdrawShare(walletAddress: string, wallets: ConnectedWal
     return false;
   }
 
-  let chainId: number;
-  try {
-    chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
-  } catch (error) {
-    console.log('Error parsing chain ID:', error);
-    return false;
-  }
+  const { chainId, gameContractAddress } = await getEnvironments();
+  
   await wallet.switchChain(chainId);
 
   const provider = await wallet.getEthersProvider();
   const signer = provider.getSigner();
-  const gameContract = new ethers.Contract(process.env.NEXT_PUBLIC_GAME_CONTRACT_ADDRESS!, GameContract.abi, signer);
+  const gameContract = new ethers.Contract(gameContractAddress!, GameContract.abi, signer as any);
 
   try {
     const withdrawTransaction = await gameContract.withdrawTeamShare();

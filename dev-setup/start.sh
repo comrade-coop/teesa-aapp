@@ -1,11 +1,19 @@
 #!/bin/bash
 
-# Get the current directory path
-current_directory=$(pwd)
-# Define the volumes path (current_directory/volumes)
-volumes_path="$current_directory/volumes"
-# Get the repository root directory path
-root_directory=$(dirname "$current_directory")
+# Determine if we're running from repo root or dev-setup directory
+current_directory=$(dirname "$0")
+if [ "$current_directory" = "." ]; then
+    # Script is being run from dev-setup directory
+    script_directory=$(pwd)
+    root_directory=$(dirname "$script_directory")
+else
+    # Script is being run from repository root
+    script_directory="$(pwd)/dev-setup"
+    root_directory=$(pwd)
+fi
+
+# Define the volumes path (script_directory/volumes)
+volumes_path="$script_directory/volumes"
 
 ssh_port=22909
 

@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import GameContract from '../../_contracts/Game.json';
 import { ConnectedWallet } from "@privy-io/react-auth";
+import { getEnvironments } from '../../_actions/get-environments';
 
 export enum ProcessPaymentResult {
   Success,
@@ -15,18 +16,13 @@ export async function processPayment(walletAddress: string, wallets: ConnectedWa
     return ProcessPaymentResult.FailedWalletNotFound;
   }
 
-  let chainId: number;
-  try {
-    chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
-  } catch (error) {
-    console.log('Error parsing chain ID:', error);
-    return ProcessPaymentResult.FailedOtherError;
-  }
+  const { chainId, gameContractAddress } = await getEnvironments();
+
   await wallet.switchChain(chainId);
 
   const provider = await wallet.getEthersProvider();
   const signer = provider.getSigner();
-  const gameContract = new ethers.Contract(process.env.NEXT_PUBLIC_GAME_CONTRACT_ADDRESS!, GameContract.abi, signer);
+  const gameContract = new ethers.Contract(gameContractAddress!, GameContract.abi, signer as any);
 
   try {
     const balance = await provider.getBalance(walletAddress);

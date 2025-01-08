@@ -14,24 +14,25 @@ This guide will help you set up the development environment using Docker.
 git clone https://github.com/comrade-coop/teesa-aapp.git
 ```
 
-2. Navigate to the `dev-setup` directory:
+2. Navigate to the repository root directory:
 ```bash
-cd teesa-aapp/dev-setup
+cd teesa-aapp
 ```
 
 3. Build the Docker container:
 ```bash
-docker build --pull --rm -f "Dockerfile" -t teesa-aapp:latest .
+docker build --pull --rm -f "dev-setup/Dockerfile" -t teesa-aapp:latest .
 ```
 
 4. Start the container:
 ```bash
-./start.sh clear
+chmod +x dev-setup/start.sh
+./dev-setup/start.sh clear
 ```
 
-The `start.sh` script accepts the following parameters:
-- Use `./start.sh clear` to clean the SSH hosts entry. This should only be used after rebuilding the container.
-- Use `./start.sh` without parameters for regular container startup.
+The `dev-setup/start.sh` script accepts the following parameters:
+- Use `./dev-setup/start.sh clear` to clean the SSH hosts entry. This should only be used after rebuilding the container.
+- Use `./dev-setup/start.sh` without parameters for regular container startup.
 
 5. Connect to the container:
 ```bash

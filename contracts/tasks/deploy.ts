@@ -19,37 +19,6 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
   }
 
   try {
-    // Remove artifacts, cache, and ignition deployments
-    console.log('Removing artifacts, cache, and ignition deployments...');
-    try {
-      execSync('npx hardhat clean', { encoding: 'utf-8', stdio: 'inherit' });
-      execSync('rm -rf ./ignition/deployments/*', { encoding: 'utf-8', stdio: 'inherit' });
-      console.log('Clear successful! ✅');
-    } catch (error) {
-      console.error('Clear failed! ❌');
-      throw error;
-    }
-
-    // Compile contracts first
-    console.log('Compiling contracts...');
-    try {
-      execSync('npx hardhat compile', { encoding: 'utf-8', stdio: 'inherit' });
-      console.log('Compilation successful! ✅');
-    } catch (error) {
-      console.error('Compilation failed! ❌');
-      throw error;
-    }
-
-    // Run tests
-    console.log('\nRunning tests...');
-    try {
-      execSync('npx hardhat test', { encoding: 'utf-8', stdio: 'inherit' });
-      console.log('Tests passed successfully! ✅');
-    } catch (error) {
-      console.error('Tests failed! ❌');
-      throw error;
-    }
-
     // Deploy contract using Ignition
     console.log(`\nDeploying to ${network}...`);
     let output: string;
@@ -122,10 +91,10 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
           -1;
 
     // Set CHAIN ID in .env
-    if (envContent.includes('NEXT_PUBLIC_CHAIN_ID=')) {
-      envContent = envContent.replace(/NEXT_PUBLIC_CHAIN_ID=.*/, `NEXT_PUBLIC_CHAIN_ID=${chainId}`);
+    if (envContent.includes('CHAIN_ID=')) {
+      envContent = envContent.replace(/CHAIN_ID=.*/, `CHAIN_ID=${chainId}`);
     } else {
-      envContent += `\nNEXT_PUBLIC_CHAIN_ID=${chainId}`;
+      envContent += `\CHAIN_ID=${chainId}`;
     }
 
     // Update RPC URL based on network
@@ -154,27 +123,16 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
       envContent += `\nWALLET_PRIVATE_KEY=${privateKey}`;
     }
 
-    if (envContent.includes('NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=')) {
+    if (envContent.includes('GAME_CONTRACT_ADDRESS=')) {
       envContent = envContent.replace(
-        /NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=.*/,
-        `NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=${contractAddress}`
+        /GAME_CONTRACT_ADDRESS=.*/,
+        `GAME_CONTRACT_ADDRESS=${contractAddress}`
       );
     } else {
-      envContent += `\NEXT_PUBLIC_GAME_CONTRACT_ADDRESS=${contractAddress}`;
+      envContent += `\GAME_CONTRACT_ADDRESS=${contractAddress}`;
     }
 
     fs.writeFileSync(envPath, envContent.trim());
-
-    // Create _contracts directory if it doesn't exist
-    const contractsDir = path.join(__dirname, '../../teesa/app/_contracts');
-    if (!fs.existsSync(contractsDir)) {
-      fs.mkdirSync(contractsDir, { recursive: true });
-    }
-
-    // Copy artifact
-    const artifactPath = path.join(__dirname, '../artifacts/contracts/Game.sol/Game.json');
-    const destPath = path.join(contractsDir, 'Game.json');
-    fs.copyFileSync(artifactPath, destPath);
 
     console.log(`Deployment successful! Contract address: ${contractAddress}`);
   } catch (error) {
