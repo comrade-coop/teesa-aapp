@@ -48,7 +48,7 @@ Run the deployment script:
 ```bash
 npx hardhat deploy-contract <network>
 ```
-Replace `<network>` with desired target (`hardhat`, `sepolia`, `base`)
+Replace `<network>` with desired target (`localhost`, `sepolia`, `base`)
 
 ### Deployment Steps
 
