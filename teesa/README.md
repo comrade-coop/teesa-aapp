@@ -35,8 +35,8 @@ Ensure you have the following installed:
    - The following environment variables are automatically set by the contract deployment script. Refer to the [README.md](../contracts/README.md) in the `../contracts` directory directory for more details:
       - `RPC_URL` - RPC URL for the network
       - `WALLET_PRIVATE_KEY` - Private key for the wallet
-      - `NEXT_PUBLIC_CHAIN_ID` - Chain ID for the network
-      - `NEXT_PUBLIC_GAME_CONTRACT_ADDRESS` - Address of the game contract
+      - `CHAIN_ID` - Chain ID for the network
+      - `GAME_CONTRACT_ADDRESS` - Address of the game contract
 
 ## Start the Application
 
