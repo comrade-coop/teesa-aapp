@@ -58,4 +58,4 @@ The deployment script will:
 3. Deploy the contract
 4. Verify the contract on Etherscan and Basescan
 5. Update the `RPC_URL`, `WALLET_PRIVATE_KEY`, `CHAIN_ID` and `GAME_CONTRACT_ADDRESS` in `../teesa/.env`
-6. Copy the contract ABI to `../teesa/app/contracts` (added in .gitignore)
+6. Copy the contract ABI to `../teesa/app/_contracts` (added in .gitignore)
