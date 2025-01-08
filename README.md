@@ -13,7 +13,7 @@ Follow these instructions to set up, configure, and run the Teesa application in
 
 Make sure you have the following installed:
 - [Docker](https://www.docker.com/) (latest version recommended)
-- [Git](https://git-scm.com/)
+- [Git](https://git-scm.com/) and [Git LFS](https://git-lfs.com/)
 
 ---
 
