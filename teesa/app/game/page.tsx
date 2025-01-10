@@ -155,6 +155,8 @@ export default function Page() {
             <li>Make a direct guess at any time</li>
             <li>No asking about spelling or word length</li>
             <li>No repeating questions</li>
+            <li>You can ask questions about the word to help you guess it</li>
+            <li>When making a guess, you must clearly indicate that you are attempting to guess by saying "I guess..." or "The word is..." or similar explicit statement</li>
           </ul>
         </div>
       </div>
