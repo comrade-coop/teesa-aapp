@@ -3,14 +3,18 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatAnthropic } from "@langchain/anthropic";
 
-const anthropic = () => new ChatAnthropic({
+const createLlm = (temperature: number) => new ChatAnthropic({
   model: 'claude-3-sonnet-20240229',
-  temperature: 0.1,
+  temperature,
 });
 
-const llm = anthropic();
+// Low temperature for precise tasks
+const preciseLlm = createLlm(0);
 
-export async function sendMessage(message: string, systemMessage?: string | undefined): Promise<string> {
+// Higher temperature for creative responses
+const creativeLlm = createLlm(1);
+
+export async function sendMessage(message: string, systemMessage?: string | undefined, isCreative: boolean = false): Promise<string> {
   const messages = [];
 
   if (systemMessage) {
@@ -19,6 +23,7 @@ export async function sendMessage(message: string, systemMessage?: string | unde
 
   messages.push(new HumanMessage(message));
 
+  const llm = isCreative ? creativeLlm : preciseLlm;
   const response = await llm.invoke(messages);
 
   const parser = new StringOutputParser();

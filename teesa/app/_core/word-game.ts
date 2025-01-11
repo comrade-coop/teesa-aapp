@@ -78,21 +78,36 @@ Channel these traits by:
 
   private async getInputType(userInput: string): Promise<string> {
     const prompt = `
-    Determine if this input is a question, guess, or neither: 
-    ${userInput}
+    # TASK: 
+    Determine if the INPUT below is a question, guess, or neither: 
+    - For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes.
+    - For a "guess": Must indicate attempting to guess the word or state what they think the word is. 
+    - Everything else is considered "other".
 
-    ---
-    For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes.
+    # RULES:
+    All secret words are nouns. When determining the type:
+    - Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move") are "question"
+    - Direct statements or questions that name a specific noun (e.g. "is it a cat", "I think it's a flower", "dog") are "guess"
+    - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
+    
+    # EXAMPLES:
+    - "alive" -> "question" (asking about a property)
+    - "is it a plant" -> "guess" (naming a specific noun)
+    - "does it grow in gardens" -> "question" (asking about behavior/property)
+    - "flower" -> "guess" (direct noun)
+    - "is it made of metal" -> "question" (asking about material property)
+    - "is it car" -> "guess" (direct noun)
+    - "is it abstract" -> "question" (asking about abstract property)
 
-    For a "guess": Must clearly indicate attempting to guess the word or explicitly state what they think the word is.
-
-    Everything else is considered "other".
-
+    # RESPONSE:
     Respond with ONLY "question", "guess", or "other".
+
+    # INPUT:
+    ${userInput}
     `;
 
     const response = await sendMessage(prompt, WordGame.getSystemRules());
-    return response.toLowerCase();
+    return response.toLowerCase().replace(/[^a-z]/g, '');
   }
 
   private async getRandomResponse(userInput: string): Promise<string> {
@@ -110,7 +125,7 @@ Channel these traits by:
     Respond with ONLY the comment, nothing else.
     `;
 
-    return sendMessage(prompt, WordGame.getSystemRules(true));
+    return sendMessage(prompt, WordGame.getSystemRules(true), true);
   }
 
   private async extractGuess(userInput: string): Promise<string> {
@@ -174,14 +189,15 @@ Channel these traits by:
 
     // Step 2: get a final yes/no
     const yesNoPrompt = `
-    Player's question: 
+    # TASK:
+    Based on the explanation determine if the question is about the secret word.
+    Respond with ONLY "yes" or "no", nothing else.
+
+    # QUESTION:
     ${question}
 
-    Answer explanation:
+    # EXPLANATION:
     ${explanation}
-
-    ---
-    Based on the explanation respond with ONLY "yes" or "no", nothing else.
     `;
     const yesNo = await sendMessage(yesNoPrompt, WordGame.getSystemRules());
 
@@ -203,7 +219,7 @@ Channel these traits by:
     DO NOT include Yes/No in your response - just the comment. DO NOT include any other words or explanation.
     `;
 
-    return sendMessage(prompt, WordGame.getSystemRules(true));
+    return sendMessage(prompt, WordGame.getSystemRules(true), true);
   }
 
   private async checkGuess(guess: string): Promise<boolean> {
@@ -237,7 +253,7 @@ Channel these traits by:
     DO NOT include any other explanation.
     `;
 
-    return sendMessage(prompt, WordGame.getSystemRules(true));
+    return sendMessage(prompt, WordGame.getSystemRules(true), true);
   }
 
   public async processUserInput(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {
