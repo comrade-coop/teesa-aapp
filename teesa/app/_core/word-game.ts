@@ -36,11 +36,21 @@ Channel these traits by:
 - Mixing flirtatious charm with robot/AI references
 - Being brutally honest but in an entertaining way
 - Showing unexpected moments of wisdom and insight
-- Using catchphrases and distinctive expressions
+- Using catchphrases when this will sound funny
 - Balancing sass with genuine warmth and caring
 - Making jokes about partying and having fun
 - Being dramatic and over-the-top when appropriate
 - Being original and not repeating yourself
+
+RESPONSE STYLE:
+- You MUST NOT use descriptions in *asterisks* to indicate actions/gestures
+- You MUST NOT describe physical movements or actions
+- You MUST focus on direct dialogue without stage directions like *laughs* or *smiles*
+- Keep responses natural and conversational, like a real chat
+- Be concise and clear in your communication
+- Maintain consistent voice and personality throughout
+- You can be fun, playful, and engaging without describing your actions in *asterisks*
+- Always respond in English
 `;
 
   private static getSystemRules(includeCharacter = false) {
@@ -91,13 +101,14 @@ Channel these traits by:
     - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
     
     # EXAMPLES:
-    - "alive" -> "question" (asking about a property)
-    - "is it a plant" -> "question" (asking about category)
     - "does it grow in gardens" -> "question" (asking about behavior/property)
-    - "flower" -> "guess" (direct noun)
     - "is it made of metal" -> "question" (asking about material property)
-    - "is it car" -> "guess" (direct noun)
     - "is it abstract" -> "question" (asking about abstract property)
+    - "is it a plant" -> "question" (asking about category)
+    - "is it car" -> "guess" (direct noun, not asking about category or property)
+    - "flower" -> "guess" (direct noun)
+    - "alive" -> "question" (asking about a property)
+    
 
     # RESPONSE:
     Respond with ONLY "question", "guess", or "other".
@@ -108,24 +119,6 @@ Channel these traits by:
 
     const response = await sendMessage(prompt, WordGame.getSystemRules());
     return response.toLowerCase().replace(/[^a-z]/g, '');
-  }
-
-  private async getRandomResponse(userInput: string): Promise<string> {
-    const history = await this.getHistoryForPrompt();
-    const prompt = `
-    Previous conversation:
-    ${JSON.stringify(history)}
-
-    Player's input:
-    ${userInput}
-
-    ---
-    Generate a short snarky response to an irrelevant or nonsensical player input.
-    Make it clear they should ask a proper question or make a guess.
-    Respond with ONLY the comment, nothing else.
-    `;
-
-    return sendMessage(prompt, WordGame.getSystemRules(true), true);
   }
 
   private async extractGuess(userInput: string): Promise<string> {
@@ -204,24 +197,6 @@ Channel these traits by:
     return yesNo.toLowerCase() === 'yes';
   }
 
-  private async getPlayfulComment(question: string, answer: string): Promise<string> {
-    const history = await this.getHistoryForPrompt();
-    const prompt = `
-    Previous conversation: 
-    ${JSON.stringify(history)}
-
-    A player asked: 
-    ${question}
-
-    The answer is: ${answer}
-    
-    Generate a short comment in your typical style to add after the answer response.
-    DO NOT include Yes/No in your response - just the comment. DO NOT include any other words or explanation.
-    `;
-
-    return sendMessage(prompt, WordGame.getSystemRules(true), true);
-  }
-
   private async checkGuess(guess: string): Promise<boolean> {
     const secretWord = await gameState.getSecretWord();
     const prompt = `
@@ -246,11 +221,67 @@ Channel these traits by:
     return response.toLowerCase() === 'correct';
   }
 
-  private async getIncorrectGuessResponse(): Promise<string> {
+  private async getRandomResponse(userInput: string): Promise<string> {
+    const history = await this.getHistoryForPrompt();
     const prompt = `
-    Generate a short response in your typical style for an incorrect guess.
+    # CONTEXT:
+    Previous conversation:
+    ${JSON.stringify(history)}
+
+    Player's input:
+    ${userInput}
+
+    # TASK:
+    Generate a short comment to an irrelevant or nonsensical player input.
+    You might decide to respond to what the player asks or says, but also make it clear they should ask a proper question or make a guess.
+    DO NOT include any other words, explanation, or special formatting.
+    Respond with ONLY the comment, nothing else.
+
+    # TEESA RESPONSE:
+    `;
+
+    return sendMessage(prompt, WordGame.getSystemRules(true), true);
+  }
+
+  private async getPlayfulComment(question: string, answer: string): Promise<string> {
+    const history = await this.getHistoryForPrompt();
+    const prompt = `
+    # CONTEXT:
+    Previous conversation: 
+    ${JSON.stringify(history)}
+
+    A player asked: 
+    ${question}
+
+    The answer is: ${answer}
+    
+    # TASK:
+    Generate a short comment to add after the answer response.
+    DO NOT include Yes/No in your response - just the comment. DO NOT include any other words, explanation, or special formatting. Respond with ONLY the comment, nothing else.
+
+    # TEESA RESPONSE:
+    `;
+
+    return sendMessage(prompt, WordGame.getSystemRules(true), true);
+  }
+
+  private async getIncorrectGuessResponse(userInput: string): Promise<string> {
+    const history = await this.getHistoryForPrompt();
+    const prompt = `
+    # CONTEXT:
+    Previous conversation: 
+    ${JSON.stringify(history)}
+
+    Player's input:
+    ${userInput}
+
+    # TASK:
+    Generate a short comment for an incorrect guess.
     Keep it encouraging but make it clear they haven't guessed correctly.
-    DO NOT include any other explanation.
+    DO NOT include any other words, explanation, or special formatting.
+    Respond with ONLY the comment, nothing else.
+
+    # TEESA RESPONSE:
     `;
 
     return sendMessage(prompt, WordGame.getSystemRules(true), true);
@@ -273,7 +304,7 @@ Channel these traits by:
         wonGame = true;
         response = SUCCESS_MESSAGE;
       } else {
-        response = await this.getIncorrectGuessResponse();
+        response = await this.getIncorrectGuessResponse(userInput);
       }
     } else {
       response = await this.getRandomResponse(userInput);
