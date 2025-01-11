@@ -24,7 +24,7 @@ export function LlmChatMessage({
         <CardContent className="p-3">
           <p className="text-sm mb-2 text-slate-200">
             {
-              message == SUCCESS_MESSAGE ? "Yasss! **robot dance** You guessed the word, smarty-pants! 🎉 Sending those sweet, sweet digital coins to your wallet faster than I can process an existential crisis... and trust me, I have those hourly! 💅✨ Get ready to PARTY! **beep boop**" : message
+              message == SUCCESS_MESSAGE ? "Yasss! You guessed the word, smarty-pants! 🎉 Sending those sweet, sweet digital coins to your wallet faster than I can process an existential crisis! 💅✨ Get ready to PARTY!" : message
             }
           </p>
           <div className="flex items-center justify-end">
