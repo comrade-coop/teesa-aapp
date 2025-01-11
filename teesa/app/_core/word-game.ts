@@ -92,7 +92,7 @@ Channel these traits by:
     
     # EXAMPLES:
     - "alive" -> "question" (asking about a property)
-    - "is it a plant" -> "guess" (naming a specific noun)
+    - "is it a plant" -> "question" (asking about category)
     - "does it grow in gardens" -> "question" (asking about behavior/property)
     - "flower" -> "guess" (direct noun)
     - "is it made of metal" -> "question" (asking about material property)
