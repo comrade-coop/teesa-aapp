@@ -50,6 +50,18 @@ npx hardhat compile-and-deploy-contract <network>
 ```
 Replace `<network>` with desired target (`localhost`, `sepolia`, `base`)
 
+### Localhost deployment
+
+Start the Hardhat localhost node:
+```bash
+npx hardhat node
+```
+
+Deploy the contract:
+```bash
+npx hardhat compile-and-deploy-contract localhost
+```
+
 ### Deployment Steps
 
 The deployment script will:
