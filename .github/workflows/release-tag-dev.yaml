@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Private Cloud (Beta)
-        if: github.ref == 'refs/heads/beta'
+      - name: Deploy to Private Cloud (Dev)
         run: |
           curl --location 'https://github.kubocloud.io/teesa-aapp/deploy?tag=${{ github.event.release.tag_name }}' \
                --header 'X-Hook-Timeout: 600' \
