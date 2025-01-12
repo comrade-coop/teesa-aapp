@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { VideoBackground } from "./_components/video-background";
 
 export const metadata: Metadata = {
   title: "Game | Teesa app",
@@ -12,6 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <div className="fixed inset-0 overflow-hidden">
+      <VideoBackground />
       {children}
     </div>
   );
