@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Private Cloud (Beta)
-        if: github.ref == 'refs/heads/beta'
+      - name: Deploy to Private Cloud (Dev)
         run: |
-          curl --location 'https://github.kubocloud.io/teesa-aapp/deploy?tag=${{ github.event.release.tag_name }}' \
+          curl --silent --show-error \
+               --location 'https://github.kubocloud.io/teesa-aapp/deploy?tag=${{ github.event.release.tag_name }}' \
                --header 'X-Hook-Timeout: 600' \
                --header 'CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}' \
                --header 'CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}'
