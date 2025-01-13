@@ -27,8 +27,15 @@ const fragmentShaderSource = `
     float threshold = 0.05;
     float alpha = 1.0;
     
-    if (greenDifference > threshold && color.g > 0.3) {
-      alpha = 0.0;
+    if (greenDifference > threshold && color.g > 0.2) {
+      vec3 greenScreen = vec3(53.0/255.0, 187.0/255.0, 145.0/255.0);
+      float colorDist = length(color.rgb - greenScreen);
+        
+      // Calculate alpha based on color similarity
+      float maxDist = 1.0;  // If the color distance is greater than this, the pixel will be fully opaque (alpha = 1)
+      float minDist = 0.1;  // If the color distance is less than this, the pixel will be fully transparent (alpha = 0)
+
+      alpha = smoothstep(minDist, maxDist, colorDist);
     }
     
     gl_FragColor = vec4(color.rgb, alpha);
