@@ -26,13 +26,13 @@ export async function processPayment(walletAddress: string, wallets: ConnectedWa
 
   try {
     const balance = await provider.getBalance(walletAddress);
-    const currentPrice = await gameContract.getCurrentPrice();
+    const currentPrice = await gameContract.currentFee();
 
     if(balance.lt(currentPrice)) {
       return ProcessPaymentResult.FailedInsufficientFunds;
     }
 
-    const paymentTransaction = await gameContract.pay({ value: currentPrice });
+    const paymentTransaction = await gameContract.payFee({ value: currentPrice });
     await provider.waitForTransaction(paymentTransaction.hash, 1);
 
     return ProcessPaymentResult.Success;
