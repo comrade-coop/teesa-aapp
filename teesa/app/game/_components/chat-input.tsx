@@ -75,9 +75,16 @@ export function ChatInput({
 
   const gameEndedMessage = (
     <div
-      className="flex flex-row items-center justify-center mb-4 w-full uppercase p-4 bg-slate-800/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200">
+      className="mb-4 w-full uppercase text-center p-4 bg-slate-800/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200">
       Game ended!
-      {winnersAddresses.length > 0 && <span className="ml-2 text-green-500">Winners: {winnersAddresses.join(', ')}</span>}
+      {winnersAddresses.length > 0 && (
+        <>
+          {winnersAddresses.length === 1 ? ' Winner' : ' Winners'}: <br />
+          <span className="text-green-500">
+            {winnersAddresses.join(', ')}
+          </span>
+        </>
+        )}
     </div>
   )
 
