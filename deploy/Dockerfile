@@ -1,6 +1,6 @@
 # syntax=docker.io/docker/dockerfile:1
 
-FROM node:20.18.1-alpine AS base
+FROM node:23.6.0-alpine AS base
 
 
 # Add build arguments

@@ -60,7 +60,7 @@ Make sure you have the following installed:
 
 ### Accessing the Application
 
-Once the container is running, you can access the application in your web browser at:
+Once the container is started, you can access the application in your web browser at:
 
    ```
    http://localhost:3000
