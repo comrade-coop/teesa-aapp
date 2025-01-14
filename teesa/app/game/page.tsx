@@ -26,7 +26,7 @@ export default function Page() {
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
   const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
-  const [winnerAddress, setWinnerAddress] = useState<string | undefined>(undefined);
+  const [winnersAddresses, setWinnersAddresses] = useState<string[]>([]);
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
   // Logout and make the user to reconnect their wallet if no wallets are found
@@ -70,9 +70,9 @@ export default function Page() {
   }, [lastTimestamp, showAllMessages]);
 
   async function getGameEndedState() {
-    const [gameEnded, winnerAddress] = await getGameEnded();
+    const [gameEnded, winnersAddresses] = await getGameEnded();
     setGameEnded(gameEnded);
-    setWinnerAddress(winnerAddress);
+    setWinnersAddresses(winnersAddresses);
   }
 
   async function getNewMessages() {
@@ -192,7 +192,7 @@ export default function Page() {
         {ready && <ChatInput
           className='mt-auto'
           gameEnded={gameEnded}
-          winnerAddress={winnerAddress}
+          winnersAddresses={winnersAddresses}
           isLoggedIn={authenticated}
           loading={paymentProcessing}
           onLogin={login}

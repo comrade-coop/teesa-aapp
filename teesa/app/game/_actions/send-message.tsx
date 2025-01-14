@@ -6,7 +6,7 @@ import { wordGame } from '@/app/_core/word-game';
 import { getLocaleServer } from "@/lib/server-utils";
 import { UserChatMessage } from "../_components/user-chat-message";
 import { LlmChatMessagePlaceholder } from "../_components/llm-chat-message-placeholder";
-import { awardPrice } from "./award-price";
+import { addWinner } from "./add-winner";
 
 export async function sendMessage(userAddress: string, id: string, timestamp: number, message: string) {
   const responseUi = createStreamableUI();
@@ -26,7 +26,7 @@ export async function sendMessage(userAddress: string, id: string, timestamp: nu
     </>);
 
     if (wonGame) {
-      await awardPrice();
+      await addWinner(userAddress);
     }
   })();
 

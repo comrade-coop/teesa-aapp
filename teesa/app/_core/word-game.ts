@@ -300,7 +300,7 @@ RESPONSE STYLE:
       const guessedWord = await this.extractGuess(userInput);
 
       if (await this.checkGuess(guessedWord)) {
-        gameState.setGameEnded(userAddress);
+        gameState.addWinnerAddress(userAddress);
         wonGame = true;
         response = SUCCESS_MESSAGE;
       } else {
