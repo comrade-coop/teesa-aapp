@@ -2,9 +2,9 @@
 
 import { gameState } from '@/app/_core/game-state';
 
-export async function getGameEnded(): Promise<[boolean, string | undefined]> {
+export async function getGameEnded(): Promise<[boolean, string[]]> {
   const gameEnded = await gameState.getGameEnded();
-  const winnerAddress = await gameState.getWinnerAddress();
+  const winnersAddresses = await gameState.getWinnersAddresses();
 
-  return [gameEnded, winnerAddress];
+  return [gameEnded, winnersAddresses];
 }
