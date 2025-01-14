@@ -19,26 +19,104 @@ const fragmentShaderSource = `
   uniform sampler2D u_image;
   varying vec2 v_texCoord;
   
+  // Convert RGB to YCbCr
+  vec3 rgb2ycbcr(vec3 c) {
+    vec3 yuv = mat3(
+      vec3(0.299, 0.587, 0.114),
+      vec3(-0.169, -0.331, 0.500),
+      vec3(0.500, -0.419, -0.081)
+    ) * c;
+    return yuv;
+  }
+
+  // Enhanced spill suppression with color preservation
+  vec3 suppressSpill(vec3 color, float amount) {
+    float gr = color.g / color.r;
+    float gb = color.g / color.b;
+    
+    // Preserve natural green colors
+    float naturalGreen = max(0.0, 1.0 - abs(color.g - 0.4) * 3.0);
+    float spillStrength = max(0.0, gr - 1.0) * max(0.0, gb - 1.0);
+    
+    if (spillStrength > 0.0) {
+      float targetGreen = max(color.r, color.b) * mix(1.0, amount, spillStrength);
+      color.g = mix(color.g, targetGreen, 1.0 - naturalGreen);
+    }
+    return color;
+  }
+  
+  float getDetailMask(vec4 color, vec3 ycbcr, float brightness) {
+    // Enhanced color variation detection
+    float colorVar = max(abs(color.r - color.g), max(abs(color.g - color.b), abs(color.r - color.b)));
+    float colorVarNorm = smoothstep(0.05, 0.2, colorVar);
+    
+    // Multi-scale edge detection
+    float lumEdge = abs(ycbcr.x - 0.5);
+    float sharpEdge = 1.0 - smoothstep(0.0, 0.2, lumEdge);
+    float softEdge = 1.0 - smoothstep(0.0, 0.4, lumEdge);
+    
+    // Enhanced darkness factor with gamma correction
+    float darkness = pow(1.0 - brightness, 1.5);
+    
+    // Combine different detail indicators with weights
+    float edgeDetail = mix(softEdge, sharpEdge, darkness) * 0.8;
+    float colorDetail = colorVarNorm * darkness;
+    float finalDetail = max(edgeDetail, colorDetail);
+    
+    // Boost subtle details
+    return smoothstep(0.1, 0.9, finalDetail);
+  }
+  
   void main() {
     vec4 color = texture2D(u_image, v_texCoord);
+    vec3 rgb = color.rgb;
     
-    // Simple green screen removal based on color differences
-    float greenDifference = color.g - max(color.r, color.b);
-    float threshold = 0.05;
+    // Default to fully opaque
     float alpha = 1.0;
     
-    if (greenDifference > threshold && color.g > 0.2) {
-      vec3 greenScreen = vec3(53.0/255.0, 187.0/255.0, 145.0/255.0);
-      float colorDist = length(color.rgb - greenScreen);
+    // Multi-factor green screen detection
+    float greenDominance = color.g - max(color.r, color.b);
+    vec3 ycbcr = rgb2ycbcr(rgb);
+    float chromaDist = length(ycbcr.yz);
+    float brightness = max(max(color.r, color.g), color.b);
+    
+    // Refined green detection
+    if (greenDominance > 0.02 || (color.g > 0.15 && chromaDist < 0.4)) {
+      // Calculate multiple factors for better detail preservation
+      float greenFactor = smoothstep(0.02, 0.3, greenDominance);
+      float chromaFactor = smoothstep(0.5, 0.15, chromaDist);
+      
+      // Get enhanced detail mask
+      float detailMask = getDetailMask(color, ycbcr, brightness);
+      
+      // Base green screen factor with weighted combination
+      float greenScreenness = greenFactor * 0.75 + chromaFactor * 0.25;
+      
+      // Multi-stage transparency
+      if (detailMask > 0.15) {
+        // Fine detail areas (hair, edges)
+        float detailStrength = smoothstep(0.15, 0.85, detailMask);
+        float detailGreenScreen = greenScreenness * (1.0 - detailStrength * 0.7);
+        alpha = 1.0 - smoothstep(0.15, 0.85, detailGreenScreen);
         
-      // Calculate alpha based on color similarity
-      float maxDist = 1.0;  // If the color distance is greater than this, the pixel will be fully opaque (alpha = 1)
-      float minDist = 0.1;  // If the color distance is less than this, the pixel will be fully transparent (alpha = 0)
-
-      alpha = smoothstep(minDist, maxDist, colorDist);
+        // Extra preservation for very fine details
+        if (detailStrength > 0.8) {
+          alpha = mix(alpha, 1.0, (detailStrength - 0.8) * 2.0);
+        }
+      } else {
+        // Solid areas with sharp transition
+        float solidGreenScreen = greenScreenness * 1.3;
+        alpha = 1.0 - smoothstep(0.45, 0.55, solidGreenScreen);
+      }
+      
+      // Adaptive spill suppression
+      if (alpha < 0.99) {
+        float spillAmount = mix(0.95, 0.98, alpha);
+        rgb = suppressSpill(rgb, spillAmount);
+      }
     }
     
-    gl_FragColor = vec4(color.rgb, alpha);
+    gl_FragColor = vec4(rgb, alpha);
   }
 `;
 
@@ -282,7 +360,7 @@ export function VideoBackground({
           }}
         >
           <source 
-            src="https://v3.fal.media/files/panda/5bBNK0diMeBK4nSKxc-Yi_output.mp4" 
+            src="https://v3.fal.media/files/penguin/pgQL_9OO0I2MZKDmBFuKF_output.mp4" 
             type="video/mp4" 
           />
           Your browser does not support the video tag.

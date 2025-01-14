@@ -14,6 +14,22 @@ A portrait of a woman with the following characteristics:
 - Natural but enhanced makeup emphasizing eyes and lips
 - Overall aesthetic balancing refinement with subtle danger
 
+
+[subject] Teesa, female portrait, 1girl
+[pose] head and chest facing camera, direct eye contact, straight shoulders
+[outfit] black cyberpunk purple neon clothing, mix of rubber and textile high-performance materials, non-reflective
+[lighting] warm navy blue and purple studio lighting setup, warm glow, no green glow
+[background] green screen, uniform light-absorbing surface
+[camera] Nikon D850, professional photography
+[quality] (best quality, 4k, 8k, highres, masterpiece:1.4), (clear image)
+[style] (realistic, photorealistic, photo-realistic:1.37)
+[details] sharp facial features, clear texture
+
+
+looks straight to the camera, waits silent, barely moves, blinks from time to time
+
+talks on a video call
+
 ---
 Full-figure photo, professional studio lighting, neutral background, capturing entire height of the model. Young woman with shoulder-length wavy brown hair, symmetrical face with arched eyebrows and large expressive eyes. Small straight nose, high cheekbones, full lips with soft gloss. Warm, self-assured smile. Poised posture showing determination. Wearing sleek futuristic outfit in matte black with bold angular cutouts. Form-fitting top with plunging neckline, seamlessly transitioning to high-cut bottom with integrated thigh-high boots. Striking neon blue and white accents as glowing lines and patterns embedded in the outfit. Glowing neon panels run along legs. Soft, even lighting emphasizes the futuristic attire and glowing elements. Expression shows warm confidence and modern sophistication. Sharp modern presentation with cyberpunk aesthetic.
 
