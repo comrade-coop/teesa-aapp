@@ -8,6 +8,7 @@ WORKDIR /projects
 RUN apt-get update && \
     apt-get install -y openssh-server && \
     apt-get install -y git && \
+    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install && \
     apt-get install -y curl && \
     apt-get install -y build-essential python3 && \
     apt-get install -y python3-pip python3.12-venv direnv && \
@@ -40,10 +41,10 @@ EXPOSE 22
 # ------------------------------------ START ------------------------------------
 
 # Install NVM (Node Version Manager)
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 # Install Node
-RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 20'
+RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 23'
 
 # ------------------------------------ END ------------------------------------
 
