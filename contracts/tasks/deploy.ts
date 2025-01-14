@@ -85,7 +85,7 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
     }
 
     // Set CHAIN ID based on network
-    const chainId = network === 'localhost' ? 1337 :
+    const chainId = network === 'localhost' ? 31337 :
       network === 'sepolia' ? 11155111 :
         network === 'base' ? 8453 :
           -1;

@@ -14,7 +14,7 @@ class GameState {
   private secretWord: string;
   private history: LlmMessage[];
   private gameEnded: boolean;
-  private winnerAddress: string | undefined;
+  private winnersAddresses: string[];
 
   private mutex: Mutex;
 
@@ -23,7 +23,7 @@ class GameState {
     this.history = [];
     this.gameEnded = false
     this.mutex = new Mutex();
-    this.winnerAddress = undefined;
+    this.winnersAddresses = [];
   }
 
   private selectRandomWord(): string {
@@ -49,19 +49,15 @@ class GameState {
     return this.gameEnded;
   }
 
-  async setGameEnded(winnerAddress: string): Promise<any> {
-    if(this.gameEnded) {
-      return;
-    }
-
+  async addWinnerAddress(winnerAddress: string): Promise<any> {
     await this.mutex.runExclusive(() => {
       this.gameEnded = true;
-      this.winnerAddress = winnerAddress;
+      this.winnersAddresses.push(winnerAddress);
     });
   }
 
-  async getWinnerAddress(): Promise<string | undefined> {
-    return this.winnerAddress;
+  async getWinnersAddresses(): Promise<string[]> {
+    return this.winnersAddresses;
   }
 
 }
