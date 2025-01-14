@@ -8,6 +8,7 @@ WORKDIR /projects
 RUN apt-get update && \
     apt-get install -y openssh-server && \
     apt-get install -y git && \
+    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs && git lfs install && \
     apt-get install -y curl && \
     apt-get install -y build-essential python3 && \
     apt-get install -y python3-pip python3.12-venv direnv && \
