@@ -40,10 +40,10 @@ EXPOSE 22
 # ------------------------------------ START ------------------------------------
 
 # Install NVM (Node Version Manager)
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 # Install Node
-RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 20'
+RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 23'
 
 # ------------------------------------ END ------------------------------------
 
