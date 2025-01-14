@@ -22,8 +22,7 @@ const fragmentShaderSource = `#version 300 es
   
   // Threshold values for transparency regions
   const float TRANSPARENT_THRESHOLD = 0.03;  // Below this: fully transparent
-  const float OPAQUE_THRESHOLD = 0.07;       // Above this: fully opaque
-  const vec3 DISTANCE_WEIGHTS = vec3(0.2, 1.0, 1.0);  // Weights for Y, Cb, Cr components
+  const float OPAQUE_THRESHOLD = 0.1;       // Above this: fully opaque
   
   // Convert RGB to YCbCr
   vec3 rgb2ycbcr(vec3 c) {
@@ -47,7 +46,7 @@ const fragmentShaderSource = `#version 300 es
     vec3 targetYcbcr = rgb2ycbcr(targetColor);
     
     // Calculate color distance using weights
-    float colorDist = length((ycbcr - targetYcbcr) * DISTANCE_WEIGHTS);
+    float colorDist = length(ycbcr - targetYcbcr);
     
     // Three distinct regions based on thresholds
     float alpha;
@@ -295,7 +294,7 @@ export function VideoBackground({
           }}
         >
           <source 
-            src="https://v3.fal.media/files/rabbit/ODZjIWFmKLwzJ7hdM9mlK_output.mp4" 
+            src="/teesa-idle.mp4"
             type="video/mp4" 
           />
           Your browser does not support the video tag.
