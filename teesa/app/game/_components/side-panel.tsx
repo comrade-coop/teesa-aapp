@@ -2,7 +2,22 @@
 
 import { Button } from "@/components/button";
 import { Menu, LogOut, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    setMatches(media.matches);
+
+    const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, [query]);
+
+  return matches;
+}
 
 export function SidePanel({ 
   children, 
@@ -13,7 +28,12 @@ export function SidePanel({
   isLoggedIn: boolean;
   onLogout: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setIsOpen(isDesktop);
+  }, [isDesktop]);
 
   return (
     <>
