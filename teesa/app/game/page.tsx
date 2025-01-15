@@ -176,7 +176,7 @@ export default function Page() {
   return (
     <div className="flex flex-col md:flex-row w-full h-full gap-4 p-4">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full max-w-2xl mx-auto w-full">
+      <div className="flex-1 flex flex-col h-full max-w-2xl w-full order-2 md:order-1">
         <MessageTabs
           showAllMessages={showAllMessages}
           onTabChange={handleTabChange} />
@@ -202,7 +202,8 @@ export default function Page() {
       {/* Rules Panel */}
       <SidePanel
         isLoggedIn={authenticated}
-        onLogout={logout}>
+        onLogout={logout}
+        className="order-1 md:order-2">
         {systemMessage}
       </SidePanel>
     </div>
