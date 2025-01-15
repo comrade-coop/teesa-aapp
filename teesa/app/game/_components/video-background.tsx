@@ -16,48 +16,56 @@ const vertexShaderSource = `#version 300 es
 
 const fragmentShaderSource = `#version 300 es
   precision highp float;
+  
+  // Input/Output
   uniform sampler2D u_image;
   in vec2 v_texCoord;
   out vec4 fragColor;
   
-  // Threshold values for transparency regions
-  const float TRANSPARENT_THRESHOLD = 0.03;  // Below this: fully transparent
-  const float OPAQUE_THRESHOLD = 0.1;       // Above this: fully opaque
+  // Transparency thresholds
+  const float TRANSPARENT_THRESHOLD = 0.03;
+  const float OPAQUE_THRESHOLD = 0.1;
+  const float MAX_OPACITY = 0.90;
+  
+  // Color adjustments
+  const float COLOR_DARKENING = 0.95;
+  const vec3 TARGET_COLOR = vec3(0.082, 0.212, 0.243);  // #15363E
+  
+  // YCbCr conversion matrix
+  const mat3 RGB_TO_YCBCR = mat3(
+    vec3(0.299, 0.587, 0.114),
+    vec3(-0.169, -0.331, 0.500),
+    vec3(0.500, -0.419, -0.081)
+  );
   
   // Convert RGB to YCbCr
   vec3 rgb2ycbcr(vec3 c) {
-    vec3 yuv = mat3(
-      vec3(0.299, 0.587, 0.114),
-      vec3(-0.169, -0.331, 0.500),
-      vec3(0.500, -0.419, -0.081)
-    ) * c;
-    return yuv;
+    return RGB_TO_YCBCR * c;
   }
   
   void main() {
     vec4 color = texture(u_image, v_texCoord);
     vec3 rgb = color.rgb;
     
-    // Target color (#15363E)
-    vec3 targetColor = vec3(0.082, 0.212, 0.243);
-    
     // Convert both colors to YCbCr for better matching
     vec3 ycbcr = rgb2ycbcr(rgb);
-    vec3 targetYcbcr = rgb2ycbcr(targetColor);
+    vec3 targetYcbcr = rgb2ycbcr(TARGET_COLOR);
     
     // Calculate color distance using weights
     float colorDist = length(ycbcr - targetYcbcr);
     
-    // Three distinct regions based on thresholds
+    // Smoother transition with adjusted curve
     float alpha;
     if (colorDist < TRANSPARENT_THRESHOLD) {
-        alpha = 0.0;  // Fully transparent
+        alpha = 0.0;
     } else if (colorDist > OPAQUE_THRESHOLD) {
-        alpha = 1.0;  // Fully opaque
+        alpha = MAX_OPACITY;
     } else {
-        // Smooth transition only in the middle range
-        alpha = smoothstep(TRANSPARENT_THRESHOLD, OPAQUE_THRESHOLD, colorDist);
+        alpha = smoothstep(TRANSPARENT_THRESHOLD, OPAQUE_THRESHOLD, colorDist) * MAX_OPACITY;
     }
+    
+    // Apply color darkening
+    rgb *= COLOR_DARKENING;
     
     fragColor = vec4(rgb, alpha);
   }
