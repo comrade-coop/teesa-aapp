@@ -16,7 +16,7 @@ export async function getContractInfo() {
     ]);
 
     return {
-        prizePool: ethers.formatEther(prizePoolBN),
-        currentFee: ethers.formatEther(currentFeeBN)
+        prizePool: Number(ethers.formatEther(prizePoolBN)).toFixed(5),
+        currentFee: Number(ethers.formatEther(currentFeeBN)).toFixed(5)
     };
 }
