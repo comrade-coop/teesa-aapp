@@ -3,6 +3,7 @@
 import { Button } from "@/components/button";
 import { Menu, LogOut, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
@@ -22,11 +23,13 @@ function useMediaQuery(query: string) {
 export function SidePanel({ 
   children, 
   isLoggedIn = false, 
-  onLogout 
+  onLogout,
+  className
 }: { 
   children: React.ReactNode;
   isLoggedIn: boolean;
   onLogout: () => void;
+  className?: string;
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isOpen, setIsOpen] = useState(false);
@@ -58,10 +61,10 @@ export function SidePanel({
       </Button>
 
       {/* Panel */}
-      <div className={`fixed top-0 right-0 bottom-0 w-full md:w-80
+      <div className={cn(`fixed top-0 right-0 bottom-0 w-full md:w-80
         bg-slate-800/95 md:bg-slate-800/50 backdrop-blur-sm border-l border-blue-500/30 
         p-6 z-40 transition-transform duration-300 transform flex flex-col
-        ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}`, className)}
       >
         <div className="flex-1">
           {children}
