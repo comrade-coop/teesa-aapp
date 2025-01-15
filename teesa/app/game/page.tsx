@@ -178,7 +178,7 @@ export default function Page() {
       {/* Fixed width container for chat and panel */}
       <div className="flex flex-col md:flex-row w-full h-full max-w-[1800px] mx-auto">
         {/* Main Chat Area */}
-        <div className="w-full md:w-[512px] flex flex-col h-full order-2 md:order-1">
+        <div className="w-full md:w-[512px] flex flex-col h-full order-2 md:order-1 px-4">
           <MessageTabs
             showAllMessages={showAllMessages}
             onTabChange={handleTabChange} />
