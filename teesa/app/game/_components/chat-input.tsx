@@ -45,7 +45,7 @@ export function ChatInput({
   );
 
   const chatForm = (
-    <div className="relative mb-4">
+    <div className="relative mb-4 mx-4">
       <form onSubmit={handleSubmit}>
         <input
           className="w-full p-4 pr-14 bg-slate-800/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
