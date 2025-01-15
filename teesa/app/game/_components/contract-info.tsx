@@ -1,7 +1,5 @@
-import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
-import GameContract from '../../_contracts/Game.json';
-import { getEnvironments } from '../../_actions/get-environments';
+import { getContractInfo } from '../_actions/get-contract-info';
 
 export function ContractInfo() {
   const [prizePool, setPrizePool] = useState<string>('0');
@@ -10,29 +8,17 @@ export function ContractInfo() {
   useEffect(() => {
     const fetchContractInfo = async () => {
       try {
-        const { gameContractAddress, rpcUrl } = await getEnvironments();
-        if (!gameContractAddress || !rpcUrl) {
-          console.error('Missing contract address or RPC URL');
-          return;
-        }
+        const { prizePool, currentFee } = await getContractInfo();
 
-        const provider = new ethers.JsonRpcProvider(rpcUrl);
-        const contract = new ethers.Contract(gameContractAddress, GameContract.abi, provider);
-
-        const [prizePoolBN, currentFeeBN] = await Promise.all([
-          contract.prizePool(),
-          contract.currentFee()
-        ]);
-
-        setPrizePool(ethers.formatEther(prizePoolBN));
-        setCurrentFee(ethers.formatEther(currentFeeBN));
+        setPrizePool(prizePool);
+        setCurrentFee(currentFee);
       } catch (error) {
         console.error('Error fetching contract info:', error);
       }
     };
 
     fetchContractInfo();
-    const interval = setInterval(fetchContractInfo, 10000); // Update every 10 seconds
+    const interval = setInterval(fetchContractInfo, 5000);
 
     return () => clearInterval(interval);
   }, []);
