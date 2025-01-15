@@ -11,6 +11,10 @@ export enum ProcessPaymentResult {
 }
 
 export async function processPayment(walletAddress: string, wallets: ConnectedWallet[]): Promise<ProcessPaymentResult> {
+  if (process.env.NEXT_PUBLIC_ENV_MODE === 'dev') {
+    return ProcessPaymentResult.Success;
+  }
+
   const wallet = wallets.find(wallet => wallet.address == walletAddress);
   if (!wallet) {
     return ProcessPaymentResult.FailedWalletNotFound;
