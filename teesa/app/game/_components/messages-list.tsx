@@ -13,7 +13,7 @@ export function MessagesList({
   }, [messages]);
 
   return <div className="flex-1 overflow-auto my-4">
-    <div className="mx-6">
+    <div className="mx-4">
     {
       messages.map((message) => (
         <div key={message.id}>

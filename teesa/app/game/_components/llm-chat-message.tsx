@@ -16,6 +16,7 @@ export function LlmChatMessage({
           className="w-full h-full object-cover"
         />
       </div>
+      
       <Card className={`flex-1 backdrop-blur-sm ${
         message === SUCCESS_MESSAGE 
           ? 'border border-green-500/50 bg-green-800/20' 
