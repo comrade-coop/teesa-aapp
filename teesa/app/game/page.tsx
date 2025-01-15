@@ -148,7 +148,7 @@ export default function Page() {
     <>
       <h2 className="text-xl font-bold mb-4 text-white">How to Play</h2>
       <div className="space-y-4">
-        <p>Welcome to Teesa! I've selected a random word for you to guess.</p>
+        <p>Hi there! I'm Teesa, your game host. I've picked a mystery word - can you figure out what it is?</p>
         <div>
           <p className="font-semibold mb-2">Rules:</p>
           <ul className="list-disc list-inside space-y-2">
@@ -158,7 +158,7 @@ export default function Page() {
             <li>No asking about spelling or word length</li>
             <li>No repeating questions</li>
             <li>You can ask questions about the word to help you guess it</li>
-            <li>When making a guess, you must clearly indicate that you are attempting to guess by saying "I guess..." or "The word is..." or similar explicit statement</li>
+            <li>When guessing, start with an explicit statement like "I guess..." or "The word is..."</li>
           </ul>
         </div>
       </div>
