@@ -23,6 +23,7 @@ Ensure you have the following installed:
    ```
 
 3. Update the `.env` file with:
+   - `ENV_MODE`: Set to either "dev" for development or "prod" for production (defaults to "prod")
    - `ANTHROPIC_API_KEY`: Your API key for accessing the Anthropic LLMs
    - Langsmith Configuration (**used only in development**) - you can get the values from the Langsmith dashboard (https://smith.langchain.com/):
      - `LANGCHAIN_TRACING_V2`

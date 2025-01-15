@@ -19,9 +19,9 @@ class GameState {
   private mutex: Mutex;
 
   constructor() {
-    this.secretWord = this.selectRandomWord();
+    this.secretWord = process.env.ENV_MODE === 'dev' ? 'car' : this.selectRandomWord();
     this.history = [];
-    this.gameEnded = false
+    this.gameEnded = false;
     this.mutex = new Mutex();
     this.winnersAddresses = [];
   }
