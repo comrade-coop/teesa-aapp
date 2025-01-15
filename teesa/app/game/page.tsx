@@ -174,38 +174,41 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-full gap-4 p-4">
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full max-w-2xl w-full order-2 md:order-1">
-        <MessageTabs
-          showAllMessages={showAllMessages}
-          onTabChange={handleTabChange} />
+    <div className="flex flex-col md:flex-row w-full h-full">
+      {/* Fixed width container for chat and panel */}
+      <div className="flex flex-col md:flex-row w-full h-full max-w-[1800px] mx-auto">
+        {/* Main Chat Area */}
+        <div className="w-full md:w-[512px] flex flex-col h-full order-2 md:order-1">
+          <MessageTabs
+            showAllMessages={showAllMessages}
+            onTabChange={handleTabChange} />
 
-        {showMessages ?
-          <MessagesList
-            messages={getMessagesForList()} />
-          :
-          <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-white">Connect your wallet to start playing</p>
-          </div>}
+          {showMessages ?
+            <MessagesList
+              messages={getMessagesForList()} />
+            :
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-white">Connect your wallet to start playing</p>
+            </div>}
 
-        {ready && <ChatInput
-          className='mt-auto'
-          gameEnded={gameEnded}
-          winnersAddresses={winnersAddresses}
+          {ready && <ChatInput
+            className='mt-auto'
+            gameEnded={gameEnded}
+            winnersAddresses={winnersAddresses}
+            isLoggedIn={authenticated}
+            loading={paymentProcessing}
+            onLogin={login}
+            onChatMessage={hadleChatMessage} />}
+        </div>
+
+        {/* Rules Panel */}
+        <SidePanel
           isLoggedIn={authenticated}
-          loading={paymentProcessing}
-          onLogin={login}
-          onChatMessage={hadleChatMessage} />}
+          onLogout={logout}
+          className="order-1 md:order-3">
+          {systemMessage}
+        </SidePanel>
       </div>
-
-      {/* Rules Panel */}
-      <SidePanel
-        isLoggedIn={authenticated}
-        onLogout={logout}
-        className="order-1 md:order-2">
-        {systemMessage}
-      </SidePanel>
     </div>
   );
 }

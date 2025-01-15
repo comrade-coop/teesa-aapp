@@ -272,7 +272,7 @@ export function VideoBackground({
   }, []);
 
   return (
-    <div className={cn("fixed inset-0 -z-10", className)}>
+    <div className={cn("fixed inset-0 -z-10 overflow-hidden", className)}>
       {/* Gradient background */}
       <div 
         className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.15)_0%,rgba(6,78,59,0.2)_45%,rgba(15,23,42,0.4)_100%)]"
@@ -281,32 +281,38 @@ export function VideoBackground({
       
       {/* Video layer */}
       <div className="absolute inset-0 flex items-end justify-center overflow-hidden z-[1]">
-        <canvas 
-          ref={canvasRef}
-          className="h-[90vh] w-auto object-contain"
-          style={{ 
-            imageRendering: 'crisp-edges',
-            transform: 'translateZ(0)', // Force GPU acceleration
-          }}
-        />
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          preload="auto"
-          className="hidden"
-          webkit-playsinline="true"
-          crossOrigin="anonymous"
-          style={{
-            transform: 'translateZ(0)', // Force hardware acceleration
-          }}
-        >
-          <source 
-            src="/teesa-idle.mp4"
-            type="video/mp4" 
-          />
-          Your browser does not support the video tag.
-        </video>
+        <div className="flex items-end justify-center w-full max-w-[1800px] mx-auto">
+          <div className="w-[512px] hidden md:block" /> {/* Left spacer for chat UI */}
+          <div className="flex items-end justify-center flex-1 px-4">
+            <canvas 
+              ref={canvasRef}
+              className="h-[90vh] w-auto object-contain"
+              style={{ 
+                imageRendering: 'crisp-edges',
+                transform: 'translateZ(0)', // Force GPU acceleration
+              }}
+            />
+            <video
+              ref={videoRef}
+              muted
+              playsInline
+              preload="auto"
+              className="hidden"
+              webkit-playsinline="true"
+              crossOrigin="anonymous"
+              style={{
+                transform: 'translateZ(0)', // Force hardware acceleration
+              }}
+            >
+              <source 
+                src="/teesa-idle.mp4"
+                type="video/mp4" 
+              />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div className="w-80 hidden md:block" /> {/* Right spacer for panel */}
+        </div>
       </div>
     </div>
   );
