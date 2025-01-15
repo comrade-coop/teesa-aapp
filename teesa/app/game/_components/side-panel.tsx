@@ -54,7 +54,7 @@ export function SidePanel({
       {/* Panel */}
       <div className={cn(`fixed top-0 right-0 bottom-0 w-full md:w-80
         bg-slate-800/95 md:bg-slate-800/50 backdrop-blur-sm border-l border-blue-500/30 
-        p-6 z-40 transition-transform duration-300 transform flex flex-col
+        p-6 z-40 transition-transform duration-300 transform flex flex-col overflow-y-auto
         ${!isDesktop && !isOpen ? 'translate-x-full' : 'translate-x-0'}`, className)}
       >
         <div className="flex-1 space-y-6">
