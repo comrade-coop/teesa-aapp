@@ -105,6 +105,7 @@ RESPONSE STYLE:
     - "is it made of metal" -> "question" (asking about material property)
     - "is it abstract" -> "question" (asking about abstract property)
     - "is it a plant" -> "question" (asking about category)
+    - "is your word about the future of economy" -> "question" (asking about abstract concepts and categories)
     - "is it car" -> "guess" (direct noun, not asking about category or property)
     - "flower" -> "guess" (direct noun)
     - "alive" -> "question" (asking about a property)
