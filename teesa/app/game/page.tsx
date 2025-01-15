@@ -107,8 +107,7 @@ export default function Page() {
     setShowAllMesssages(false);
 
     setPaymentProcessing(true);
-    const paymentResult = process.env.ENV_MODE === 'dev' ? ProcessPaymentResult.Success 
-      : await processPayment(walletAddress, wallets);
+    const paymentResult = await processPayment(walletAddress, wallets);
     setPaymentProcessing(false);
 
     if (paymentResult != ProcessPaymentResult.Success) {
