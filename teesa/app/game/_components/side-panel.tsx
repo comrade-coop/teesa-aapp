@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from "@/components/button";
-import { Menu, LogOut, X } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { ContractInfo } from "./contract-info";
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
@@ -56,7 +57,8 @@ export function SidePanel({
         p-6 z-40 transition-transform duration-300 transform flex flex-col
         ${!isDesktop && !isOpen ? 'translate-x-full' : 'translate-x-0'}`, className)}
       >
-        <div className="flex-1">
+        <div className="flex-1 space-y-6">
+          <ContractInfo />
           {children}
         </div>
         
