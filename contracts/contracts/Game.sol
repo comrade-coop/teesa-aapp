@@ -5,13 +5,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract Game is ReentrancyGuard {
     address public immutable owner;
+    address public immutable teamAddress;
     uint256 public immutable deploymentTime;
 
     bool public gameEnded;
 
-    address[] public teamAddresses;
-    mapping(address => uint256) public teamShares;
-
+    uint256 public teamShare;
     uint256 public prizePool;
     uint256 public currentFee;
 
@@ -26,7 +25,7 @@ contract Game is ReentrancyGuard {
     mapping(address => bool) public paidUserShares;
 
     // Errors
-    error NoTeamAddresses(); // No team addresses provided in the constructor
+    error InvalidTeamAddress(); // Team address is zero
     error InsufficientFeePayment(); // The fee payment is insufficient
     error NotOwner(); // The caller is not the owner
     error EmptyPrizePool(); // The prize pool is empty
@@ -40,6 +39,7 @@ contract Game is ReentrancyGuard {
     error UserShareAlreadyClaimed(); // The user share is already claimed
     error ClaimUserShareFailed(); // Add this line
     error NoUnclaimedShares(); // Add this line
+    error NotTeamAddress(); // The caller is not the team address
 
     // Events
     // A new user fee payment is received
@@ -68,8 +68,8 @@ contract Game is ReentrancyGuard {
     // The prize is awarded to the winners
     event PrizeAwarded(uint256 amount, uint16 winnerCount);
 
-    // A team member's share is withdrawn
-    event TeamShareWithdrawn(address indexed teamMemberAddress, uint256 amount);
+    // The team share is withdrawn
+    event TeamShareWithdrawn(uint256 amount);
 
     // An unclaimed user share is added
     event UnclaimedUserShareAdded(address indexed userAddress, uint256 amount);
@@ -80,8 +80,8 @@ contract Game is ReentrancyGuard {
         uint256 amount
     );
 
-    // A team member's share is increased
-    event TeamShareIncreased(address indexed teamMember, uint256 amount);
+    // The team share is increased
+    event TeamShareIncreased(uint256 amount);
 
     // An abandoned game user share is claimed
     event AbandonedGameUserShareClaimed(
@@ -90,13 +90,10 @@ contract Game is ReentrancyGuard {
         bool isLastPlayer
     );
 
-    constructor(address[] memory _teamAddresses) {
-        if (_teamAddresses.length == 0) revert NoTeamAddresses();
+    constructor(address _teamAddress) {
+        if (_teamAddress == address(0)) revert InvalidTeamAddress();
 
-        for (uint i = 0; i < _teamAddresses.length; i++) {
-            teamAddresses.push(_teamAddresses[i]);
-        }
-
+        teamAddress = _teamAddress;
         gameEnded = false;
         currentFee = 0.001 ether;
         owner = msg.sender;
@@ -123,16 +120,12 @@ contract Game is ReentrancyGuard {
             totalPaymentsPerUser[msg.sender]
         );
 
-        uint256 teamShare = (msg.value * 30) / 100;
-        uint256 sharePerTeamMember = teamShare / teamAddresses.length;
-
-        for (uint256 i = 0; i < teamAddresses.length; i++) {
-            teamShares[teamAddresses[i]] += sharePerTeamMember;
-            emit TeamShareIncreased(teamAddresses[i], sharePerTeamMember);
-        }
+        uint256 teamShareAmount = (msg.value * 30) / 100;
+        teamShare += teamShareAmount;
+        emit TeamShareIncreased(teamShareAmount);
 
         unchecked {
-            uint256 prizePoolShare = msg.value - teamShare;
+            uint256 prizePoolShare = msg.value - teamShareAmount;
             prizePool += prizePoolShare;
         }
 
@@ -253,18 +246,19 @@ contract Game is ReentrancyGuard {
     }   
 
     function withdrawTeamShare() external nonReentrant {
-        uint256 amount = teamShares[msg.sender];
-        if (amount == 0) revert NoTeamShareToWithdraw();
+        if (msg.sender != teamAddress) revert NotTeamAddress();
+        if (teamShare == 0) revert NoTeamShareToWithdraw();
 
-        teamShares[msg.sender] = 0;
+        uint256 amount = teamShare;
+        teamShare = 0;
 
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         if (!success) {
-            teamShares[msg.sender] = amount;
+            teamShare = amount;
             revert TeamShareWithdrawFailed();
         }
 
-        emit TeamShareWithdrawn(msg.sender, amount);
+        emit TeamShareWithdrawn(amount);
     }
 
     function getUserTotalPayments(
