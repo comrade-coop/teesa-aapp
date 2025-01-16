@@ -26,6 +26,7 @@ export default function Page() {
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
   const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
+  const [gameAbandoned, setGameAbandoned] = useState<boolean>(false);
   const [winnersAddresses, setWinnersAddresses] = useState<string[]>([]);
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
@@ -70,9 +71,10 @@ export default function Page() {
   }, [lastTimestamp, showAllMessages]);
 
   async function getGameEndedState() {
-    const [gameEnded, winnersAddresses] = await getGameEnded();
+    const [gameEnded, winnersAddresses, gameAbandoned] = await getGameEnded();
     setGameEnded(gameEnded);
     setWinnersAddresses(winnersAddresses);
+    setGameAbandoned(gameAbandoned);
   }
 
   async function getNewMessages() {
@@ -107,9 +109,7 @@ export default function Page() {
     setShowAllMesssages(false);
 
     setPaymentProcessing(true);
-    const paymentResult = process.env.NEXT_PUBLIC_ENV_MODE === 'dev' 
-      ? ProcessPaymentResult.Success 
-      : await processPayment(walletAddress, wallets);
+    const paymentResult = await processPayment(walletAddress, wallets);
     setPaymentProcessing(false);
 
     if (paymentResult != ProcessPaymentResult.Success) {
@@ -146,7 +146,7 @@ export default function Page() {
 
   const systemMessage = (
     <>
-      <h2 className="text-xl font-bold mb-4 text-white">How to Play</h2>
+      <h2 className="text-xl font-bold mb-4 text-white">About</h2>
       <div className="space-y-4">
         <p>Hi there! I'm Teesa, your game host. I've picked a mystery word - can you figure out what it is?</p>
         <div>
@@ -158,7 +158,7 @@ export default function Page() {
             <li>No asking about spelling or word length</li>
             <li>No repeating questions</li>
             <li>You can ask questions about the word to help you guess it</li>
-            <li>When guessing, start with an explicit statement like "I guess..." or "The word is..."</li>
+            <li>When guessing, start with an explicit statement like "My guess is..." or "The word is..."</li>
           </ul>
         </div>
       </div>
@@ -181,6 +181,19 @@ export default function Page() {
       <div className="flex flex-col md:flex-row w-full h-full max-w-[1800px] mx-auto">
         {/* Main Chat Area */}
         <div className="w-full md:w-[512px] flex flex-col h-full order-2 md:order-1">
+          {gameAbandoned && (
+            <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4 m-4">
+              <p className="text-yellow-300">
+                The game has been abandoned due to inactivity. You can now claim your share of the prize pool.
+                {walletAddress && (
+                  <a href="/claim/user" className="text-yellow-400 hover:text-yellow-300 underline ml-2">
+                    Claim your share
+                  </a>
+                )}
+              </p>
+            </div>
+          )}
+
           <MessageTabs
             showAllMessages={showAllMessages}
             onTabChange={handleTabChange} />

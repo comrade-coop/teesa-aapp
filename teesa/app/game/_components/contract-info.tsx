@@ -25,7 +25,6 @@ export function ContractInfo() {
 
   return (
     <div className="space-y-4 p-4 rounded-lg bg-slate-800/50 border border-blue-500/30">
-      <h3 className="text-lg font-semibold text-blue-400">Game Info</h3>
       <div className="space-y-2">
         <div>
           <p className="text-sm text-slate-400">Prize Pool</p>
