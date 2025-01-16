@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import GameContract from '../../_contracts/Game.json';
 import { ConnectedWallet } from "@privy-io/react-auth";
 import { getEnvironments } from '../../_actions/get-environments';
+import { executeContractAction } from '@/app/_utils/contract';
 
 export enum ProcessPaymentResult {
   Success,
