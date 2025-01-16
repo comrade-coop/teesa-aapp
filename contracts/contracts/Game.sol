@@ -126,13 +126,9 @@ contract Game is ReentrancyGuard {
         uint256 teamShare = (msg.value * 30) / 100;
         uint256 sharePerTeamMember = teamShare / teamAddresses.length;
 
-        for (uint256 i = 0; i < teamAddresses.length; ) {
+        for (uint256 i = 0; i < teamAddresses.length; i++) {
             teamShares[teamAddresses[i]] += sharePerTeamMember;
             emit TeamShareIncreased(teamAddresses[i], sharePerTeamMember);
-
-            unchecked {
-                ++i;
-            }
         }
 
         unchecked {
@@ -155,12 +151,9 @@ contract Game is ReentrancyGuard {
         if (msg.sender != owner) revert NotOwner();
         if (prizePool == 0) revert EmptyPrizePool();
 
-        for (uint256 i = 0; i < winnerAddresses.length; ) {
-            if (winnerAddresses[i] == winnerAddress)
+        for (uint256 i = 0; i < winnerAddresses.length; i++) {
+            if (winnerAddresses[i] == winnerAddress) {
                 revert WinnerAddressAlreadyAdded();
-
-            unchecked {
-                ++i;
             }
         }
 
@@ -182,15 +175,9 @@ contract Game is ReentrancyGuard {
         uint256 prizeShare = prizePool / winnerAddresses.length;
         prizePool = 0;
 
-        for (uint256 i = 0; i < winnerAddresses.length; ) {
-            (bool success, ) = payable(winnerAddresses[i]).call{value: prizeShare}("");
-            if (success) {
-                emit PrizeAwarded(winnerAddresses[i], prizeShare);
-            }
-
-            unchecked {
-                ++i;
-            }
+        for (uint256 i = 0; i < winnerAddresses.length; i++) {
+            _sendUserShare(payable(winnerAddresses[i]), prizeShare);
+            emit PrizeAwarded(winnerAddresses[i], prizeShare);
         }
     }
 
@@ -226,20 +213,14 @@ contract Game is ReentrancyGuard {
         uint256 lastPlayerShare = (prizePool * 10) / 100;
         uint256 remainingPrize = prizePool - lastPlayerShare;
 
-        if (msg.sender == lastPlayerAddress) {
-            if (_sendUserShare(payable(msg.sender), lastPlayerShare)) {
-                emit AbandonedGameUserShareClaimed(msg.sender, lastPlayerShare, true);
-                return;
-            }
-        } else {
-            uint256 userShare = (remainingPrize *
-                totalPaymentsPerUser[msg.sender]) / totalPayments;
+        bool isLastPlayer = msg.sender == lastPlayerAddress;
+        uint256 shareAmount = isLastPlayer 
+            ? lastPlayerShare 
+            : (remainingPrize * totalPaymentsPerUser[msg.sender]) / totalPayments;
 
-            if (_sendUserShare(payable(msg.sender), userShare)) {
-                emit AbandonedGameUserShareClaimed(msg.sender, userShare, false);
-                return;
-            }
-        }
+        _sendUserShare(payable(msg.sender), shareAmount);
+        paidUserShares[msg.sender] = true;
+        emit AbandonedGameUserShareClaimed(msg.sender, shareAmount, isLastPlayer);
     }
 
     function _sendUserShare(
@@ -250,10 +231,7 @@ contract Game is ReentrancyGuard {
         if (!success) {
             unclaimedShares[recipient] = amount;
             emit UnclaimedUserShareAdded(recipient, amount);
-        } else {
-            paidUserShares[recipient] = true;
-        }
-
+        } 
         return success;
     }
 
