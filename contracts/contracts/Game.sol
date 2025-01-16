@@ -66,7 +66,7 @@ contract Game is ReentrancyGuard {
     event WinnerAdded(address indexed winnerAddress);
 
     // The prize is awarded to the winners
-    event PrizeAwarded(address indexed winnerAddress, uint256 amount);
+    event PrizeAwarded(uint256 amount, uint16 winnerCount);
 
     // A team member's share is withdrawn
     event TeamShareWithdrawn(address indexed teamMemberAddress, uint256 amount);
@@ -75,7 +75,7 @@ contract Game is ReentrancyGuard {
     event UnclaimedUserShareAdded(address indexed userAddress, uint256 amount);
 
     // An unclaimed user share is claimed
-    event UnclaimedUserShareClaimed(
+    event UserShareSent(
         address indexed userAddress,
         uint256 amount
     );
@@ -175,9 +175,14 @@ contract Game is ReentrancyGuard {
         uint256 prizeShare = prizePool / winnerAddresses.length;
         prizePool = 0;
 
+        emit PrizeAwarded(prizePool, uint16(winnerAddresses.length));
+
+        for (uint256 i = 0; i < winnerAddresses.length; i++) {
+            _allocateUserShare(payable(winnerAddresses[i]), prizeShare);
+        }
+
         for (uint256 i = 0; i < winnerAddresses.length; i++) {
             _sendUserShare(payable(winnerAddresses[i]), prizeShare);
-            emit PrizeAwarded(winnerAddresses[i], prizeShare);
         }
     }
 
@@ -187,7 +192,7 @@ contract Game is ReentrancyGuard {
             (bool success, ) = payable(msg.sender).call{value: unclaimedAmount}("");
             if (success) {
                 unclaimedShares[msg.sender] = 0;
-                emit UnclaimedUserShareClaimed(msg.sender, unclaimedAmount);
+                emit UserShareSent(msg.sender, unclaimedAmount);
             }
             else{
                 revert ClaimUserShareFailed();
@@ -218,9 +223,14 @@ contract Game is ReentrancyGuard {
             ? lastPlayerShare 
             : (remainingPrize * totalPaymentsPerUser[msg.sender]) / totalPayments;
 
-        _sendUserShare(payable(msg.sender), shareAmount);
-        paidUserShares[msg.sender] = true;
         emit AbandonedGameUserShareClaimed(msg.sender, shareAmount, isLastPlayer);
+        _sendOrAllocateUserShare(payable(msg.sender), shareAmount);
+        paidUserShares[msg.sender] = true;
+    }
+
+    function _allocateUserShare(address payable recipient, uint256 amount) private {
+        unclaimedShares[recipient] += amount;
+        emit UnclaimedUserShareAdded(recipient, amount);
     }
 
     function _sendUserShare(
@@ -228,12 +238,19 @@ contract Game is ReentrancyGuard {
         uint256 amount
     ) private returns (bool) {
         (bool success, ) = recipient.call{value: amount}("");
-        if (!success) {
-            unclaimedShares[recipient] = amount;
-            emit UnclaimedUserShareAdded(recipient, amount);
+        if (success) {
+            unclaimedShares[recipient] = 0;
+            emit UserShareSent(recipient, amount);  
         } 
         return success;
     }
+
+    function _sendOrAllocateUserShare(address payable recipient, uint256 amount) private {
+        bool success = _sendUserShare(recipient, amount);
+        if (!success) {
+            _allocateUserShare(recipient, amount);
+        }
+    }   
 
     function withdrawTeamShare() external nonReentrant {
         uint256 amount = teamShares[msg.sender];
