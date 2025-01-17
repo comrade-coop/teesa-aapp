@@ -14,8 +14,7 @@ This project includes the contract and associated tools for deploying and testin
 
 ## Prerequisites
 
-1. Ensure you have Node.js and npm installed
-2. Install Hardhat and project dependencies:
+1. Install Hardhat and project dependencies:
    ```bash
    npm install
    ```
