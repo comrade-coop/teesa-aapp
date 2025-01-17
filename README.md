@@ -1,13 +1,69 @@
 # Teesa App
 
-## Getting Started
+## 🛠️ Development Setup
+
+### Prerequisites
+
+Make sure you have the following installed:
+- [Git](https://git-scm.com/) and [Git LFS](https://git-lfs.com/)
+
+### Environment Setup
+
+1. Install NVM
+   ```bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+   ```
+
+2. Install Node   
+   ```bash
+   nvm install 23.3.0
+   ```
+
+3. Install Pnpm
+   ```bash
+   npm install -g pnpm
+   ```
+
+4. Install direnv (*optional if want to use `.envrc` to automatically set the correct node version when navigating to the repository directory*)
+   - For MacOS
+   ```bash
+   brew install direnv
+   ```
+   - For Linux
+   ```bash
+   sudo apt-get install direnv
+   ```
+
+5. Clone the repository
+   ```bash
+   git clone https://github.com/comrade-coop/teesa-aapp.git
+   ```
+
+6. Navigate to the repository root directory
+   ```bash
+   cd teesa-aapp
+   ```
+
+7. Allow direnv (*if you installed direnv in 4.*)
+   ```bash
+   direnv allow
+   ```
+
+### Contracts Setup
+
+See the README file in the [/contracts](/contracts/README.md) directory for the contract setup
+
+### Next.js App Setup
+
+See the README file in the [/teesa](/teesa/README.md) directory for Next.js app setup
+
+
+---
+
+
+## 🚀 Production Setup
 
 Follow these instructions to set up, configure, and run the Teesa application in production mode on your local machine or server.
-
-### For development mode:
-0. See the README file in the [/dev-setup](/dev-setup/README.md) directory for the Docker development environment setup
-1. See the README file in the [/contracts](/contracts/README.md) directory for the contract setup
-2. See the README file in the [/teesa](/teesa/README.md) directory for Next.js app setup
 
 ### Prerequisites
 
@@ -15,24 +71,19 @@ Make sure you have the following installed:
 - [Docker](https://www.docker.com/) (latest version recommended)
 - [Git](https://git-scm.com/) and [Git LFS](https://git-lfs.com/)
 
----
-
 ### Installation
 
 1. Clone the repository
-
    ```bash
    git clone https://github.com/comrade-coop/teesa-aapp.git
    ```
 
 2. Navigate to the root directory: 
-
    ```bash
    cd teesa-aapp
    ```
 
 3. Build the production Docker image:
-
    ```bash
    docker build \
       --build-arg NETWORK=<network> \ # localhost, sepolia, base
@@ -51,25 +102,21 @@ Make sure you have the following installed:
    ```
 
 3. Run the production container:
-
    ```bash
    docker run -p 3000:3000 teesa-app-deploy:latest
    ```
 
----
-
 ### Accessing the Application
 
 Once the container is started, you can access the application in your web browser at:
-
    ```
    http://localhost:3000
    ```
 
+
 ---
 
-### License
+
+## 📜 License
 
 This project is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute this project as per the license terms.
-
----
