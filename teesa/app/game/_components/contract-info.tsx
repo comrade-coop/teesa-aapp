@@ -35,7 +35,7 @@ export function ContractInfo() {
       return { url: 'https://basescan.org', name: 'Base' };
     }
     if (chainId === 11155111) {
-      return { url: 'https://sepolia.etherscan.io', name: 'Sepolia' };
+      return { url: 'https://sepolia.etherscan.io', name: 'Sepolia Testnet' };
     }
     return { url: 'https://etherscan.io', name: 'EVM' };
   };
