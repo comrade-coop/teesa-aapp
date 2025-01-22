@@ -37,7 +37,7 @@ export function ContractInfo() {
     if (chainId === 11155111) {
       return { url: 'https://sepolia.etherscan.io', name: 'Sepolia' };
     }
-    return { url: 'https://etherscan.io', name: 'Ethereum' };
+    return { url: 'https://etherscan.io', name: 'EVM' };
   };
 
   const explorerInfo = getExplorerInfo();
