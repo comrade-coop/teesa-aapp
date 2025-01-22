@@ -7,16 +7,18 @@ export function ContractInfo() {
   const [prizePool, setPrizePool] = useState<string>('0');
   const [currentFee, setCurrentFee] = useState<string>('0');
   const [contractAddress, setContractAddress] = useState<string>('');
+  const [chainId, setChainId] = useState<number>(0);
 
   useEffect(() => {
     const fetchContractInfo = async () => {
       try {
         const { prizePool, currentFee } = await getContractInfo();
-        const { gameContractAddress } = await getEnvironments();
+        const { gameContractAddress, chainId } = await getEnvironments();
 
         setPrizePool(prizePool);
         setCurrentFee(currentFee);
         setContractAddress(gameContractAddress || '');
+        setChainId(chainId);
       } catch (error) {
         console.error('Error fetching contract info:', error);
       }
@@ -27,6 +29,18 @@ export function ContractInfo() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const getExplorerInfo = () => {
+    if (chainId === 8453) {
+      return { url: 'https://basescan.org', name: 'Base' };
+    }
+    if (chainId === 11155111) {
+      return { url: 'https://sepolia.etherscan.io', name: 'Sepolia' };
+    }
+    return { url: 'https://etherscan.io', name: 'Ethereum' };
+  };
+
+  const explorerInfo = getExplorerInfo();
 
   return (
     <div className="space-y-4 p-4 rounded-lg bg-slate-800/50 border border-blue-500/30">
@@ -41,14 +55,13 @@ export function ContractInfo() {
         </div>
         {contractAddress && (
           <div>
-            <p className="text-sm text-slate-400">Contract</p>
             <a
-              href={`https://basescan.org/address/${contractAddress}`}
+              href={`${explorerInfo.url}/address/${contractAddress}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
             >
-              View on Basescan
+              Contract on {explorerInfo.name}
               <ExternalLink size={14} />
             </a>
           </div>
