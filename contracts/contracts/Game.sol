@@ -209,15 +209,14 @@ contract Game is ReentrancyGuard {
             : (remainingPrize * totalPaymentsPerUser[msg.sender]) /
                 totalPayments;
 
-        _allocateUserShare(payable(msg.sender), shareAmount);
-        claimedAbandonedGameUserShares[msg.sender] = true;
-
         emit AbandonedGameUserShareClaimed(
             msg.sender,
             shareAmount,
             isLastPlayer
         );
 
+        _allocateUserShare(payable(msg.sender), shareAmount);
+        claimedAbandonedGameUserShares[msg.sender] = true;
         _sendUserShare(payable(msg.sender));
     }
 
