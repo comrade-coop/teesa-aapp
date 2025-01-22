@@ -3,6 +3,42 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+/*
+ * # Overview:
+ *
+ * Constructor:
+ *   - teamAddress: The address of the team multi-sig wallet
+ *
+ * PayFee:
+ *   - The user pays a fee to play the game
+ *   - The fee is split into:
+ *     - 30% to the team
+ *     - 70% to the prize pool
+ *   - The fee is increased by 1%, till a cap of 1 ether is reached
+ *
+ * SetWinner:
+ *   - The owner sets the winner address
+ *   - The game is ended
+ *
+ * AwardPrize:
+ *   - The owner sends the prize to the winner
+ *
+ * ClaimAbandonedGameShare:
+ *   - If no message is sent within 3 days, the game is abandoned -> the game ends
+ *   - The users can claim the abandoned game shares:
+ *     - If the user is the last player, they receive the bigger of:
+ *         - 10% of the prize pool
+ *         - Share of the prize pool, proportional to their paid fees
+ *     - The other players receive the remaining prize pool split proportionally to their paid fees
+ *
+ * ClaimUserShare:
+ *   - In case a payment to a user is reverted, the user share is added to the unclaimedShares
+ *   - The user can claim their share of the prize pool
+ *
+ * WithdrawTeamShare:
+ *   - The team can withdraw their share
+ */
+
 contract Game is ReentrancyGuard {
     address public immutable owner;
     address public immutable teamAddress;
@@ -11,6 +47,7 @@ contract Game is ReentrancyGuard {
     bool public gameEnded;
 
     uint256 public teamShare;
+
     uint256 public prizePool;
     uint256 public currentFee;
 
@@ -19,19 +56,19 @@ contract Game is ReentrancyGuard {
     address public lastPlayerAddress;
     uint256 public lastPaymentTime;
 
-    address[] public winnerAddresses;
+    address public winnerAddress;
 
     mapping(address => uint256) public unclaimedShares;
 
-    bool public abandonedGame;
     mapping(address => bool) public claimedAbandonedGameUserShares;
+    uint256 private abondenedGameLastPlayerShare;
+    uint256 private abondenedGameRemainingPrize;
 
     // Errors
     error InvalidTeamAddress(); // Team address is zero
     error InsufficientFeePayment(); // The fee payment is insufficient
     error NotOwner(); // The caller is not the owner
     error EmptyPrizePool(); // The prize pool is empty
-    error WinnerAddressAlreadyAdded(); // The winner address is already added
     error GameHasEnded(); // The game has ended
     error GameNotEnded(); // The game has not ended
     error NoTeamShareToWithdraw(); // No team share to withdraw
@@ -42,7 +79,7 @@ contract Game is ReentrancyGuard {
     error NoUnclaimedShares(); // The user has no unclaimed shares
     error NotTeamAddress(); // The caller is not the team address
     error AbondonedGameUserShareAlreadyClaimed(); // The abandoned game user share is already claimed
-    error GameWasAbandoned(); // The game was abandoned
+    error InvalidWinnerAddress(); // The winner address is invalid
 
     // Events
     // A new user fee payment is received
@@ -69,7 +106,7 @@ contract Game is ReentrancyGuard {
     event WinnerAdded(address indexed winnerAddress);
 
     // The prize is awarded to the winners
-    event PrizeAwarded(uint256 amount, address[] winnerAddresses);
+    event PrizeAwarded(uint256 amount, address winnerAddress);
 
     // The team share is withdrawn
     event TeamShareWithdrawn(uint256 amount);
@@ -99,12 +136,10 @@ contract Game is ReentrancyGuard {
         owner = msg.sender;
         deploymentTime = block.timestamp;
         lastPaymentTime = block.timestamp;
-        abandonedGame = false;
     }
 
     function payFee() external payable nonReentrant {
         if (gameEnded) revert GameHasEnded();
-        if (abandonedGame) revert GameWasAbandoned();
         if (msg.value < currentFee) revert InsufficientFeePayment();
 
         lastPlayerAddress = msg.sender;
@@ -143,49 +178,29 @@ contract Game is ReentrancyGuard {
         emit FeeIncreased(currentFee);
     }
 
-    function addWinner(address winnerAddress) external nonReentrant {
+    function setWinner(address _winnerAddress) external nonReentrant {
         if (msg.sender != owner) revert NotOwner();
-        if (abandonedGame) revert GameWasAbandoned();
-        if (prizePool == 0) revert EmptyPrizePool();
+        if (gameEnded) revert GameHasEnded();
+        if (_winnerAddress == address(0)) revert InvalidWinnerAddress();
 
-        for (uint256 i = 0; i < winnerAddresses.length; i++) {
-            if (winnerAddresses[i] == winnerAddress) {
-                revert WinnerAddressAlreadyAdded();
-            }
-        }
+        gameEnded = true;
+        emit GameEnded();
 
-        if (!gameEnded) {
-            gameEnded = true;
-            emit GameEnded();
-        }
-
-        winnerAddresses.push(winnerAddress);
-
+        winnerAddress = _winnerAddress;
         emit WinnerAdded(winnerAddress);
-    }
-
-    function setPrize() external nonReentrant {
-        if (msg.sender != owner) revert NotOwner();
-        if (!gameEnded) revert GameNotEnded();
-        if (prizePool == 0) revert EmptyPrizePool();
-
-        uint256 prizeShare = prizePool / winnerAddresses.length;
-        prizePool = 0;
-
-        emit PrizeAwarded(prizePool, winnerAddresses);
-
-        for (uint256 i = 0; i < winnerAddresses.length; i++) {
-            _allocateUserShare(payable(winnerAddresses[i]), prizeShare);
-        }
     }
 
     function awardPrize() external nonReentrant {
         if (msg.sender != owner) revert NotOwner();
         if (!gameEnded) revert GameNotEnded();
+        if (prizePool == 0) revert EmptyPrizePool();
 
-        for (uint256 i = 0; i < winnerAddresses.length; i++) {
-            _sendUserShare(payable(winnerAddresses[i]));
-        }
+        uint256 prizeAmount = prizePool;
+        prizePool = 0;
+
+        emit PrizeAwarded(prizeAmount, winnerAddress);
+
+        _sendOrAllocateUserShare(payable(winnerAddress), prizeAmount);
     }
 
     function claimAbandonedGameShare() external nonReentrant {
@@ -195,18 +210,23 @@ contract Game is ReentrancyGuard {
         if (prizePool == 0) revert EmptyPrizePool();
         if (!abondoneGameTimeElapsed()) revert AbandonedGameTimeNotElapsed();
 
-        if (!abandonedGame) {
-            abandonedGame = true;
+        if (!gameEnded) {
+            gameEnded = true;
+            emit GameEnded();
             emit GameAbandoned();
-        }
 
-        uint256 lastPlayerShare = (prizePool * 10) / 100;
-        uint256 remainingPrize = prizePool - lastPlayerShare;
+            unchecked {
+                abondenedGameLastPlayerShare = _calculateAbandonedGameLastPlayerShare();
+                abondenedGameRemainingPrize =
+                    prizePool -
+                    abondenedGameLastPlayerShare;
+            }
+        }
 
         bool isLastPlayer = msg.sender == lastPlayerAddress;
         uint256 shareAmount = isLastPlayer
-            ? lastPlayerShare
-            : (remainingPrize * totalPaymentsPerUser[msg.sender]) /
+            ? abondenedGameLastPlayerShare
+            : (abondenedGameRemainingPrize * totalPaymentsPerUser[msg.sender]) /
                 totalPayments;
 
         emit AbandonedGameUserShareClaimed(
@@ -215,58 +235,77 @@ contract Game is ReentrancyGuard {
             isLastPlayer
         );
 
-        _allocateUserShare(payable(msg.sender), shareAmount);
         claimedAbandonedGameUserShares[msg.sender] = true;
-        _sendUserShare(payable(msg.sender));
+        _sendOrAllocateUserShare(payable(msg.sender), shareAmount);
     }
 
     function claimUserShare() external nonReentrant {
         uint256 unclaimedAmount = unclaimedShares[msg.sender];
         if (unclaimedAmount == 0) revert NoUnclaimedShares();
 
-        _sendUserShare(payable(msg.sender));
         unclaimedShares[msg.sender] = 0;
+
+        bool success = _sendUserShare(payable(msg.sender), unclaimedAmount);
+        if (!success) {
+            unclaimedShares[msg.sender] = unclaimedAmount;
+        }
     }
 
     function withdrawTeamShare() external nonReentrant {
         if (msg.sender != teamAddress) revert NotTeamAddress();
         if (teamShare == 0) revert NoTeamShareToWithdraw();
 
-        uint256 amount = teamShare;
+        uint256 teamAmount = teamShare;
         teamShare = 0;
 
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        (bool success, ) = payable(msg.sender).call{value: teamAmount}("");
         if (!success) {
-            teamShare = amount;
+            teamShare = teamAmount;
             revert TeamShareWithdrawFailed();
         }
 
-        emit TeamShareWithdrawn(amount);
+        emit TeamShareWithdrawn(teamAmount);
     }
 
     function abondoneGameTimeElapsed() public view returns (bool) {
         return block.timestamp >= lastPaymentTime + 3 days;
     }
 
-    function _allocateUserShare(
+    function _sendUserShare(
         address payable recipient,
         uint256 amount
-    ) private {
-        unclaimedShares[recipient] = amount;
-        emit UnclaimedUserShareAdded(recipient, amount);
-    }
-
-    function _sendUserShare(address payable recipient) private returns (bool) {
-        uint256 amount = unclaimedShares[recipient];
-        unclaimedShares[recipient] = 0;
-
+    ) private returns (bool) {
         (bool success, ) = recipient.call{value: amount}("");
         if (success) {
             emit UserShareSent(recipient, amount);
-        } else {
-            unclaimedShares[recipient] = amount;
         }
 
         return success;
+    }
+
+    function _sendOrAllocateUserShare(
+        address payable recipient,
+        uint256 amount
+    ) private {
+        bool success = _sendUserShare(recipient, amount);
+        if (!success) {
+            unclaimedShares[recipient] = amount;
+            emit UnclaimedUserShareAdded(recipient, amount);
+        }
+    }
+
+    function _calculateAbandonedGameLastPlayerShare()
+        private
+        view
+        returns (uint256)
+    {
+        unchecked {
+            uint256 tenPercent = (prizePool * 10) / 100;
+            uint256 proportionalShare = (prizePool *
+                totalPaymentsPerUser[lastPlayerAddress]) / totalPayments;
+
+            return
+                tenPercent > proportionalShare ? tenPercent : proportionalShare;
+        }
     }
 }

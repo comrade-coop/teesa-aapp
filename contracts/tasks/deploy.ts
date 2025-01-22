@@ -45,19 +45,14 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
       // Verify contract on Etherscan/BaseScan
       console.log('\nVerifying contract...');
 
-      const teamAddresses = process.env.TEAM_ADDRESSES;
-      if (!teamAddresses) {
-        throw new Error("TEAM_ADDRESSES environment variable is not set");
-      }
-
-      const teamAddressesArray = teamAddresses.split(',').map(addr => addr.trim());
-      if (teamAddressesArray.length === 0) {
-        throw new Error("At least one team address is required");
+      const teamAddress = process.env.TEAM_ADDRESS;
+      if (!teamAddress) {
+        throw new Error("TEAM_ADDRESS environment variable is not set");
       }
 
       try {
         // Create arguments.js file
-        const argsFilePath = createConstructorArgsFile(teamAddressesArray);
+        const argsFilePath = createConstructorArgsFile(teamAddress);
         
         try {
           // Execute verification with constructor args file
@@ -141,8 +136,8 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
   }
 }
 
-function createConstructorArgsFile(teamAddresses: string[]): string {
-  const argsContent = `module.exports = [[\n${teamAddresses.map(addr => `"${addr}"`).join(',\n')}\n]];`;
+function createConstructorArgsFile(teamAddress: string): string {
+  const argsContent = `module.exports = ["${teamAddress}"];`;
   const argsFilePath = path.join(__dirname, '../arguments.js');
   fs.writeFileSync(argsFilePath, argsContent);
   return argsFilePath;
