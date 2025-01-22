@@ -48,7 +48,11 @@ export function SidePanel({
         className="fixed top-4 right-4 md:hidden z-50"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <Menu className="h-6 w-6" />
+        {isOpen ? (
+          <X className="h-6 w-6" />
+        ) : (
+          <Menu className="h-6 w-6" />
+        )}
       </Button>
 
       {/* Panel */}
