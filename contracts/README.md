@@ -39,7 +39,7 @@ This project includes the contract and associated tools for deploying and testin
    - Etherscan and Basescan API keys:
       - `ETHERSCAN_API_KEY`: Etherscan API key
       - `BASESCAN_API_KEY`: Basescan API key
-   - `TEAM_ADDRESSES`: Comma-separated wallet addresses (no spaces) for team income distribution
+   - `TEAM_ADDRESS`: The address of the team multi-sig wallet
 
 ## Deployment
 

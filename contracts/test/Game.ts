@@ -8,31 +8,30 @@ describe("Game", function () {
 
   let game: Game;
   let owner: SignerWithAddress;
-  let teamMember: SignerWithAddress;
+  let teamAddress: SignerWithAddress;
   let player: SignerWithAddress;
-  let teamAddresses: string[];
+  let nonPlayer: SignerWithAddress;
 
   beforeEach(async function () {
-    [owner, teamMember, player] = await ethers.getSigners();
-    teamAddresses = [teamMember.address];
+    [owner, teamAddress, player, nonPlayer] = await ethers.getSigners();
     
     const GameFactory = await ethers.getContractFactory("Game");
-    game = await GameFactory.deploy(teamAddresses) as Game;
+    game = await GameFactory.deploy(teamAddress.address) as Game;
   });
 
   describe("Constructor", function () {
     it("should set the correct initial values", async function () {
       expect(await game.owner()).to.equal(owner.address);
-      expect(await game.teamAddresses(0)).to.equal(teamMember.address);
+      expect(await game.teamAddress()).to.equal(teamAddress.address);
       expect(await game.currentFee()).to.equal(INITIAL_FEE);
       expect(await game.gameEnded()).to.equal(false);
       expect(await game.deploymentTime()).to.not.equal(0);
     });
 
-    it("should revert if no team addresses are provided", async function () {
+    it("should revert if team address is zero", async function () {
       const GameFactory = await ethers.getContractFactory("Game");
-      await expect(GameFactory.deploy([]))
-        .to.be.revertedWithCustomError(game, "NoTeamAddresses");
+      await expect(GameFactory.deploy(ethers.ZeroAddress))
+        .to.be.revertedWithCustomError(game, "InvalidTeamAddress");
     });
   });
 
@@ -56,74 +55,119 @@ describe("Game", function () {
     });
 
     it("should revert if payment is insufficient", async function () {
-      const insufficientAmount = INITIAL_FEE - ethers.parseEther("0.0001");
+      const insufficientAmount = INITIAL_FEE - 1n;
       await expect(game.connect(player).payFee({ value: insufficientAmount }))
         .to.be.revertedWithCustomError(game, "InsufficientFeePayment");
     });
 
-    it("should distribute team shares correctly", async function () {
+    it("should distribute fees correctly between team and prize pool", async function () {
       const paymentAmount = INITIAL_FEE;
       await game.connect(player).payFee({ value: paymentAmount });
       
       const expectedTeamShare = (paymentAmount * 30n) / 100n;
-      const expectedTeamMemberShare = expectedTeamShare / BigInt(teamAddresses.length);
-      expect(await game.teamShares(teamMember.address)).to.equal(expectedTeamMemberShare);
+      const expectedPrizePool = paymentAmount - expectedTeamShare;
+      
+      expect(await game.teamShare()).to.equal(expectedTeamShare);
+      expect(await game.prizePool()).to.equal(expectedPrizePool);
+    });
+
+    it("should revert if game has ended", async function () {
+      // First payment
+      await game.connect(player).payFee({ value: INITIAL_FEE });
+      
+      // End the game by setting a winner
+      await game.connect(owner).setWinner(player.address);
+      
+      // Try to pay fee after game has ended
+      await expect(game.connect(player).payFee({ value: INITIAL_FEE }))
+        .to.be.revertedWithCustomError(game, "GameHasEnded");
     });
   });
 
   describe("Prize Distribution", function () {
     beforeEach(async function () {
-      const paymentAmount = INITIAL_FEE;
-      await game.connect(player).payFee({ value: paymentAmount });
+      await game.connect(player).payFee({ value: INITIAL_FEE });
     });
 
-    it("should allow owner to add winner", async function () {
-      await expect(game.connect(owner).addWinner(player.address))
+    it("should allow owner to set winner", async function () {
+      await expect(game.connect(owner).setWinner(player.address))
         .to.emit(game, "GameEnded")
         .to.emit(game, "WinnerAdded");
       
       expect(await game.gameEnded()).to.be.true;
-      expect(await game.winnerAddresses(0)).to.deep.equal(player.address);
+      expect(await game.winnerAddress()).to.equal(player.address);
     });
 
-    it("should revert if non-owner tries to add winner", async function () {
-      await expect(game.connect(player).addWinner(player.address))
+    it("should revert if non-owner tries to set winner", async function () {
+      await expect(game.connect(player).setWinner(player.address))
         .to.be.revertedWithCustomError(game, "NotOwner");
     });
 
     it("should allow owner to award prize", async function () {
-      await game.connect(owner).addWinner(player.address);
+      await game.connect(owner).setWinner(player.address);
+      const prizePoolBefore = await game.prizePool();
       
       await expect(game.connect(owner).awardPrize())
-        .to.emit(game, "PrizeAwarded");
+        .to.emit(game, "PrizeAwarded")
+        .withArgs(prizePoolBefore, player.address);
+        
       expect(await game.prizePool()).to.equal(0);
     });
 
     it("should revert if non-owner tries to award prize", async function () {
-      await game.connect(owner).addWinner(player.address);
+      await game.connect(owner).setWinner(player.address);
       await expect(game.connect(player).awardPrize())
         .to.be.revertedWithCustomError(game, "NotOwner");
+    });
+
+    it("should revert if setting winner when game has ended", async function () {
+      await game.connect(owner).setWinner(player.address);
+      
+      await expect(game.connect(owner).setWinner(player.address))
+        .to.be.revertedWithCustomError(game, "GameHasEnded");
+    });
+
+    it("should revert if setting winner with zero address", async function () {
+      await expect(game.connect(owner).setWinner(ethers.ZeroAddress))
+        .to.be.revertedWithCustomError(game, "InvalidWinnerAddress");
+    });
+
+    it("should revert if awarding prize when game has not ended", async function () {
+      await expect(game.connect(owner).awardPrize())
+        .to.be.revertedWithCustomError(game, "GameNotEnded");
+    });
+
+    it("should revert if awarding prize with empty prize pool", async function () {
+      await game.connect(owner).setWinner(player.address);
+      await game.connect(owner).awardPrize(); // First award empties pool
+      
+      await expect(game.connect(owner).awardPrize())
+        .to.be.revertedWithCustomError(game, "EmptyPrizePool");
     });
   });
 
   describe("Team Share Withdrawal", function () {
-    beforeEach(async function () {
+    it("should allow team address to withdraw share", async function () {
       await game.connect(player).payFee({ value: INITIAL_FEE });
-    });
-
-    it("should allow team members to withdraw their share", async function () {
-      const initialBalance = await ethers.provider.getBalance(teamMember.address);
-      await expect(game.connect(teamMember).withdrawTeamShare())
+      
+      const initialBalance = await ethers.provider.getBalance(teamAddress.address);
+      await expect(game.connect(teamAddress).withdrawTeamShare())
         .to.emit(game, "TeamShareWithdrawn");
       
-      const finalBalance = await ethers.provider.getBalance(teamMember.address);
+      const finalBalance = await ethers.provider.getBalance(teamAddress.address);
       expect(finalBalance).to.be.gt(initialBalance);
-      expect(await game.teamShares(teamMember.address)).to.equal(0);
+      expect(await game.teamShare()).to.equal(0);
     });
 
-    it("should revert if team member has no share", async function () {
-      await game.connect(teamMember).withdrawTeamShare();
-      await expect(game.connect(teamMember).withdrawTeamShare())
+    it("should revert if non-team address tries to withdraw", async function () {
+      await game.connect(player).payFee({ value: INITIAL_FEE });
+      
+      await expect(game.connect(player).withdrawTeamShare())
+        .to.be.revertedWithCustomError(game, "NotTeamAddress");
+    });
+
+    it("should revert if no team share to withdraw", async function () {
+      await expect(game.connect(teamAddress).withdrawTeamShare())
         .to.be.revertedWithCustomError(game, "NoTeamShareToWithdraw");
     });
   });
@@ -138,21 +182,20 @@ describe("Game", function () {
       await ethers.provider.send("evm_mine", []);
 
       await expect(game.connect(player).claimAbandonedGameShare())
-        .to.emit(game, "GameAbandoned")
         .to.emit(game, "GameEnded")
+        .to.emit(game, "GameAbandoned")
         .to.emit(game, "AbandonedGameUserShareClaimed");
 
       expect(await game.gameEnded()).to.be.true;
-      expect(await game.paidUserShares(player.address)).to.be.true;
+      expect(await game.claimedAbandonedGameUserShares(player.address)).to.be.true;
     });
 
     it("should revert if claiming before time elapsed", async function () {
       await expect(game.connect(player).claimAbandonedGameShare())
-        .to.be.revertedWithCustomError(game, "TimeNotElapsed");
+        .to.be.revertedWithCustomError(game, "AbandonedGameTimeNotElapsed");
     });
 
-    it("should revert if user has not made payments", async function () {
-      const nonPlayer = (await ethers.getSigners())[3];
+    it("should revert if user has not made any fee payments", async function () {
       await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]);
       await ethers.provider.send("evm_mine", []);
 
@@ -160,53 +203,32 @@ describe("Game", function () {
         .to.be.revertedWithCustomError(game, "NoFeePaymentMade");
     });
 
-    it("should revert if user has already claimed", async function () {
+    it("should revert if user has already claimed abandoned game share", async function () {
       await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]);
       await ethers.provider.send("evm_mine", []);
 
       await game.connect(player).claimAbandonedGameShare();
+      
       await expect(game.connect(player).claimAbandonedGameShare())
-        .to.be.revertedWithCustomError(game, "UserShareAlreadyClaimed");
+        .to.be.revertedWithCustomError(game, "AbondonedGameUserShareAlreadyClaimed");
+    });
+
+    it("should revert if prize pool is empty", async function () {
+      await game.connect(owner).setWinner(player.address);
+      await game.connect(owner).awardPrize(); // Empty the prize pool
+      
+      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]);
+      await ethers.provider.send("evm_mine", []);
+
+      await expect(game.connect(player).claimAbandonedGameShare())
+        .to.be.revertedWithCustomError(game, "EmptyPrizePool");
     });
   });
 
   describe("Unclaimed Shares", function () {
-    it("should allow claiming unclaimed shares", async function () {
-      // First create an unclaimed share by making a payment
-      await game.connect(player).payFee({ value: INITIAL_FEE });
-      
-      // Set up unclaimed share (this would normally happen if a transfer fails)
-      const unclaimedAmount = ethers.parseEther("0.0001");
-      await game.connect(owner).addWinner(player.address);
-      
-      // Simulate unclaimed share (would need a way to force this in a real scenario)
-      if (typeof game.unclaimedShares === 'function') {
-        const hasUnclaimedShare = await game.unclaimedShares(player.address);
-        if (hasUnclaimedShare > 0n) {
-          await expect(game.connect(player).claimUserShare())
-            .to.emit(game, "UnclaimedUserShareClaimed");
-        }
-      }
-    });
-
     it("should revert if no unclaimed shares", async function () {
       await expect(game.connect(player).claimUserShare())
         .to.be.revertedWithCustomError(game, "NoUnclaimedShares");
-    });
-  });
-
-  describe("Game State", function () {
-    it("should not allow fee payments after game has ended", async function () {
-      await game.connect(player).payFee({ value: INITIAL_FEE });
-      await game.connect(owner).addWinner(player.address);
-
-      await expect(game.connect(player).payFee({ value: INITIAL_FEE }))
-        .to.be.revertedWithCustomError(game, "GameHasEnded");
-    });
-
-    it("should not allow adding winner with empty prize pool", async function () {
-      await expect(game.connect(owner).addWinner(player.address))
-        .to.be.revertedWithCustomError(game, "EmptyPrizePool");
     });
   });
 });
