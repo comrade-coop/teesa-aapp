@@ -4,11 +4,25 @@ export function ContractInfo({
   prizePool,
   currentFee,
   contractAddress,
+  chainId
 }: {
   prizePool: string;
   currentFee: string;
   contractAddress: string | undefined;  
+  chainId: number;
 }) {
+  const getExplorerInfo = () => {
+    if (chainId === 8453) {
+      return { url: 'https://basescan.org', name: 'Base' };
+    }
+    if (chainId === 11155111) {
+      return { url: 'https://sepolia.etherscan.io', name: 'Sepolia Testnet' };
+    }
+    return { url: 'https://etherscan.io', name: 'EVM' };
+  };
+
+  const explorerInfo = getExplorerInfo();
+
   return (
     <div className="space-y-4 p-4 rounded-lg bg-slate-800/50 border border-blue-500/30">
       <div className="space-y-2">
@@ -17,19 +31,18 @@ export function ContractInfo({
           <p className="text-lg font-medium">{prizePool} ETH</p>
         </div>
         <div>
-          <p className="text-sm text-slate-400">Current Fee</p>
+          <p className="text-sm text-slate-400">Message Fee</p>
           <p className="text-lg font-medium">{currentFee} ETH</p>
         </div>
         {contractAddress && (
           <div>
-            <p className="text-sm text-slate-400">Contract</p>
             <a
-              href={`https://basescan.org/address/${contractAddress}`}
+              href={`${explorerInfo.url}/address/${contractAddress}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
             >
-              View on Basescan
+              Contract on {explorerInfo.name}
               <ExternalLink size={14} />
             </a>
           </div>
@@ -38,7 +51,6 @@ export function ContractInfo({
         <div className="pt-4 border-t border-blue-500/30">
           <p className="text-sm text-slate-400 mb-2">How it works</p>
           <ul className="space-y-2 text-sm text-slate-300">
-            <li>• Next message costs {currentFee} ETH</li>
             <li>• Message fee increases by 1% after each message</li>
             <li>• All fees go to the prize pool</li>
             <li>• Winner gets 70% of the prize pool</li>
