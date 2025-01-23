@@ -11,6 +11,7 @@ export async function withdrawTeamShare(walletAddress: string, wallets: Connecte
   );
 
   if (result == ExecuteContractActionClientResult.Success) {
+    console.log('Team share withdrawn successfully');
     return ClaimSharesResult.Success;
   } else if (result == ExecuteContractActionClientResult.FailedWalletNotFound) {
     return ClaimSharesResult.FailedWalletNotFound;
