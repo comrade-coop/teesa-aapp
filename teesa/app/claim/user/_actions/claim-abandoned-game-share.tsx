@@ -11,6 +11,7 @@ export async function claimAbandonedGameShare(walletAddress: string, wallets: Co
   );
 
   if (result == ExecuteContractActionClientResult.Success) {
+    console.log(`Abandoned game share claimed successfully. Wallet address: ${walletAddress}`);
     return ClaimSharesResult.Success;
   } else if (result == ExecuteContractActionClientResult.FailedWalletNotFound) {
     return ClaimSharesResult.FailedWalletNotFound;
