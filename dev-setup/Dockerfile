@@ -44,7 +44,7 @@ EXPOSE 22
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 # Install Node
-RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 23'
+RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 22'
 
 # ------------------------------------ END ------------------------------------
 
