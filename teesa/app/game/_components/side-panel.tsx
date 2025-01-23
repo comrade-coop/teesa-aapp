@@ -28,6 +28,7 @@ export function SidePanel({
   prizePool,
   currentFee,
   contractAddress,
+  chainId,
   className
 }: { 
   children: React.ReactNode;
@@ -37,6 +38,7 @@ export function SidePanel({
   prizePool: string;
   currentFee: string;
   contractAddress: string | undefined;
+  chainId: number;
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isOpen, setIsOpen] = useState(false);
@@ -72,6 +74,7 @@ export function SidePanel({
             prizePool={prizePool}
             currentFee={currentFee}
             contractAddress={contractAddress}
+            chainId={chainId}
           />
           {children}
         </div>

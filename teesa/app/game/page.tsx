@@ -33,6 +33,7 @@ export default function Page() {
   const [prizePool, setPrizePool] = useState<string>('0');
   const [currentFee, setCurrentFee] = useState<string>('0');
   const [contractAddress, setContractAddress] = useState<string | undefined>(undefined);
+  const [chainId, setChainId] = useState<number>(0);
 
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
@@ -40,7 +41,7 @@ export default function Page() {
     fetchGameState();
     fetchContractInfo();
     fetchNewMessages();
-    fetchContractAddress();
+    fetchEnvironments();
 
     const timeoutId = setTimeout(() => {
       setLastTimestamp(getTimestamp());
@@ -83,9 +84,10 @@ export default function Page() {
     setGameAbandoned(gameAbandoned);
   }
 
-  async function fetchContractAddress() {
-    const { gameContractAddress } = await getEnvironments();
+  async function fetchEnvironments() {
+    const { gameContractAddress, chainId } = await getEnvironments();
     setContractAddress(gameContractAddress);
+    setChainId(chainId);
   }
 
   async function fetchNewMessages() {
@@ -223,6 +225,7 @@ export default function Page() {
           prizePool={prizePool}
           currentFee={currentFee}
           contractAddress={contractAddress}
+          chainId={chainId}
           className="order-1 md:order-3">
           {systemMessage}
         </SidePanel>
