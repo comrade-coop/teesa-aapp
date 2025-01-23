@@ -6,7 +6,7 @@ import { UserChatMessage } from './_components/user-chat-message';
 import { getLocaleClient, getTimestamp } from '@/lib/utils';
 import { MessagesList } from './_components/messages-list';
 import { useEffect, useState } from 'react';
-import { ChatInput } from './_components/chat-input';
+import { BottomPanel } from './_components/bottom-panel';
 import { getMessages } from './_actions/get-messages';
 import { LlmChatMessage } from './_components/llm-chat-message';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,9 +14,11 @@ import { MessageTabs } from './_components/message-tabs';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { SidePanel } from './_components/side-panel';
 import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
-import { getGameEnded } from './_actions/get-game-ended';
+import { getGameState } from './_actions/get-game-state';
 import { processPayment } from './_actions/process-payment';
 import { ProcessPaymentResult } from './_actions/process-payment';
+import { getContractInfo } from './_actions/get-contract-info';
+import { getEnvironments } from '../_actions/get-environments';
 
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -26,22 +28,19 @@ export default function Page() {
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
   const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
+  const [winnerAddress, setWinnerAddress] = useState<string | undefined>(undefined);
   const [gameAbandoned, setGameAbandoned] = useState<boolean>(false);
-  const [winnersAddresses, setWinnersAddresses] = useState<string[]>([]);
+  const [prizePool, setPrizePool] = useState<string>('0');
+  const [currentFee, setCurrentFee] = useState<string>('0');
+  const [contractAddress, setContractAddress] = useState<string | undefined>(undefined);
+
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
-  // Logout and make the user to reconnect their wallet if no wallets are found
-  // We noticed an issue with the Privy.io `useWallets` hook - sometimes returns empty wallets array
-  // This is a workaround to force the user to reconnect their wallet
-  useEffect(() => {
-    if (ready && authenticated && wallets.length == 0) {
-      //logout();
-    }
-  }, [ready, authenticated, wallets]);
-
   useEffect((() => {
-    getGameEndedState();
-    getNewMessages();
+    fetchGameState();
+    fetchContractInfo();
+    fetchNewMessages();
+    fetchContractAddress();
 
     const timeoutId = setTimeout(() => {
       setLastTimestamp(getTimestamp());
@@ -56,11 +55,12 @@ export default function Page() {
       return;
     }
 
-    getGameEndedState();
+    fetchGameState();
+    fetchContractInfo();
 
     // Get new messages only if we are not showing all messages
     if (showAllMessages) {
-      getNewMessages();
+      fetchNewMessages();
     }
 
     const timeoutId = setTimeout(() => {
@@ -70,14 +70,25 @@ export default function Page() {
     return () => clearTimeout(timeoutId);
   }, [lastTimestamp, showAllMessages]);
 
-  async function getGameEndedState() {
-    const [gameEnded, winnersAddresses, gameAbandoned] = await getGameEnded();
+  async function fetchGameState() {
+    const { gameEnded, winnerAddress } = await getGameState();
     setGameEnded(gameEnded);
-    setWinnersAddresses(winnersAddresses);
+    setWinnerAddress(winnerAddress);
+  }
+
+  async function fetchContractInfo() {
+    const { prizePool, currentFee, gameAbandoned } = await getContractInfo();
+    setPrizePool(prizePool);
+    setCurrentFee(currentFee);
     setGameAbandoned(gameAbandoned);
   }
 
-  async function getNewMessages() {
+  async function fetchContractAddress() {
+    const { gameContractAddress } = await getEnvironments();
+    setContractAddress(gameContractAddress);
+  }
+
+  async function fetchNewMessages() {
     const newMessages = await getMessages();
 
     if (newMessages.length == 0) {
@@ -181,19 +192,6 @@ export default function Page() {
       <div className="flex flex-col md:flex-row w-full h-full max-w-[1800px] mx-auto">
         {/* Main Chat Area */}
         <div className="w-full md:w-[512px] flex flex-col h-full order-2 md:order-1">
-          {gameAbandoned && (
-            <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4 m-4">
-              <p className="text-yellow-300">
-                The game has been abandoned due to inactivity. You can now claim your share of the prize pool.
-                {walletAddress && (
-                  <a href="/claim/user" className="text-yellow-400 hover:text-yellow-300 underline ml-2">
-                    Claim your share
-                  </a>
-                )}
-              </p>
-            </div>
-          )}
-
           <MessageTabs
             showAllMessages={showAllMessages}
             onTabChange={handleTabChange} />
@@ -206,11 +204,13 @@ export default function Page() {
               <p className="text-white">Connect your wallet to start playing</p>
             </div>}
 
-          {ready && <ChatInput
+          {ready && <BottomPanel
             className='mt-auto'
             gameEnded={gameEnded}
-            winnersAddresses={winnersAddresses}
+            winnerAddress={winnerAddress}
             isLoggedIn={authenticated}
+            gameAbandoned={gameAbandoned}
+            walletAddress={walletAddress}
             loading={paymentProcessing}
             onLogin={login}
             onChatMessage={hadleChatMessage} />}
@@ -220,6 +220,9 @@ export default function Page() {
         <SidePanel
           isLoggedIn={authenticated}
           onLogout={logout}
+          prizePool={prizePool}
+          currentFee={currentFee}
+          contractAddress={contractAddress}
           className="order-1 md:order-3">
           {systemMessage}
         </SidePanel>

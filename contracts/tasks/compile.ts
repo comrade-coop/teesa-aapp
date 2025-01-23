@@ -41,8 +41,8 @@ async function compile() {
       throw error;
     }
 
-    // Create /teesa/app/_contracts directory if it doesn't exist
-    const contractsDir = path.join(__dirname, '../../teesa/app/_contracts');
+    // Create /teesa/app/_contracts/abi directory if it doesn't exist
+    const contractsDir = path.join(__dirname, '../../teesa/app/_contracts/abi');
     if (!fs.existsSync(contractsDir)) {
       fs.mkdirSync(contractsDir, { recursive: true });
     }

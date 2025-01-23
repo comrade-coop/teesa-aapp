@@ -25,12 +25,18 @@ export function SidePanel({
   children, 
   isLoggedIn = false, 
   onLogout,
+  prizePool,
+  currentFee,
+  contractAddress,
   className
 }: { 
   children: React.ReactNode;
   isLoggedIn: boolean;
   onLogout: () => void;
   className?: string;
+  prizePool: string;
+  currentFee: string;
+  contractAddress: string | undefined;
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +64,11 @@ export function SidePanel({
         ${!isDesktop && !isOpen ? 'translate-x-full' : 'translate-x-0'}`, className)}
       >
         <div className="flex-1 space-y-6">
-          <ContractInfo />
+          <ContractInfo 
+            prizePool={prizePool}
+            currentFee={currentFee}
+            contractAddress={contractAddress}
+          />
           {children}
         </div>
         

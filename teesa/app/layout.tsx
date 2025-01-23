@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import PrivyIoProvider from "./privy-provider";
-import { setupContractEventListeners } from "./game/_actions/contract-events";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,11 +17,6 @@ export const metadata: Metadata = {
   title: "Teesa aapp",
   description: "AI powered word guessing game",
 };
-
-// Initialize contract event listeners
-setupContractEventListeners().catch(error => {
-  console.error('Failed to setup contract event listeners:', error);
-});
 
 export default function RootLayout({
   children,

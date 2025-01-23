@@ -1,8 +1,7 @@
-import { ethers } from 'ethers';
-import GameContract from '../../_contracts/Game.json';
 import { ConnectedWallet } from "@privy-io/react-auth";
-import { getEnvironments } from '../../_actions/get-environments';
-import { executeContractAction } from '@/app/_utils/contract';
+import { getWalletBalance } from '@/app/_contracts/get-wallet-balance';
+import { executeContractActionClient, ExecuteContractActionClientResult } from '@/app/_contracts/execute-contract-action-client';
+import { callContractViewMethod } from '@/app/_contracts/call-contract-view-method';
 
 export enum ProcessPaymentResult {
   Success,
@@ -16,33 +15,24 @@ export async function processPayment(walletAddress: string, wallets: ConnectedWa
     return ProcessPaymentResult.Success;
   }
 
-  const wallet = wallets.find(wallet => wallet.address == walletAddress);
-  if (!wallet) {
+  const balance = await getWalletBalance(walletAddress, wallets);
+  if (!balance) {
     return ProcessPaymentResult.FailedWalletNotFound;
   }
 
-  const { chainId, gameContractAddress } = await getEnvironments();
+  const currentFee = await callContractViewMethod('currentFee');
 
-  await wallet.switchChain(chainId);
+  if(balance.lt(currentFee)) {
+    return ProcessPaymentResult.FailedInsufficientFunds;
+  }
 
-  const provider = await wallet.getEthersProvider();
-  const signer = provider.getSigner();
-  const gameContract = new ethers.Contract(gameContractAddress!, GameContract.abi, signer as any);
-
-  try {
-    const balance = await provider.getBalance(walletAddress);
-    const currentPrice = await gameContract.currentFee();
-
-    if(balance.lt(currentPrice)) {
-      return ProcessPaymentResult.FailedInsufficientFunds;
-    }
-
-    const paymentTransaction = await gameContract.payFee({ value: currentPrice });
-    await provider.waitForTransaction(paymentTransaction.hash, 1);
-
+  const result = await executeContractActionClient(walletAddress, wallets, 'payFee', [{ value: currentFee }]);
+    
+  if(result == ExecuteContractActionClientResult.Success) {
     return ProcessPaymentResult.Success;
-  } catch (error) {
-    console.log('Error processing payment:', error);
+  } else if(result == ExecuteContractActionClientResult.FailedWalletNotFound) {
+    return ProcessPaymentResult.FailedWalletNotFound;
+  } else {
     return ProcessPaymentResult.FailedOtherError;
   }
 }
