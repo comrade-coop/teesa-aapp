@@ -2,11 +2,11 @@ import { ConnectedWallet } from "@privy-io/react-auth";
 import { executeContractActionClient, ExecuteContractActionClientResult } from "@/app/_contracts/execute-contract-action-client";
 import { ClaimSharesResult } from "../../_models/claim-shares-result-enum";
 
-export async function claimAbandonedGameShare(walletAddress: string, wallets: ConnectedWallet[]): Promise<ClaimSharesResult> {
+export async function withdrawTeamShare(walletAddress: string, wallets: ConnectedWallet[]): Promise<ClaimSharesResult> {
   const result = await executeContractActionClient(
     walletAddress,
     wallets,
-    'claimAbandonedGameShare',
+    'withdrawTeamShare',
     []
   );
 
@@ -17,4 +17,4 @@ export async function claimAbandonedGameShare(walletAddress: string, wallets: Co
   } else {
     return ClaimSharesResult.FailedOtherError;
   }
-} 
+}

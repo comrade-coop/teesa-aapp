@@ -14,12 +14,14 @@ class GameState {
   private secretWord: string;
   private history: LlmMessage[];
   private gameEnded: boolean;
+  private winnerAddress: string | undefined;
   private gameAbandoned: boolean;
-  private winnersAddresses: string[];
 
   private mutex: Mutex;
 
   constructor() {
+    this.mutex = new Mutex();
+
     this.secretWord = process.env.NEXT_PUBLIC_ENV_MODE === 'dev' 
       ? 'car' 
       : this.selectRandomWord();
@@ -27,8 +29,7 @@ class GameState {
     this.history = [];
     this.gameEnded = false;
     this.gameAbandoned = false;
-    this.mutex = new Mutex();
-    this.winnersAddresses = [];
+    this.winnerAddress = undefined;
   }
 
   private selectRandomWord(): string {
@@ -54,9 +55,14 @@ class GameState {
     return this.gameEnded;
   }
 
-  async setGameEnded(ended: boolean): Promise<void> {
+  async getWinnerAddress(): Promise<string | undefined> {
+    return this.winnerAddress;
+  }
+
+  async setWinner(winnerAddress: string): Promise<void> {
     await this.mutex.runExclusive(() => {
-      this.gameEnded = ended;
+      this.winnerAddress = winnerAddress;
+      this.gameEnded = true;
     });
   }
 
@@ -64,24 +70,11 @@ class GameState {
     return this.gameAbandoned;
   }
 
-  async setGameAbandoned(abandoned: boolean): Promise<void> {
+  async setGameAbandoned(): Promise<void> {
     await this.mutex.runExclusive(() => {
-      this.gameAbandoned = abandoned;
-      if (abandoned) {
-        this.gameEnded = true;
-      }
-    });
-  }
-
-  async addWinnerAddress(winnerAddress: string): Promise<any> {
-    await this.mutex.runExclusive(() => {
+      this.gameAbandoned = true;
       this.gameEnded = true;
-      this.winnersAddresses.push(winnerAddress);
     });
-  }
-
-  async getWinnersAddresses(): Promise<string[]> {
-    return this.winnersAddresses;
   }
 }
 

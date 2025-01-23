@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { ClaimSharesResult } from '../_models/claim-shares-result-enum';
 
 interface ClaimInterfaceProps {
   title: string;
   actionButtonText: string;
-  onAction: (walletAddress: string, wallets: any[]) => Promise<boolean>;
+  onAction: (walletAddress: string, wallets: any[]) => Promise<ClaimSharesResult>;
 }
 
 export function ClaimInterface({ title, actionButtonText, onAction }: ClaimInterfaceProps) {
@@ -23,11 +24,13 @@ export function ClaimInterface({ title, actionButtonText, onAction }: ClaimInter
     }
 
     setLoading(true);
-    const success = await onAction(walletAddress, wallets);
+    const result = await onAction(walletAddress, wallets);
     setLoading(false);
 
-    if(success) {
+    if(result == ClaimSharesResult.Success) {
       setMessage({ text: 'Action successful', type: 'success' });
+    } else if (result == ClaimSharesResult.FailedWalletNotFound) {
+      setMessage({ text: 'Action failed. Wallet not found.', type: 'error' });
     } else {
       setMessage({ text: 'Action failed. Please try again.', type: 'error' });
     }
@@ -59,6 +62,7 @@ export function ClaimInterface({ title, actionButtonText, onAction }: ClaimInter
                   {actionButtonText}
                 </button>
                 <button
+                  disabled={loading}
                   onClick={logout}
                   className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >

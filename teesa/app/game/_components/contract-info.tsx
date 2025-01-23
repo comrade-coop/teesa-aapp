@@ -1,33 +1,14 @@
-import { useEffect, useState } from 'react';
-import { getContractInfo } from '../_actions/get-contract-info';
-import { getEnvironments } from '../../_actions/get-environments';
 import { ExternalLink } from 'lucide-react';
 
-export function ContractInfo() {
-  const [prizePool, setPrizePool] = useState<string>('0');
-  const [currentFee, setCurrentFee] = useState<string>('0');
-  const [contractAddress, setContractAddress] = useState<string>('');
-
-  useEffect(() => {
-    const fetchContractInfo = async () => {
-      try {
-        const { prizePool, currentFee } = await getContractInfo();
-        const { gameContractAddress } = await getEnvironments();
-
-        setPrizePool(prizePool);
-        setCurrentFee(currentFee);
-        setContractAddress(gameContractAddress || '');
-      } catch (error) {
-        console.error('Error fetching contract info:', error);
-      }
-    };
-
-    fetchContractInfo();
-    const interval = setInterval(fetchContractInfo, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
+export function ContractInfo({
+  prizePool,
+  currentFee,
+  contractAddress,
+}: {
+  prizePool: string;
+  currentFee: string;
+  contractAddress: string | undefined;  
+}) {
   return (
     <div className="space-y-4 p-4 rounded-lg bg-slate-800/50 border border-blue-500/30">
       <div className="space-y-2">

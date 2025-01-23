@@ -1,19 +1,23 @@
 import { cn, isNullOrWhiteSpace } from '@/lib/utils';
 import { Loader2, SendHorizonal } from 'lucide-react';
 
-export function ChatInput({
+export function BottomPanel({
   className,
   gameEnded,
-  winnersAddresses,
+  winnerAddress,
   isLoggedIn,
+  gameAbandoned,
+  walletAddress,
   loading,
   onLogin,
   onChatMessage
 }: {
   className?: string,
   gameEnded: boolean,
-  winnersAddresses: string[],
+  winnerAddress: string | undefined,
   isLoggedIn: boolean,
+  gameAbandoned: boolean,
+  walletAddress: string | undefined,
   loading: boolean,
   onLogin: () => void,
   onChatMessage: (message: string) => void
@@ -37,11 +41,13 @@ export function ChatInput({
   }
 
   const loginButton = (
+    <div className="mb-4 px-4">
     <button
-      className="mb-4 w-full p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase rounded-full shadow-xl hover:opacity-90 transition-opacity"
-      onClick={onLogin}>
-      Connect Wallet
-    </button>
+      className="w-full p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase rounded-full shadow-xl hover:opacity-90 transition-opacity"
+        onClick={onLogin}>
+        Connect Wallet
+      </button>
+    </div>
   );
 
   const chatForm = (
@@ -74,25 +80,39 @@ export function ChatInput({
   );
 
   const gameEndedMessage = (
-    <div
-      className="mb-4 w-full uppercase text-center p-4 bg-slate-800/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200">
-      Game ended!
-      {winnersAddresses.length > 0 && (
-        <>
-          {winnersAddresses.length === 1 ? ' Winner' : ' Winners'}: <br />
-          <span className="text-green-500">
-            {winnersAddresses.join(', ')}
+    <div className="mb-4 px-4">
+      <div
+        className="w-full uppercase text-center p-4 bg-slate-800/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200">
+        Game ended!
+        {winnerAddress && (
+          <span className="ms-1">
+            Winner: <br />
+            <span className="text-green-500"> {winnerAddress} </span>
           </span>
-        </>
-        )}
+          )}
+      </div>
     </div>
-  )
+  );
+
+  const gameAbandonedMessage = (
+    <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4 m-4">
+        <p className="text-yellow-300 text-center">
+          The game has been abandoned due to inactivity. You can now claim your share of the prize pool.
+          {walletAddress && (
+            <a href="/claim/user" className="text-yellow-400 hover:text-yellow-300 underline ml-2">
+              Claim your share
+            </a>
+          )}
+        </p>
+      </div>
+  );
 
   return <div
     className={cn("", className)}
   >
-    {(!isLoggedIn && !gameEnded) && loginButton}
-    {(isLoggedIn && !gameEnded) && chatForm}
-    {gameEnded && gameEndedMessage}
+    {(!isLoggedIn && !gameEnded && !gameAbandoned) && loginButton}
+    {(isLoggedIn && !gameEnded && !gameAbandoned) && chatForm}
+    {(gameEnded && !gameAbandoned) && gameEndedMessage}
+    {gameAbandoned && gameAbandonedMessage}
   </div>
 }

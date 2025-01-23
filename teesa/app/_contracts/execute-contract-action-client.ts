@@ -1,17 +1,29 @@
 import { ethers } from 'ethers';
-import GameContract from '../_contracts/Game.json';
+import GameContract from './abi/Game.json';
 import { ConnectedWallet } from "@privy-io/react-auth";
 import { getEnvironments } from '../_actions/get-environments';
 
-export async function executeContractAction(
+export enum ExecuteContractActionClientResult {
+  Success,
+  FailedWalletNotFound,
+  FailedOtherError
+}
+
+export async function executeContractActionClient(
   walletAddress: string, 
   wallets: ConnectedWallet[],
   contractMethod: string,
-  errorMessage: string = 'Error executing contract action'
-): Promise<boolean> {
+  params: any[],
+  errorMessage?: string
+): Promise<ExecuteContractActionClientResult> {
+  if (!errorMessage) {
+    errorMessage = `Error executing contract action: ${contractMethod}`;
+  }
+
   const wallet = wallets.find(wallet => wallet.address == walletAddress);
   if (!wallet) {
-    return false;
+    console.error(`Wallet not found for address: ${walletAddress}`);
+    return ExecuteContractActionClientResult.FailedWalletNotFound;
   }
 
   const { chainId, gameContractAddress } = await getEnvironments();
@@ -23,11 +35,11 @@ export async function executeContractAction(
   const gameContract = new ethers.Contract(gameContractAddress!, GameContract.abi, signer as any);
 
   try {
-    const transaction = await gameContract[contractMethod]();
+    const transaction = await gameContract[contractMethod](...params);
     await provider.waitForTransaction(transaction.hash, 1);
-    return true;
+    return ExecuteContractActionClientResult.Success;
   } catch (error) {
     console.error(errorMessage, error);
-    return false;
+    return ExecuteContractActionClientResult.FailedOtherError;
   }
 } 
