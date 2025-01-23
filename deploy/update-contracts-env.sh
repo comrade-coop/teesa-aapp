@@ -25,5 +25,5 @@ case "$DOCKER_NETWORK" in
     ;;
 esac
 
-# Update team addresses regardless of network
-sed -i "s|TEAM_ADDRESSES=.*|TEAM_ADDRESSES=$DOCKER_TEAM_ADDRESSES|g" .env 
+# Update team address regardless of network
+sed -i "s|TEAM_ADDRESS=.*|TEAM_ADDRESS=$DOCKER_TEAM_ADDRESS|g" .env 
