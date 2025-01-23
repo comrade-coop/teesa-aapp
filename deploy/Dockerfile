@@ -13,8 +13,8 @@ ARG RPC_URL
 # API key of the blockchain scan service - Etherscan or Basescan to use for the contract deployment
 # We automatically use the correct API key based on the network
 ARG BLOCKCHAINSCAN_API_KEY
-# Comma separated list (no spaces) of team addresses to use for the contract deployment
-ARG TEAM_ADDRESSES
+# Address of the team multi-sig wallet to use for the contract deployment
+ARG TEAM_ADDRESS
 # API key of the anthropic to use in the app
 ARG ANTHROPIC_API_KEY
 # App ID and app secret of the PrivyIO to use in the app
@@ -26,7 +26,7 @@ ENV DOCKER_NETWORK=${NETWORK}
 ENV DOCKER_WALLET_PRIVATE_KEY=${WALLET_PRIVATE_KEY}
 ENV DOCKER_RPC_URL=${RPC_URL}
 ENV DOCKER_BLOCKCHAINSCAN_API_KEY=${BLOCKCHAINSCAN_API_KEY}
-ENV DOCKER_TEAM_ADDRESSES=${TEAM_ADDRESSES}
+ENV DOCKER_TEAM_ADDRESS=${TEAM_ADDRESS}
 ENV DOCKER_ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 ENV DOCKER_PRIVYIO_APP_ID=${PRIVYIO_APP_ID}
 ENV DOCKER_PRIVYIO_APP_SECRET=${PRIVYIO_APP_SECRET}
