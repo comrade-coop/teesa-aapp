@@ -50,7 +50,7 @@ export function ContractInfo() {
           <p className="text-lg font-medium">{prizePool} ETH</p>
         </div>
         <div>
-          <p className="text-sm text-slate-400">Current Fee</p>
+          <p className="text-sm text-slate-400">Message Fee</p>
           <p className="text-lg font-medium">{currentFee} ETH</p>
         </div>
         {contractAddress && (
