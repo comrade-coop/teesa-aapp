@@ -115,11 +115,16 @@ export function VideoBackground({
   const programRef = useRef<WebGLProgram | null>(null);
   const textureRef = useRef<WebGLTexture | null>(null);
   const rafRef = useRef<number>(0);
+  const isInitializedRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
+
+    // Prevent multiple initializations
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
 
     // Initialize WebGL 2
     const gl = canvas.getContext('webgl2', { 
@@ -190,74 +195,92 @@ export function VideoBackground({
     
     // Render loop
     function render() {
-      if (!gl || !video || !canvas || !program || !texture) return;
-      
-      // Only update canvas size if video dimensions change
-      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        gl.viewport(0, 0, canvas.width, canvas.height);
-      }
-
-      // Skip frame if video is not ready or hasn't changed
-      if (video.readyState < video.HAVE_CURRENT_DATA) {
+      if (!gl || !video || !canvas || !program || !texture) {
         rafRef.current = requestAnimationFrame(render);
         return;
       }
-
-      gl.clear(gl.COLOR_BUFFER_BIT);
       
-      // Update texture with new video frame
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+      try {
+        // Only update canvas size if video dimensions change
+        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        }
 
-      // Draw
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.enableVertexAttribArray(positionLocation);
-      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+        // Ensure video is actually ready
+        if (video.readyState < video.HAVE_CURRENT_DATA || !video.videoWidth) {
+          rafRef.current = requestAnimationFrame(render);
+          return;
+        }
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-      gl.enableVertexAttribArray(texCoordLocation);
-      gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        
+        // Update texture with new video frame
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        // Draw
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        gl.enableVertexAttribArray(texCoordLocation);
+        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      } catch (error) {
+        console.error('Render error:', error);
+      }
       
       rafRef.current = requestAnimationFrame(render);
     }
 
     // Video playback handling
-    const handleTimeUpdate = () => {
+    const handleLoadedMetadata = () => {
+      if (video.videoWidth) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+        startPlayback();
+        render();
+      }
+    };
+
+    const startPlayback = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        console.log("Video playback failed:", error);
+        // Retry playback after a short delay
+        setTimeout(startPlayback, 1000);
+      }
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('timeupdate', () => {
       const buffer = 0.2;
       if (video.currentTime > video.duration - buffer) {
         video.currentTime = 0;
       }
-    };
-
-    const startPlayback = () => {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.log("Video playback failed:", error);
-        });
-      }
-    };
-
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('loadedmetadata', () => {
-      startPlayback();
-      render();
     });
     video.addEventListener('ended', () => { video.currentTime = 0 });
     video.addEventListener('pause', startPlayback);
 
-    if (video.readyState >= 2) {
-      startPlayback();
-      render();
+    // Start immediately if video is already loaded
+    if (video.readyState >= 2 && video.videoWidth) {
+      handleLoadedMetadata();
     }
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('loadedmetadata', startPlayback);
+      isInitializedRef.current = false;
+      video.removeEventListener('timeupdate', () => {
+        const buffer = 0.2;
+        if (video.currentTime > video.duration - buffer) {
+          video.currentTime = 0;
+        }
+      });
       video.removeEventListener('ended', () => { video.currentTime = 0 });
       video.removeEventListener('pause', startPlayback);
       cancelAnimationFrame(rafRef.current);
