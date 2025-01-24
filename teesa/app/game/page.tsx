@@ -34,8 +34,15 @@ export default function Page() {
   const [currentFee, setCurrentFee] = useState<string>('0');
   const [contractAddress, setContractAddress] = useState<string | undefined>(undefined);
   const [chainId, setChainId] = useState<number>(0);
+  const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
 
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
+
+  useEffect(() => {
+    if (scrollMessagesToBottom) {
+      setScrollMessagesToBottom(false);
+    }
+  }, [scrollMessagesToBottom]);
 
   useEffect((() => {
     fetchGameState();
@@ -151,6 +158,8 @@ export default function Page() {
         display: response
       }
     ]);
+
+    setScrollMessagesToBottom(true);
   };
 
   function handleTabChange(allMessages: boolean) {
@@ -200,7 +209,8 @@ export default function Page() {
 
           {showMessages ?
             <MessagesList
-              messages={getMessagesForList()} />
+              messages={getMessagesForList()}
+              scrollToBottom={scrollMessagesToBottom} />
             :
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-white">Connect your wallet to start playing</p>
