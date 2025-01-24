@@ -21,8 +21,7 @@ function useMediaQuery(query: string) {
   return matches;
 }
 
-export function SidePanel({ 
-  children, 
+export function SidePanel({
   isLoggedIn = false, 
   onLogout,
   prizePool,
@@ -30,8 +29,7 @@ export function SidePanel({
   contractAddress,
   chainId,
   className
-}: { 
-  children: React.ReactNode;
+}: {
   isLoggedIn: boolean;
   onLogout: () => void;
   className?: string;
@@ -76,7 +74,23 @@ export function SidePanel({
             contractAddress={contractAddress}
             chainId={chainId}
           />
-          {children}
+          
+          <h2 className="text-xl font-bold mb-4 text-white">About</h2>
+          <div className="space-y-4">
+            <p>Hi there! I'm Teesa, your game host. I've picked a mystery word - can you figure out what it is?</p>
+            <div>
+              <p className="font-semibold mb-2">Rules:</p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Ask <span className="font-bold">yes/no</span> questions about the word</li>
+                <li>Questions should be about characteristics or properties</li>
+                <li>Make a direct guess at any time</li>
+                <li>No asking about spelling or word length</li>
+                <li>No repeating questions</li>
+                <li>You can ask questions about the word to help you guess it</li>
+                <li>When guessing, start with an explicit statement like "My guess is..." or "The word is..."</li>
+              </ul>
+            </div>
+          </div>
         </div>
         
         <div className="border-t border-b border-blue-500/30 py-4 my-4">
