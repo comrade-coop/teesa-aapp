@@ -4,25 +4,28 @@ This project is the Next.js application for the Teesa game. We use `pnpm` for pa
 
 ## Prerequisites
 
-**Ensure you have completed the steps in the [README.md](../contracts/README.md) in the `../contracts` directory.**
-
-Ensure you have the following installed:
-- **Node.js** (v16 or higher recommended)
-- **pnpm** (installation guide: [https://pnpm.io/installation](https://pnpm.io/installation))
+Ensure you have completed the following:
+- **Setup your development environment** - Check the [README.md](../dev-setup/README.md) in the `../dev-setup` directory.
+- **Deploy the contracts** - Check the [README.md](../contracts/README.md) in the `../contracts` directory.
 
 ## Installation
 
-1. Install the dependencies:
+1. Set permissions for the scripts
+   ```bash
+   chmod +x teesa/scripts/start-dev-ollama.sh
+   ```
+
+2. Install the dependencies:
    ```bash
    pnpm install
    ```
 
-2. Set up the environment variables:
+3. Set up the environment variables:
    ```bash
    cp .env.example .env
    ```
 
-3. Update the `.env` file with:
+4. Update the `.env` file with:
    - `NEXT_PUBLIC_ENV_MODE`: Set to either "dev" for development or "prod" for production (defaults to "prod")
    - `ANTHROPIC_API_KEY`: Your API key for accessing the Anthropic LLMs
    - Langsmith Configuration (**used only in development**) - you can get the values from the Langsmith dashboard (https://smith.langchain.com/):
@@ -41,8 +44,8 @@ Ensure you have the following installed:
 
 ## Start the Application
 
-To start the development server, use the following command:
+To start the ollama model and the development server, use the following command:
 ```bash
-pnpm dev
+pnpm ollama
 ```
-This will start the app locally, and you can access it at http://localhost:3000.
+This will start the ollama model and the app locally, and you can access the app at http://localhost:3000.

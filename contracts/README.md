@@ -12,7 +12,13 @@ This project includes the contract and associated tools for deploying and testin
   - Sepolia
   - Base Ethereum Mainnet
 
+
 ## Prerequisites
+
+Ensure you have completed the following:
+- **Setup your development environment** - Check the [README.md](../dev-setup/README.md) in the `../dev-setup` directory.
+
+## Dependencies
 
 1. Install Hardhat and project dependencies:
    ```bash
