@@ -166,27 +166,6 @@ export default function Page() {
     setShowAllMesssages(allMessages);
   }
 
-  const systemMessage = (
-    <>
-      <h2 className="text-xl font-bold mb-4 text-white">About</h2>
-      <div className="space-y-4">
-        <p>Hi there! I'm Teesa, your game host. I've picked a mystery word - can you figure out what it is?</p>
-        <div>
-          <p className="font-semibold mb-2">Rules:</p>
-          <ul className="list-disc list-inside space-y-2">
-            <li>Ask <span className="font-bold">yes/no</span> questions about the word</li>
-            <li>Questions should be about characteristics or properties</li>
-            <li>Make a direct guess at any time</li>
-            <li>No asking about spelling or word length</li>
-            <li>No repeating questions</li>
-            <li>You can ask questions about the word to help you guess it</li>
-            <li>When guessing, start with an explicit statement like "My guess is..." or "The word is..."</li>
-          </ul>
-        </div>
-      </div>
-    </>
-  );
-
   const showMessages = (ready && authenticated) || showAllMessages;
 
   const getMessagesForList = () => {
@@ -236,9 +215,7 @@ export default function Page() {
           currentFee={currentFee}
           contractAddress={contractAddress}
           chainId={chainId}
-          className="order-1 md:order-3">
-          {systemMessage}
-        </SidePanel>
+          className="order-1 md:order-3" />
       </div>
     </div>
   );
