@@ -24,6 +24,9 @@ RUN mkdir /var/run/sshd
 # Set the root password for SSH login (optional, use with caution)
 RUN echo 'root:p' | chpasswd
 
+# Set default directory for SSH login
+RUN echo "cd /teesa-aapp" >> /root/.bashrc
+
 # Allow root login by updating the SSH config
 RUN sed -i '/[[:space:]]*PermitRootLogin/s/.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i '/[[:space:]]*PasswordAuthentication/s/.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
