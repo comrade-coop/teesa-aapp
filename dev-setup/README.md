@@ -7,6 +7,8 @@ This guide will help you set up the development environment.
 
 # 🐳 Docker Setup
 
+Please follow the instruction is this section to setup your development environment using Docker.
+
 ## Prerequisites
 
 - Docker installed on your system
@@ -61,6 +63,8 @@ This will set up your development environment in a Docker container with all the
 
 
 # 🛠️ Local Setup
+
+Please follow the instruction in this section to setup your development environment without using Docker.
 
 ## Prerequisites
 
