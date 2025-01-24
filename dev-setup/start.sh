@@ -27,11 +27,13 @@ fi
 docker run -d \
   -p "$ssh_port:22" \
   -p "3000:3000" \
+  -p "11434:11434" \
   -v "$root_directory:/teesa-aapp" \
   -v "$volumes_path/vscode:/root/.vscode-server" \
   -v "$volumes_path/cursor:/root/.cursor-server" \
+  -v "$volumes_path/ollama:/root/.ollama" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -e GIT_CONFIG_NAME="$(git config --get user.name)" \
   -e GIT_CONFIG_EMAIL="$(git config --get user.email)" \
   teesa-aapp \
-  sh -c 'git config --global user.name "${GIT_CONFIG_NAME}" && git config --global user.email "${GIT_CONFIG_EMAIL}" && /usr/sbin/sshd -D'
+  sh -c "git config --global user.name '${GIT_CONFIG_NAME}' && git config --global user.email '${GIT_CONFIG_EMAIL}' && tail -f /dev/null"

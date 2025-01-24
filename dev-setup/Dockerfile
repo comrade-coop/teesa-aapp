@@ -40,14 +40,32 @@ EXPOSE 22
 # ------------------------------------ END ------------------------------------
 
 
-# Node setup
+# Ollama setup
+# ------------------------------------ START ------------------------------------
+
+# Download and install Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Expose Ollama port
+EXPOSE 11434
+
+# ------------------------------------ END ------------------------------------
+
+
+# Node and Pnpm setup
 # ------------------------------------ START ------------------------------------
 
 # Install NVM (Node Version Manager)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
-# Install Node
-RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 22'
+# Copy .nvmrc file
+COPY .nvmrc /root/.nvmrc
+
+# Install Node.js version specified in .nvmrc
+RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install $(cat /root/.nvmrc) && nvm use $(cat /root/.nvmrc)'
+
+# Install Pnpm globally
+RUN bash -c '. "/root/.nvm/nvm.sh" && npm install -g pnpm'
 
 # ------------------------------------ END ------------------------------------
 
@@ -55,14 +73,15 @@ RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install 22'
 # Next.js setup
 # ------------------------------------ START ------------------------------------
 
-# Install Pnpm globally
-RUN bash -c '. "/root/.nvm//nvm.sh" && npm install -g pnpm'
-
 # Expose the Next.js development server port
 EXPOSE 3000
 
 # ------------------------------------ END ------------------------------------
 
 
-# Start the SSH service
-RUN service ssh restart
+# Copy entrypoint script
+COPY dev-setup/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]

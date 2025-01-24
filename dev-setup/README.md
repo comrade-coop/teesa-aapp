@@ -56,6 +56,8 @@ Connection details:
 
 *Note*: We have configured the container with Docker socket volume, so you can access the Docker daemon on the host machine from the container.
 
+*Note*: We have configured the container with persistent volume for Ollama, so we keep the pulled models when restarting the container.
+
 This will set up your development environment in a Docker container with all the necessary dependencies installed.
 
 
@@ -71,6 +73,7 @@ Please follow the instruction in this section to setup your development environm
 Make sure you have the following installed:
 - [Git](https://git-scm.com/) and [Git LFS](https://git-lfs.com/)
 - [Ollama](https://ollama.com)
+- For Windows users, we recommend using [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 ## Environment Setup
 
@@ -84,7 +87,7 @@ Make sure you have the following installed:
    ```bash
    brew install direnv
    ```
-   - For Linux
+   - For Linux/WSL2 on Windows
    ```bash
    sudo apt-get install direnv
    ```

@@ -12,7 +12,7 @@ Ensure you have completed the following:
 
 1. Set permissions for the scripts
    ```bash
-   chmod +x teesa/scripts/start-dev-ollama.sh
+   chmod +x teesa/scripts/start-ollama.sh
    ```
 
 2. Install the dependencies:
@@ -46,6 +46,6 @@ Ensure you have completed the following:
 
 To start the ollama model and the development server, use the following command:
 ```bash
-pnpm ollama
+pnpm dev
 ```
 This will start the ollama model and the app locally, and you can access the app at http://localhost:3000.
