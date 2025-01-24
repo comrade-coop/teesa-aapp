@@ -53,7 +53,10 @@ Make sure you have the following installed:
 
 3. Run the production container:
    ```bash
-   docker run -p 3000:3000 teesa-app-deploy:latest
+   docker run \
+      -p 3000:3000 \
+      -v "$(pwd)/volumes/ollama:/root/.ollama" \ # Optional: If you want to persist the ollama models
+      teesa-app-deploy:latest
    ```
 
 ### Accessing the Application
