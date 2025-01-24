@@ -2,60 +2,10 @@
 
 ## 🛠️ Development Setup
 
-### Prerequisites
-
-Make sure you have the following installed:
-- [Git](https://git-scm.com/) and [Git LFS](https://git-lfs.com/)
-
-### Environment Setup
-
-1. Install NVM
-   ```bash
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-   ```
-
-2. Install Node   
-   ```bash
-   nvm install 23.3.0
-   ```
-
-3. Install Pnpm
-   ```bash
-   npm install -g pnpm
-   ```
-
-4. Install direnv (*optional if want to use `.envrc` to automatically set the correct node version when navigating to the repository directory*)
-   - For MacOS
-   ```bash
-   brew install direnv
-   ```
-   - For Linux
-   ```bash
-   sudo apt-get install direnv
-   ```
-
-5. Clone the repository
-   ```bash
-   git clone https://github.com/comrade-coop/teesa-aapp.git
-   ```
-
-6. Navigate to the repository root directory
-   ```bash
-   cd teesa-aapp
-   ```
-
-7. Allow direnv (*if you installed direnv in 4.*)
-   ```bash
-   direnv allow
-   ```
-
-### Contracts Setup
-
-See the README file in the [/contracts](/contracts/README.md) directory for the contract setup
-
-### Next.js App Setup
-
-See the README file in the [/teesa](/teesa/README.md) directory for Next.js app setup
+To start the app in development mode, please follow the instruction in:
+1. [dev-setup/README.md](dev-setup/README.md) - To setup your development environment
+2. [contracts/README.md](contracts/README.md) - To deploy the contracts
+3. [teesa/README.md](teesa/README.md) - To run the Next.js app
 
 
 ---

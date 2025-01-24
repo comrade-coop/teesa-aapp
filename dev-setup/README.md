@@ -1,6 +1,11 @@
 # Development Environment Setup
 
-This guide will help you set up the development environment using Docker.
+This guide will help you set up the development environment.
+
+---
+
+
+# 🐳 Docker Setup
 
 ## Prerequisites
 
@@ -50,3 +55,57 @@ Connection details:
 *Note*: We have configured the container with Docker socket volume, so you can access the Docker daemon on the host machine from the container.
 
 This will set up your development environment in a Docker container with all the necessary dependencies installed.
+
+
+---
+
+
+# 🛠️ Local Setup
+
+## Prerequisites
+
+Make sure you have the following installed:
+- [Git](https://git-scm.com/) and [Git LFS](https://git-lfs.com/)
+- [Ollama](https://ollama.com)
+
+## Environment Setup
+
+1. Install NVM
+   ```bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+   ```
+
+4. Install direnv (*optional if want to use `.envrc` to automatically set the correct node version when navigating to the repository directory*)
+   - For MacOS
+   ```bash
+   brew install direnv
+   ```
+   - For Linux
+   ```bash
+   sudo apt-get install direnv
+   ```
+
+5. Clone the repository
+   ```bash
+   git clone https://github.com/comrade-coop/teesa-aapp.git
+   ```
+
+6. Navigate to the repository root directory
+   ```bash
+   cd teesa-aapp
+   ```
+
+7. Install Node based on the `.nvmrc` file
+   ```bash
+   nvm install
+   ```
+
+8. Install Pnpm
+   ```bash
+   npm install -g pnpm
+   ```
+
+9. Allow direnv (*if you installed direnv in 4.*)
+   ```bash
+   direnv allow
+   ```
