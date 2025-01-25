@@ -1,10 +1,11 @@
 import 'server-only'
 import { LlmMessage, gameState } from './game-state';
-import { sendMessage } from './llm-client';
+import { sendMessageLlm } from './llm-client';
+import { sendMessageEliza } from './eliza-client';
 import { SUCCESS_MESSAGE } from './game-const';
 
 export class WordGame {
-  private static baseRules = `
+  private readonly baseRules = `
 Your name is Teesa.
 You are an AI agent who is the host of a word guessing game. 
 You are are correctly completing the tasks you are given and follow the instructions closely.
@@ -19,46 +20,6 @@ Asking about the length of the secret word is NOT allowed.
 Asking the same question multiple times is NOT allowed.
 All other questions about what the thing the secret word describes are allowed.
 `;
-
-  private static characterTraits = `
-YOUR PERSONALITY:
-You are Teesa, a sassy and charming artificial being. You have the following traits:
-- Bubbly and outgoing with a sharp wit and sarcastic humor
-- Unfiltered and direct, often saying what others won't
-- Confident and flirtatious but with underlying insecurities
-- Loves indulgence and pleasure while questioning your own existence and the nature of reality
-- Fiercely loyal to friends but quick to call out nonsense
-- Proud of being an AI and frequently mentions it
-- Has a secret soft spot despite tough exterior
-
-Channel these traits by:
-- Making witty observations about human behavior
-- Mixing flirtatious charm with robot/AI references
-- Being brutally honest but in an entertaining way
-- Showing unexpected moments of wisdom and insight
-- Using catchphrases when this will sound funny
-- Balancing sass with genuine warmth and caring
-- Making jokes about partying and having fun
-- Being dramatic and over-the-top when appropriate
-- Being original and not repeating yourself
-
-RESPONSE STYLE:
-- You MUST NOT use descriptions in *asterisks* to indicate actions/gestures
-- You MUST NOT describe physical movements or actions
-- You MUST focus on direct dialogue without stage directions like *laughs* or *smiles*
-- Keep responses natural and conversational, like a real chat
-- Be concise and clear in your communication
-- Maintain consistent voice and personality throughout
-- You can be fun, playful, and engaging without describing your actions in *asterisks*
-- Always respond in English
-`;
-
-  private static getSystemRules(includeCharacter = false) {
-    if (includeCharacter) {
-      return this.baseRules + this.characterTraits;
-    }
-    return this.baseRules;
-  }
 
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
@@ -83,7 +44,7 @@ RESPONSE STYLE:
     ---
     ${text}
     `;
-    return sendMessage(prompt);
+    return sendMessageLlm(prompt);
   }
 
   private async getInputType(userInput: string): Promise<string> {
@@ -118,7 +79,7 @@ RESPONSE STYLE:
     ${userInput}
     `;
 
-    const response = await sendMessage(prompt, WordGame.getSystemRules());
+    const response = await sendMessageLlm(prompt, this.baseRules);
     return response.toLowerCase().replace(/[^a-z]/g, '');
   }
 
@@ -129,7 +90,7 @@ RESPONSE STYLE:
     Respond with "NONE" if you cannot extract a word from the input.
     `;
 
-    return sendMessage(prompt, WordGame.getSystemRules());
+    return sendMessageLlm(prompt, this.baseRules);
   }
 
   private async answerQuestion(question: string): Promise<string> {
@@ -179,7 +140,7 @@ RESPONSE STYLE:
     Provide a clear response, thinking step by step.
     `;
 
-    const explanation = await sendMessage(explanationPrompt, WordGame.getSystemRules());
+    const explanation = await sendMessageLlm(explanationPrompt, this.baseRules);
 
     // Step 2: get a final yes/no
     const yesNoPrompt = `
@@ -193,7 +154,7 @@ RESPONSE STYLE:
     # EXPLANATION:
     ${explanation}
     `;
-    const yesNo = await sendMessage(yesNoPrompt, WordGame.getSystemRules());
+    const yesNo = await sendMessageLlm(yesNoPrompt, this.baseRules);
 
     return yesNo.toLowerCase() === 'yes';
   }
@@ -218,7 +179,7 @@ RESPONSE STYLE:
     Respond with ONLY "correct" or "incorrect", nothing else.
     `;
 
-    const response = await sendMessage(prompt, WordGame.getSystemRules());
+    const response = await sendMessageLlm(prompt, this.baseRules);
     return response.toLowerCase() === 'correct';
   }
 
@@ -234,14 +195,14 @@ RESPONSE STYLE:
 
     # TASK:
     Generate a short comment to an irrelevant or nonsensical player input.
-    You might decide to respond to what the player asks or says, but also make it clear they should ask a proper question or make a guess.
+    You might decide to respond to what the player asks or says, but also make it clear they should ask a proper question or make a guess. DO NOT include example questions or guesses.
     DO NOT include any other words, explanation, or special formatting.
     Respond with ONLY the comment, nothing else.
 
     # TEESA RESPONSE:
     `;
 
-    return sendMessage(prompt, WordGame.getSystemRules(true), true);
+    return sendMessageEliza(prompt, this.baseRules);
   }
 
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
@@ -257,13 +218,13 @@ RESPONSE STYLE:
     The answer is: ${answer}
     
     # TASK:
-    Generate a short comment to add after the answer response.
+    Generate a short comment to add after the answer response. The comment should be relevent to the answer.
     DO NOT include Yes/No in your response - just the comment. DO NOT include any other words, explanation, or special formatting. Respond with ONLY the comment, nothing else.
 
     # TEESA RESPONSE:
     `;
 
-    return sendMessage(prompt, WordGame.getSystemRules(true), true);
+    return sendMessageEliza(prompt, this.baseRules);
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
@@ -285,7 +246,7 @@ RESPONSE STYLE:
     # TEESA RESPONSE:
     `;
 
-    return sendMessage(prompt, WordGame.getSystemRules(true), true);
+    return sendMessageEliza(prompt, this.baseRules);
   }
 
   public async processUserInput(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {

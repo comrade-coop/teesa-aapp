@@ -14,7 +14,7 @@ const preciseLlm = createLlm(0);
 // Higher temperature for creative responses
 const creativeLlm = createLlm(0.8);
 
-export async function sendMessage(message: string, systemMessage?: string | undefined, isCreative: boolean = false): Promise<string> {
+export async function sendMessageLlm(message: string, systemMessage?: string | undefined, isCreative: boolean = false): Promise<string> {
   const messages = [];
 
   if (systemMessage) {
