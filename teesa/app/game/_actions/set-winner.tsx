@@ -2,6 +2,12 @@ import 'server-only';
 import { executeContractActionServer } from '@/app/_contracts/execute-contract-action-server';
 
 export async function setWinner(userAddress: string) {
+  if (process.env.NEXT_PUBLIC_ENV_MODE === 'dev') {
+    console.log('DEV MODE: Winner added:', userAddress);
+    console.log('DEV MODE: Prize awarded');
+    return;
+  }
+
   const setWinnerResult = await executeContractActionServer('setWinner', [userAddress]);
   if(!setWinnerResult) {
     return;
@@ -14,5 +20,5 @@ export async function setWinner(userAddress: string) {
     return;
   }
 
-  console.log('Prizes awarded');
+  console.log('Prize awarded');
 }
