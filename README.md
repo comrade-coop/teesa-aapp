@@ -42,6 +42,8 @@ Make sure you have the following installed:
       --build-arg BLOCKCHAINSCAN_API_KEY=<blockchainscan_api_key> \ # API key for the blockchain scanner (Etherscan or Basescan, depending on the network. We automatically use the correct API key based on the network.)
       --build-arg TEAM_ADDRESS=<team_address> \ # The address of the team multi-sig wallet
       --build-arg ANTHROPIC_API_KEY=<anthropic_api_key> \ # API key for the Anthropic API
+      --build-arg ELIZA_API_URL=<eliza_api_url> \ # The URL for the Eliza API
+      --build-arg ELIZA_AGENT_ID=<eliza_agent_id> \ # The Eliza agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
       --build-arg PRIVYIO_APP_ID=<privyio_app_id> \ # App ID of the PrivyIO
       --build-arg PRIVYIO_APP_SECRET=<privyio_app_secret> \ # App secret of the PrivyIO
       --pull \
