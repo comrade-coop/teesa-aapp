@@ -52,8 +52,7 @@ export function ContractInfo({
           <p className="text-sm text-slate-400 mb-2">How it works</p>
           <ul className="space-y-2 text-sm text-slate-300">
             <li>• Message fee increases by 1% after each message</li>
-            <li>• All fees go to the prize pool</li>
-            <li>• Winner gets 70% of the prize pool</li>
+            <li>• Winner gets 70% of the accumulated fees</li>
             <li>• Teesa DAO receives 30%</li>
             <li className="pt-2 text-slate-400">If no activity for 3 days:</li>
             <li>• Last player gets at least 10%</li>
