@@ -1,6 +1,6 @@
 import 'server-only'
 import { LlmMessage, gameState } from './game-state';
-import { sendMessageLlm } from './llm-client';
+import { sendMessageLlm, sendMessageOllama } from './llm-client';
 import { sendMessageEliza } from './eliza-client';
 import { SUCCESS_MESSAGE } from './game-const';
 
@@ -18,8 +18,7 @@ The player can make direct guesses at any time, and you will tell them if they'r
 Asking about the spelling of the secret word or parts of it is NOT allowed.
 Asking about the length of the secret word is NOT allowed.
 Asking the same question multiple times is NOT allowed.
-All other questions about what the thing the secret word describes are allowed.
-`;
+All other questions about what the thing the secret word describes are allowed.`;
 
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
@@ -38,46 +37,45 @@ All other questions about what the thing the secret word describes are allowed.
 
   private async fixSpelling(text: string): Promise<string> {
     const prompt = `
-    Fix the spelling and grammar of the text below. 
-    Translate it to English if it's in another language. 
-    Do not include any other words or explanation.
-    ---
-    ${text}
-    `;
+Fix the spelling and grammar of the text below. 
+Translate it to English if it's in another language. 
+Do not include any other words or explanation.
+---
+${text}`;
+
     return sendMessageLlm(prompt);
   }
 
   private async getInputType(userInput: string): Promise<string> {
     const prompt = `
-    # TASK: 
-    Determine if the INPUT below is a question, guess, or neither: 
-    - For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes.
-    - For a "guess": Must indicate attempting to guess the word or state what they think the word is. 
-    - Everything else is considered "other".
+# TASK: 
+Determine if the INPUT below is a question, guess, or neither: 
+- For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes.
+- For a "guess": Must indicate attempting to guess the word or state what they think the word is. 
+- Everything else is considered "other".
 
-    # RULES:
-    All secret words are nouns. When determining the type:
-    - Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move") are "question"
-    - Direct statements or questions that name a specific noun (e.g. "is it a cat", "I think it's a flower", "dog") are "guess"
-    - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
-    
-    # EXAMPLES:
-    - "does it grow in gardens" -> "question" (asking about behavior/property)
-    - "is it made of metal" -> "question" (asking about material property)
-    - "is it abstract" -> "question" (asking about abstract property)
-    - "is it a plant" -> "question" (asking about category)
-    - "is your word about the future of economy" -> "question" (asking about abstract concepts and categories)
-    - "is it car" -> "guess" (direct noun, not asking about category or property)
-    - "flower" -> "guess" (direct noun)
-    - "alive" -> "question" (asking about a property)
-    
+# RULES:
+All secret words are nouns. When determining the type:
+- Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move") are "question"
+- Direct statements or questions that name a specific noun (e.g. "is it a cat", "I think it's a flower", "dog") are "guess"
+- Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
 
-    # RESPONSE:
-    Respond with ONLY "question", "guess", or "other".
+# EXAMPLES:
+- "does it grow in gardens" -> "question" (asking about behavior/property)
+- "is it made of metal" -> "question" (asking about material property)
+- "is it abstract" -> "question" (asking about abstract property)
+- "is it a plant" -> "question" (asking about category)
+- "is your word about the future of economy" -> "question" (asking about abstract concepts and categories)
+- "is it car" -> "guess" (direct noun, not asking about category or property)
+- "flower" -> "guess" (direct noun)
+- "alive" -> "question" (asking about a property)
 
-    # INPUT:
-    ${userInput}
-    `;
+
+# RESPONSE:
+Respond with ONLY "question", "guess", or "other".
+
+# INPUT:
+${userInput}`;
 
     const response = await sendMessageLlm(prompt, this.baseRules);
     return response.toLowerCase().replace(/[^a-z]/g, '');
@@ -85,16 +83,15 @@ All other questions about what the thing the secret word describes are allowed.
 
   private async extractGuess(userInput: string): Promise<string> {
     const prompt = `
-    Extract the exact word being guessed from this input: "${userInput}"
-    Respond with ONLY the guessed word, nothing else.
-    Respond with "NONE" if you cannot extract a word from the input.
-    `;
+Extract the exact word being guessed from this input: "${userInput}"
+Respond with ONLY the guessed word, nothing else.
+Respond with "NONE" if you cannot extract a word from the input.`;
 
     return sendMessageLlm(prompt, this.baseRules);
   }
 
   private async answerQuestion(question: string): Promise<string> {
-    // Get yes/no answer with explanation
+    // Get yes/no answer
     const isYes = await this.getAnswer(question);
     const yesNo = isYes ? 'Yes' : 'No';
 
@@ -107,100 +104,55 @@ All other questions about what the thing the secret word describes are allowed.
 
   private async getAnswer(question: string): Promise<boolean> {
     const secretWord = await gameState.getSecretWord();
+    const prompt = `
+AGENT (thinks of a word and the thing it represents): ${secretWord}
+USER (asks a yes/no question about it): ${question}
+AGENT (answers with only "yes" or "no" based on common-sense logic): `;
 
-    // Step 1: get a detailed explanation
-    const explanationPrompt = `
-    The secret word is "${secretWord}".
-    Player's question: 
-    ${question}
-    
-    ---
-    Consider that the question is asking about the secret word, even if it's not obvious.
-    Analyze the question in relation to how an average person would understand and use this word.
-    Take into account both concrete and abstract interpretations of the secret word.
-    If uncertain, lean towards the interpretation that would be most helpful for the player.
-    
-    Evaluate the properties and characteristics comprehensively:
-    - Physical attributes (size, shape, weight, color, texture, material, etc.)
-    - Functional aspects (purpose, uses, applications)
-    - Abstract qualities (emotions, concepts, symbolism)
-    - Cultural significance and common associations
-    - Taxonomic categories and classifications
-    - Temporal aspects (if relevant)
-    - Geographic/environmental context (if applicable)
-    - Behavioral traits (for animate objects)
-
-    Guidelines for answering:
-    - Be factually accurate while allowing reasonable flexibility
-    - For ambiguous questions, use the most widely accepted interpretation
-    - Consider both literal and commonly understood figurative meanings
-    - Account for regional and cultural variations in understanding
-    - Base answers on general knowledge, not edge cases
-
-    Provide a clear response, thinking step by step.
-    `;
-
-    const explanation = await sendMessageLlm(explanationPrompt, this.baseRules);
-
-    // Step 2: get a final yes/no
-    const yesNoPrompt = `
-    # TASK:
-    Based on the explanation determine if the question is about the secret word.
-    Respond with ONLY "yes" or "no", nothing else.
-
-    # QUESTION:
-    ${question}
-
-    # EXPLANATION:
-    ${explanation}
-    `;
-    const yesNo = await sendMessageLlm(yesNoPrompt, this.baseRules);
-
-    return yesNo.toLowerCase() === 'yes';
+    const response = await sendMessageOllama(prompt);
+    return response.toLowerCase().replace(/[^a-z]/g, '') === 'yes';
   }
 
   private async checkGuess(guess: string): Promise<boolean> {
     const secretWord = await gameState.getSecretWord();
     const prompt = `
-    The secret word is "${secretWord}".
-    The user guessed: "${guess}"
-    
-    Check if this guess matches the secret word exactly, or is a close synonym, plural form, or minor variation.
-    For example:
-    - "cat" matches "cats" or "kitty"
-    - "phone" matches "telephone" or "cellphone"
-    - "couch" matches "sofa"
-    But reject guesses that are:
-    - Different concepts entirely
-    - Too general or specific
-    - Only loosely related
-    
-    Remember this is a guessing game and the guess should be accurate to be considered correct.
-    Respond with ONLY "correct" or "incorrect", nothing else.
-    `;
+Secret word: "${secretWord}".
+User guess: "${guess}"
 
-    const response = await sendMessageLlm(prompt, this.baseRules);
-    return response.toLowerCase() === 'correct';
+Check if the User guess matches the Secret word exactly, or is a close synonym, plural form, or minor variation.
+For example:
+- "cat" matches "cats" or "kitty"
+- "phone" matches "telephone" or "cellphone"
+- "couch" matches "sofa"
+But reject guesses that are:
+- Different concepts entirely
+- Too general or specific
+- Only loosely related
+
+Remember this is a guessing game and the guess should be accurate to be considered correct.
+Respond with ONLY "correct" or "incorrect", nothing else.`;
+
+    const response = await sendMessageOllama(prompt);
+    return response.toLowerCase().replace(/[^a-z]/g, '') === 'correct';
   }
 
   private async getRandomResponse(userInput: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
-    # CONTEXT:
-    Previous conversation:
-    ${JSON.stringify(history)}
+# CONTEXT:
+Previous conversation:
+${JSON.stringify(history)}
 
-    Player's input:
-    ${userInput}
+Player's input:
+${userInput}
 
-    # TASK:
-    Generate a short comment to an irrelevant or nonsensical player input.
-    You might decide to respond to what the player asks or says, but also make it clear they should ask a proper question or make a guess. DO NOT include example questions or guesses.
-    DO NOT include any other words, explanation, or special formatting.
-    Respond with ONLY the comment, nothing else.
+# TASK:
+Generate a short comment to an irrelevant or nonsensical player input.
+You might decide to respond to what the player asks or says, but also make it clear they should ask a proper question or make a guess. DO NOT include example questions or guesses.
+DO NOT include any other words, explanation, or special formatting.
+Respond with ONLY the comment, nothing else.
 
-    # TEESA RESPONSE:
-    `;
+# TEESA RESPONSE:`;
 
     return sendMessageEliza(prompt, this.baseRules);
   }
@@ -208,21 +160,20 @@ All other questions about what the thing the secret word describes are allowed.
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
-    # CONTEXT:
-    Previous conversation: 
-    ${JSON.stringify(history)}
+# CONTEXT:
+Previous conversation: 
+${JSON.stringify(history)}
 
-    A player asked: 
-    ${question}
+A player asked: 
+${question}
 
-    The answer is: ${answer}
-    
-    # TASK:
-    Generate a short comment to add after the answer response. The comment should be relevent to the answer.
-    DO NOT include Yes/No in your response - just the comment. DO NOT include any other words, explanation, or special formatting. Respond with ONLY the comment, nothing else.
+The answer is: ${answer}
 
-    # TEESA RESPONSE:
-    `;
+# TASK:
+Generate a short comment to add after the answer response. The comment should be relevent to the answer.
+DO NOT include Yes/No in your response - just the comment. DO NOT include any other words, explanation, or special formatting. Respond with ONLY the comment, nothing else.
+
+# TEESA RESPONSE:`;
 
     return sendMessageEliza(prompt, this.baseRules);
   }
@@ -230,21 +181,20 @@ All other questions about what the thing the secret word describes are allowed.
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
-    # CONTEXT:
-    Previous conversation: 
-    ${JSON.stringify(history)}
+# CONTEXT:
+Previous conversation: 
+${JSON.stringify(history)}
 
-    Player's input:
-    ${userInput}
+Player's input:
+${userInput}
 
-    # TASK:
-    Generate a short comment for an incorrect guess.
-    Keep it encouraging but make it clear they haven't guessed correctly.
-    DO NOT include any other words, explanation, or special formatting.
-    Respond with ONLY the comment, nothing else.
+# TASK:
+Generate a short comment for an incorrect guess.
+Keep it encouraging but make it clear they haven't guessed correctly.
+DO NOT include any other words, explanation, or special formatting.
+Respond with ONLY the comment, nothing else.
 
-    # TEESA RESPONSE:
-    `;
+# TEESA RESPONSE:`;
 
     return sendMessageEliza(prompt, this.baseRules);
   }
