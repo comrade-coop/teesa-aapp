@@ -32,11 +32,11 @@ fi
 MODEL_NAME=$OLLAMA_MODEL
 
 check_model_running() {
-    ! ollama ps | grep -q "$MODEL_NAME"
+    ollama ps | grep -q "$MODEL_NAME"
 }
 
 # Check if model is running
-if check_model_running; then
+if ! check_model_running; then
     echo "Starting $MODEL_NAME model..."
     
     # Pull the model and show progress
@@ -46,7 +46,7 @@ if check_model_running; then
     ollama run $MODEL_NAME > /dev/null 2>&1
     
     # Verify model is running
-    if check_model_running; then
+    if ! check_model_running; then
         echo "Error: Failed to start $MODEL_NAME model"
         exit 1
     fi
