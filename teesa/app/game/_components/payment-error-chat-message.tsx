@@ -9,7 +9,7 @@ export function PaymentErrorChatMessage({
 }) {
   return (
     <div className="flex items-start mb-8 flex-row">
-      <Card className="flex-1 bg-slate-800/50 border border-red-700/50 backdrop-blur-sm">
+      <Card className="flex-1 bg-slate-800/65 sm:bg-slate-800/50 border border-red-700/50 backdrop-blur-sm">
         <CardContent className="p-3">
           <p className="text-sm mb-2 text-slate-200">
             {(() => {
