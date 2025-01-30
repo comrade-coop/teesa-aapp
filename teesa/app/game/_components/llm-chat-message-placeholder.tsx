@@ -12,7 +12,7 @@ export function LlmChatMessagePlaceholder() {
         />
       </div>
 
-      <Card className="flex-1 backdrop-blur-sm border border-slate-700/50 bg-slate-800/50">
+      <Card className="flex-1 backdrop-blur-sm border border-slate-700/50 bg-slate-800/65 sm:bg-slate-800/50">
         <CardContent className="p-3">
           <Placeholder className="w-full h-4 mb-2" />
           <Placeholder className="w-3/4 h-4 mb-2" />

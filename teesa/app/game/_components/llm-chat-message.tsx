@@ -19,8 +19,8 @@ export function LlmChatMessage({
       
       <Card className={`flex-1 backdrop-blur-sm ${
         message === SUCCESS_MESSAGE 
-          ? 'border border-green-500/50 bg-green-800/20' 
-          : 'border border-slate-700/50 bg-slate-800/50'
+          ? 'border border-green-500/50 bg-green-800/50 sm:bg-green-800/20' 
+          : 'border border-slate-700/50 bg-slate-800/65 sm:bg-slate-800/50'
       }`}>
         <CardContent className="p-3">
           <p className="text-sm mb-2 text-slate-200">
