@@ -201,7 +201,6 @@ export default function Page() {
             winnerAddress={winnerAddress}
             isLoggedIn={authenticated}
             gameAbandoned={gameAbandoned}
-            walletAddress={walletAddress}
             loading={paymentProcessing}
             onLogin={login}
             onChatMessage={hadleChatMessage} />}
