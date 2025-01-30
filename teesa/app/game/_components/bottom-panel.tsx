@@ -112,7 +112,7 @@ export function BottomPanel({
   >
     {(!isLoggedIn && !gameEnded && !gameAbandoned) && loginButton}
     {(isLoggedIn && !gameEnded && !gameAbandoned) && chatForm}
-    {(gameEnded && !gameAbandoned) && gameEndedMessage}
-    {gameAbandoned && gameAbandonedMessage}
+    {(!gameEnded && gameAbandoned) && gameAbandonedMessage}
+    {gameEnded && gameEndedMessage}
   </div>
 }
