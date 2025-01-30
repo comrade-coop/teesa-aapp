@@ -20,10 +20,12 @@ export async function sendMessage(userAddress: string, id: string, timestamp: nu
   (async () => {
     const [wonGame, response] = await wordGame.processUserInput(userAddress, id, timestamp, message);
 
-    responseUi.done(<>
+    responseUi.update(<>
       <UserChatMessage timestamp={timestamp} locale={locale} message={message} userAddress={userAddress} />
       <LlmChatMessage message={response} />
     </>);
+    
+    responseUi.done();
 
     if (wonGame) {
       await setWinner(userAddress);
