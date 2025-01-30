@@ -17,7 +17,7 @@ export function UserChatMessage({
 
   return (
     <div className="flex items-start mb-8 flex-row">
-      <Card className="flex-1 bg-blue-600/10 border border-blue-500/20 backdrop-blur-sm">
+      <Card className="flex-1 bg-blue-600/30 sm:bg-blue-600/10 border border-blue-500/20 backdrop-blur-sm">
         <CardContent className="p-3">
           <div className="mb-2 text-xs text-blue-400">
             <span className="break-all">{userAddress}</span>
