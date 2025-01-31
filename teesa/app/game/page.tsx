@@ -169,11 +169,21 @@ export default function Page() {
   const showMessages = (ready && authenticated) || showAllMessages;
 
   const getMessagesForList = () => {
+    // On some test environments, we were experiencing duplicate messages.
+    // This is a fix to remove duplicates.
+    const uniqueMessages = messages.reduce((acc, current) => {
+      const exists = acc.find(item => item.id === current.id);
+      if (!exists) {
+        acc.push(current);
+      }
+      return acc;
+    }, [] as typeof messages);
+
     if (showAllMessages) {
-      return messages.sort((a, b) => a.timestamp - b.timestamp);
+      return uniqueMessages.sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    return messages.filter(m => m.userId == walletAddress).sort((a, b) => a.timestamp - b.timestamp);
+    return uniqueMessages.filter(m => m.userId == walletAddress).sort((a, b) => a.timestamp - b.timestamp);
   };
 
   return (
