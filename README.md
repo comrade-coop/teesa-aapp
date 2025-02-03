@@ -46,6 +46,7 @@ Make sure you have the following installed:
       --build-arg ELIZA_AGENT_ID=<eliza_agent_id> \ # The Eliza agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
       --build-arg PRIVYIO_APP_ID=<privyio_app_id> \ # App ID of the PrivyIO
       --build-arg PRIVYIO_APP_SECRET=<privyio_app_secret> \ # App secret of the PrivyIO
+      --build-arg ATTESTATION_URL=<attestation_url> \ # Url for serving attestation verification by aApp Toolkit
       --pull \
       --rm \
       -f "deploy/Dockerfile" \

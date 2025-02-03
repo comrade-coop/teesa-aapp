@@ -24,6 +24,8 @@ ARG ELIZA_AGENT_ID
 # App ID and app secret of the PrivyIO to use in the app
 ARG PRIVYIO_APP_ID
 ARG PRIVYIO_APP_SECRET
+# Url for attestaion page provided by aapp-toolkit
+ARG ATTESTATION_URL
 
 # Set environment variables that will be available at runtime
 ENV DOCKER_NETWORK=${NETWORK}
@@ -36,6 +38,7 @@ ENV DOCKER_ELIZA_API_URL=${ELIZA_API_URL}
 ENV DOCKER_ELIZA_AGENT_ID=${ELIZA_AGENT_ID}
 ENV DOCKER_PRIVYIO_APP_ID=${PRIVYIO_APP_ID}
 ENV DOCKER_PRIVYIO_APP_SECRET=${PRIVYIO_APP_SECRET}
+ENV DOCKER_ATTESTATION_URL=${ATTESTATION_URL}
 
 
 # Update apt-get and install all the required packages
