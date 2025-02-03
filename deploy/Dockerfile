@@ -54,7 +54,7 @@ COPY .nvmrc /root/.nvmrc
 RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install $(cat /root/.nvmrc) && nvm use $(cat /root/.nvmrc)'
 
 # Install Pnpm globally
-RUN bash -c '. "/root/.nvm/nvm.sh" && npm install -g pnpm'
+RUN bash -c '. "/root/.nvm/nvm.sh" && npm install -g pnpm@9.15.2'
 
 
 # Contracts dependencies stage
@@ -68,7 +68,7 @@ RUN bash -c '\
   . "/root/.nvm/nvm.sh" && \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm i --frozen-lockfile; \
   else echo "Lockfile not found." && exit 1; \
   fi'
 
@@ -84,7 +84,7 @@ RUN bash -c '\
   . "/root/.nvm/nvm.sh" && \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm i --frozen-lockfile; \
   else echo "Lockfile not found." && exit 1; \
   fi'
 
@@ -133,7 +133,7 @@ RUN cd ./teesa && \
     . "/root/.nvm/nvm.sh" && \
     if [ -f yarn.lock ]; then yarn run build; \
     elif [ -f package-lock.json ]; then npm run build; \
-    elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+    elif [ -f pnpm-lock.yaml ]; then corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm run build; \
     else echo "Lockfile not found." && exit 1; \
     fi' && \
     cd ..
