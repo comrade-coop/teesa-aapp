@@ -210,7 +210,7 @@ describe("Game", function () {
       await game.connect(player).claimAbandonedGameShare();
       
       await expect(game.connect(player).claimAbandonedGameShare())
-        .to.be.revertedWithCustomError(game, "AbondonedGameUserShareAlreadyClaimed");
+        .to.be.revertedWithCustomError(game, "AbandonedGameUserShareAlreadyClaimed");
     });
 
     it("should revert if prize pool is empty", async function () {

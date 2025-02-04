@@ -61,9 +61,9 @@ contract Game is ReentrancyGuard {
     mapping(address => uint256) public unclaimedShares;
 
     mapping(address => bool) public claimedAbandonedGameUserShares;
-    uint256 private abondenedGameLastPlayerShare;
-    uint256 private abondenedGameRemainingPrize;
-
+    uint256 private abandonedGameLastPlayerShare;
+    uint256 private abandonedGameRemainingPrize;
+    
     // Errors
     error InvalidTeamAddress(); // Team address is zero
     error InsufficientFeePayment(); // The fee payment is insufficient
@@ -78,7 +78,7 @@ contract Game is ReentrancyGuard {
     error UserShareAlreadyClaimed(); // The user share is already claimed
     error NoUnclaimedShares(); // The user has no unclaimed shares
     error NotTeamAddress(); // The caller is not the team address
-    error AbondonedGameUserShareAlreadyClaimed(); // The abandoned game user share is already claimed
+    error AbandonedGameUserShareAlreadyClaimed(); // The abandoned game user share is already claimed
     error InvalidWinnerAddress(); // The winner address is invalid
 
     // Events
@@ -145,10 +145,8 @@ contract Game is ReentrancyGuard {
         lastPlayerAddress = msg.sender;
         lastPaymentTime = block.timestamp;
 
-        unchecked {
-            totalPaymentsPerUser[msg.sender] += msg.value;
-            totalPayments += msg.value;
-        }
+        totalPaymentsPerUser[msg.sender] += msg.value;
+        totalPayments += msg.value;
 
         emit FeePaymentReceived(
             msg.sender,
@@ -157,16 +155,13 @@ contract Game is ReentrancyGuard {
             totalPaymentsPerUser[msg.sender]
         );
 
-        unchecked {
-            uint256 teamShareAmount = (msg.value * 30) / 100;
-            teamShare += teamShareAmount;
+        uint256 teamShareAmount = (msg.value * 30) / 100;
+        teamShare += teamShareAmount;
 
-            uint256 prizePoolShare = msg.value - teamShareAmount;
-            prizePool += prizePoolShare;
-        }
+        uint256 prizePoolShare = msg.value - teamShareAmount;
+        prizePool += prizePoolShare;
 
         emit TeamShareIncreased(teamShare);
-
         emit PrizePoolIncreased(prizePool);
 
         unchecked {
@@ -206,34 +201,29 @@ contract Game is ReentrancyGuard {
     function claimAbandonedGameShare() external nonReentrant {
         if (totalPaymentsPerUser[msg.sender] == 0) revert NoFeePaymentMade();
         if (claimedAbandonedGameUserShares[msg.sender] == true)
-            revert AbondonedGameUserShareAlreadyClaimed();
+            revert AbandonedGameUserShareAlreadyClaimed();
         if (prizePool == 0) revert EmptyPrizePool();
-        if (!abondoneGameTimeElapsed()) revert AbandonedGameTimeNotElapsed();
+        if (!abandonedGameTimeElapsed()) revert AbandonedGameTimeNotElapsed();
 
         if (!gameEnded) {
             gameEnded = true;
             emit GameEnded();
             emit GameAbandoned();
 
-            unchecked {
-                abondenedGameLastPlayerShare = _calculateAbandonedGameLastPlayerShare();
-                abondenedGameRemainingPrize =
-                    prizePool -
-                    abondenedGameLastPlayerShare;
-            }
+            abandonedGameLastPlayerShare = _calculateAbandonedGameLastPlayerShare();
+            if (abandonedGameLastPlayerShare > prizePool) revert("Invalid share calculation");
+            abandonedGameRemainingPrize = prizePool - abandonedGameLastPlayerShare;
         }
 
         bool isLastPlayer = msg.sender == lastPlayerAddress;
-        uint256 shareAmount = isLastPlayer
-            ? abondenedGameLastPlayerShare
-            : (abondenedGameRemainingPrize * totalPaymentsPerUser[msg.sender]) /
-                totalPayments;
+        uint256 shareAmount;
+        if (isLastPlayer) {
+            shareAmount = abandonedGameLastPlayerShare;
+        } else {
+            shareAmount = (abandonedGameRemainingPrize * totalPaymentsPerUser[msg.sender]) / totalPayments;
+        }
 
-        emit AbandonedGameUserShareClaimed(
-            msg.sender,
-            shareAmount,
-            isLastPlayer
-        );
+        emit AbandonedGameUserShareClaimed(msg.sender, shareAmount, isLastPlayer);
 
         claimedAbandonedGameUserShares[msg.sender] = true;
         _sendOrAllocateUserShare(payable(msg.sender), shareAmount);
@@ -267,7 +257,7 @@ contract Game is ReentrancyGuard {
         emit TeamShareWithdrawn(teamAmount);
     }
 
-    function abondoneGameTimeElapsed() public view returns (bool) {
+    function abandonedGameTimeElapsed() public view returns (bool) {
         return block.timestamp >= lastPaymentTime + 3 days;
     }
 
@@ -294,18 +284,10 @@ contract Game is ReentrancyGuard {
         }
     }
 
-    function _calculateAbandonedGameLastPlayerShare()
-        private
-        view
-        returns (uint256)
-    {
-        unchecked {
-            uint256 tenPercent = (prizePool * 10) / 100;
-            uint256 proportionalShare = (prizePool *
-                totalPaymentsPerUser[lastPlayerAddress]) / totalPayments;
+    function _calculateAbandonedGameLastPlayerShare() private view returns (uint256) {
+        uint256 tenPercent = (prizePool * 10) / 100;
+        uint256 proportionalShare = (prizePool * totalPaymentsPerUser[lastPlayerAddress]) / totalPayments;
 
-            return
-                tenPercent > proportionalShare ? tenPercent : proportionalShare;
-        }
+        return tenPercent > proportionalShare ? tenPercent : proportionalShare;
     }
 }
