@@ -45,7 +45,7 @@ Ensure you have completed the following:
       - `WALLET_PRIVATE_KEY` - Private key for the wallet
       - `CHAIN_ID` - Chain ID for the network
       - `GAME_CONTRACT_ADDRESS` - Address of the game contract
-
+   - `NEXT_PUBLIC_ATTESTATION_URL` - Url for serving attestation verification by aApp Toolkit
 ## Start the Application
 
 To start the ollama model and the development server, use the following command:
