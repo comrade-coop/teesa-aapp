@@ -34,7 +34,7 @@ Ensure you have completed the following:
    ```
 
 2. Update the `.env` file with:
-   - Private key for the wallet we will use to deploy the contract. **In production we set the valus when we start the container:**
+   - Private key for the wallet we will use to deploy the contract. **In production we set the values when we start the container:**
       - `WALLET_PRIVATE_KEY_LOCALHOST`: Private key for deploying to Hardhat localhost network
       - `WALLET_PRIVATE_KEY`: Private key for deploying the contract
    - RPC URLs for the networks:
@@ -55,6 +55,8 @@ Run the deployment script:
 npx hardhat compile-and-deploy-contract <network>
 ```
 Replace `<network>` with desired target (`localhost`, `sepolia`, `base`)
+
+**Copy the contract address from the deployment output and set it in the `../teesa/.env` file as `GAME_CONTRACT_ADDRESS`**
 
 ### Localhost deployment
 
