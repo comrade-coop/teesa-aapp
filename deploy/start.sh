@@ -24,13 +24,8 @@ MODEL_NAME=$OLLAMA_MODEL
 ollama pull $MODEL_NAME
 ollama run $MODEL_NAME > /dev/null 2>&1
 
-# Deploy contract
-cd /app/contracts
-echo "Deploying contract to $DOCKER_NETWORK network..."
-. "/root/.nvm/nvm.sh" && npx hardhat deploy-contract $DOCKER_NETWORK
+# Generate new wallet - install ethers first
+bash -c '. "/root/.nvm/nvm.sh" && npm install ethers && node generate-wallet.js'
 
-# Start the Next.js server
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
-cd /app/teesa
-exec node server.js 
+# Keep container running
+tail -f /dev/null

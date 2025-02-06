@@ -161,7 +161,8 @@ COPY --from=builder /app/teesa/public ./teesa/public
 COPY --from=builder /app/teesa/.next/standalone ./teesa 
 COPY --from=builder /app/teesa/.next/static ./teesa/.next/static
 
-# Copy and setup start script
+# Copy and setup the start scripts
+COPY deploy/generate-wallet.js ./
 COPY deploy/start.sh ./
 RUN chmod +x start.sh
 
