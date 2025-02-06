@@ -186,8 +186,8 @@ contract Game is ReentrancyGuard {
     }
 
     function awardPrize() external nonReentrant {
-        if (msg.sender != owner) revert NotOwner();
         if (!gameEnded) revert GameNotEnded();
+        if (winnerAddress == address(0)) revert InvalidWinnerAddress();
         if (prizePool == 0) revert EmptyPrizePool();
 
         uint256 prizeAmount = prizePool;
