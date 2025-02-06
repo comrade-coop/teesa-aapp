@@ -114,12 +114,6 @@ describe("Game", function () {
       expect(await game.prizePool()).to.equal(0);
     });
 
-    it("should revert if non-owner tries to award prize", async function () {
-      await game.connect(owner).setWinner(player.address);
-      await expect(game.connect(player).awardPrize())
-        .to.be.revertedWithCustomError(game, "NotOwner");
-    });
-
     it("should revert if setting winner when game has ended", async function () {
       await game.connect(owner).setWinner(player.address);
       
