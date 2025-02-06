@@ -34,10 +34,9 @@ Ensure you have completed the following:
    ```
 
 2. Update the `.env` file with:
-   - Private key and address for the wallet we will use to deploy the contract. **We use these in the development environment only. In production we set the values as contaner environment variables when we init the app:**
+   - Private key for the wallet we will use to deploy the contract. **In production we set the valus when we start the container:**
       - `WALLET_PRIVATE_KEY_LOCALHOST`: Private key for deploying to Hardhat localhost network
       - `WALLET_PRIVATE_KEY`: Private key for deploying the contract
-      - `WALLET_ADDRESS`: The address of the wallet that we will use to deploy the contract (we use the address to transfer initial funds to the wallet and use them to deply the contract)
    - RPC URLs for the networks:
       - `RPC_URL_LOCALHOST`: RPC URL for Hardhat localhost network
       - `RPC_URL_SEPOLIA`: RPC URL for Sepolia testnet (we are using Alchemy, but you can use any other RPC provider)

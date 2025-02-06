@@ -40,6 +40,9 @@ Ensure you have completed the following:
    - PrivyIO Configuration - you can get the values from the PrivyIO dashboard (https://dashboard.privy.io/):
      - `NEXT_PUBLIC_PRIVYIO_APP_ID`: Your PrivyIO app ID
      - `PRIVYIO_APP_SECRET`: Your PrivyIO app secret
+   - Private key and address for the wallet we will use to deploy the contract. **In production we generate a new wallet each time we start the container.**
+      - `WALLET_PRIVATE_KEY`: Private key for deploying the contract
+      - `WALLET_ADDRESS`: The address of the wallet that we will use to deploy the contract (we use the address to transfer initial funds to the wallet and use them to deply the contract)
    - The following environment variables are automatically set by the contract deployment script. Refer to the [README.md](../contracts/README.md) in the `../contracts` directory directory for more details:
       - `RPC_URL` - RPC URL for the network
       - `CHAIN_ID` - Chain ID for the network
