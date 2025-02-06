@@ -16,6 +16,6 @@ async function compileAndDeploy(network: 'localhost' | 'sepolia' | 'base') {
     throw new Error(`Invalid network: ${network}. Must be one of: localhost, sepolia, base`);
   }
 
-  execSync('npx hardhat compile-contract', { encoding: 'utf-8', stdio: 'inherit' });
+  execSync(`npx hardhat compile-contract ${network}`, { encoding: 'utf-8', stdio: 'inherit' });
   execSync(`npx hardhat deploy-contract ${network}`, { encoding: 'utf-8', stdio: 'inherit' });
 }

@@ -71,52 +71,7 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
       }
     }
 
-    // Update /teesa/.env file
-    const envPath = path.join(__dirname, '../../teesa/.env');
-    let envContent = '';
-
-    if (fs.existsSync(envPath)) {
-      envContent = fs.readFileSync(envPath, 'utf-8');
-    }
-
-    // Set CHAIN ID based on network
-    const chainId = network === 'localhost' ? 31337 :
-      network === 'sepolia' ? 11155111 :
-        network === 'base' ? 8453 :
-          -1;
-
-    // Set CHAIN ID in .env
-    if (envContent.includes('CHAIN_ID=')) {
-      envContent = envContent.replace(/CHAIN_ID=.*/, `CHAIN_ID=${chainId}`);
-    } else {
-      envContent += `\CHAIN_ID=${chainId}`;
-    }
-
-    // Update RPC URL based on network
-    const rpcUrl = network === 'localhost' ? process.env.RPC_URL_LOCALHOST :
-      network === 'sepolia' ? process.env.RPC_URL_SEPOLIA :
-        network === 'base' ? process.env.RPC_URL_BASE :
-          '';
-
-    // Update RPC_URL in .env
-    if (envContent.includes('RPC_URL=')) {
-      envContent = envContent.replace(/RPC_URL=.*/, `RPC_URL=${rpcUrl}`);
-    } else {
-      envContent += `\nRPC_URL=${rpcUrl}`;
-    }
-
-    if (envContent.includes('GAME_CONTRACT_ADDRESS=')) {
-      envContent = envContent.replace(
-        /GAME_CONTRACT_ADDRESS=.*/,
-        `GAME_CONTRACT_ADDRESS=${contractAddress}`
-      );
-    } else {
-      envContent += `\GAME_CONTRACT_ADDRESS=${contractAddress}`;
-    }
-
-    fs.writeFileSync(envPath, envContent.trim());
-
-    console.log(`Deployment successful! Contract address: ${contractAddress}`);
+    console.log(`Deployment successful! Contract address:\n${contractAddress}`);
   } catch (error) {
     console.error('Deployment failed:', error);
     process.exit(1);
