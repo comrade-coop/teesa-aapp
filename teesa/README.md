@@ -43,10 +43,11 @@ Ensure you have completed the following:
    - Private key and address for the wallet we will use to deploy the contract. **In production we generate a new wallet each time we start the container.**
       - `WALLET_PRIVATE_KEY`: Private key for deploying the contract
       - `WALLET_ADDRESS`: The address of the wallet that we will use to deploy the contract (we use the address to transfer initial funds to the wallet and use them to deply the contract)
-   - The following environment variables are automatically set by the contract deployment script. Refer to the [README.md](../contracts/README.md) in the `../contracts` directory directory for more details:
-      - `RPC_URL` - RPC URL for the network
+   - The following environment variables are automatically set by the contract compilation script. Refer to the [README.md](../contracts/README.md) in the `../contracts` directory directory for more details:
+      - `BLOCKCHAIN_NETWORK` - Blockchain network for the contract - `localhost`, `sepolia`, `base`
       - `CHAIN_ID` - Chain ID for the network
-      - `GAME_CONTRACT_ADDRESS` - Address of the game contract
+      - `RPC_URL` - RPC URL for the network
+   - `GAME_CONTRACT_ADDRESS` - Address of the game contract. **In development mode we use the address from the .env file. In production we set the address when we initialize the app using `process.env`**
    - `NEXT_PUBLIC_ATTESTATION_URL` - Url for serving attestation verification by aApp Toolkit
 ## Start the Application
 

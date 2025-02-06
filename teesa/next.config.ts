@@ -12,16 +12,7 @@ const nextConfig: NextConfig = {
       type: 'json'
     })
     return config
-  },
-  redirects: async () => {
-    return [
-      {
-        source: '/',
-        destination: '/game',
-        permanent: false,
-      },
-    ];
-  },
+  }
 };
 
 export default nextConfig;

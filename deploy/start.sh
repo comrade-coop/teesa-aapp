@@ -24,8 +24,20 @@ MODEL_NAME=$OLLAMA_MODEL
 ollama pull $MODEL_NAME
 ollama run $MODEL_NAME > /dev/null 2>&1
 
-# Generate new wallet - install ethers first
-bash -c '. "/root/.nvm/nvm.sh" && npm install ethers && node generate-wallet.js'
+# Add NVM configuration to shell profile for persistence
+echo 'export NVM_DIR="/root/.nvm"' >> /root/.bashrc
+echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> /root/.bashrc
+echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> /root/.bashrc
 
-# Keep container running
-tail -f /dev/null
+# Load NVM directly for current session
+export NVM_DIR="/root/.nvm"
+. "/root/.nvm/nvm.sh"
+
+# Generate new wallet - install ethers first
+npm install ethers && node generate-wallet.js
+
+# Start the Next.js server
+# server.js is created by next build from the standalone output
+# https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
+cd /app/teesa
+exec node server.js 

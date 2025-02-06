@@ -120,7 +120,7 @@ RUN cd ./teesa && \
 
 # Compile the contract
 RUN cd ./contracts && \
-    bash -c '. "/root/.nvm/nvm.sh" && npx hardhat compile-contract' && \
+    bash -c '. "/root/.nvm/nvm.sh" && npx hardhat compile-contract ${DOCKER_NETWORK}' && \
     cd ..
 
 # Next.js collects completely anonymous telemetry data about general usage.
