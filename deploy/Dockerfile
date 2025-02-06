@@ -6,8 +6,6 @@ FROM ubuntu:latest AS base
 # Add build arguments
 # `localhost`, `sepolia` or `base`
 ARG NETWORK
-# Private key of the wallet to use for the contract deployment
-ARG WALLET_PRIVATE_KEY
 # RPC URL of the network to use for the contract deployment
 ARG RPC_URL
 # API key of the blockchain scan service - Etherscan or Basescan to use for the contract deployment
@@ -29,7 +27,6 @@ ARG ATTESTATION_URL
 
 # Set environment variables that will be available at runtime
 ENV DOCKER_NETWORK=${NETWORK}
-ENV DOCKER_WALLET_PRIVATE_KEY=${WALLET_PRIVATE_KEY}
 ENV DOCKER_RPC_URL=${RPC_URL}
 ENV DOCKER_BLOCKCHAINSCAN_API_KEY=${BLOCKCHAINSCAN_API_KEY}
 ENV DOCKER_TEAM_ADDRESS=${TEAM_ADDRESS}
@@ -121,7 +118,7 @@ RUN cd ./teesa && \
     ./update-teesa-env.sh && \
     cd ..
 
-# Deploy the contract
+# Compile the contract
 RUN cd ./contracts && \
     bash -c '. "/root/.nvm/nvm.sh" && npx hardhat compile-contract' && \
     cd ..
@@ -143,7 +140,7 @@ RUN cd ./teesa && \
 
 
 # Start stage
-# Production image, copy all the files, deploy the contract and run next
+# Production image, copy all the files and start
 FROM base AS runner
 WORKDIR /app
 

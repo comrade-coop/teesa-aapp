@@ -42,7 +42,6 @@ Ensure you have completed the following:
      - `PRIVYIO_APP_SECRET`: Your PrivyIO app secret
    - The following environment variables are automatically set by the contract deployment script. Refer to the [README.md](../contracts/README.md) in the `../contracts` directory directory for more details:
       - `RPC_URL` - RPC URL for the network
-      - `WALLET_PRIVATE_KEY` - Private key for the wallet
       - `CHAIN_ID` - Chain ID for the network
       - `GAME_CONTRACT_ADDRESS` - Address of the game contract
    - `NEXT_PUBLIC_ATTESTATION_URL` - Url for serving attestation verification by aApp Toolkit

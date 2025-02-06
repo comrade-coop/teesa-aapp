@@ -24,11 +24,11 @@ const config: HardhatUserConfig = {
     },
     sepolia: {
       url: process.env.RPC_URL_SEPOLIA,
-      accounts: [process.env.WALLET_PRIVATE_KEY_SEPOLIA!]
+      accounts: [process.env.WALLET_PRIVATE_KEY!]
     },
     base: {
       url: process.env.RPC_URL_BASE,
-      accounts: [process.env.WALLET_PRIVATE_KEY_BASE!]
+      accounts: [process.env.WALLET_PRIVATE_KEY!]
     }
   },
   etherscan: {

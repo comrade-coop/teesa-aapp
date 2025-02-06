@@ -34,10 +34,10 @@ Ensure you have completed the following:
    ```
 
 2. Update the `.env` file with:
-   - Private keys for the wallets:
+   - Private key and address for the wallet we will use to deploy the contract. **We use these in the development environment only. In production we set the values as contaner environment variables when we init the app:**
       - `WALLET_PRIVATE_KEY_LOCALHOST`: Private key for deploying to Hardhat localhost network
-      - `WALLET_PRIVATE_KEY_SEPOLIA`: Private key for deploying to Sepolia testnet
-      - `WALLET_PRIVATE_KEY_BASE`: Private key for deploying to Base mainnet
+      - `WALLET_PRIVATE_KEY`: Private key for deploying the contract
+      - `WALLET_ADDRESS`: The address of the wallet that we will use to deploy the contract (we use the address to transfer initial funds to the wallet and use them to deply the contract)
    - RPC URLs for the networks:
       - `RPC_URL_LOCALHOST`: RPC URL for Hardhat localhost network
       - `RPC_URL_SEPOLIA`: RPC URL for Sepolia testnet (we are using Alchemy, but you can use any other RPC provider)
@@ -48,6 +48,8 @@ Ensure you have completed the following:
    - `TEAM_ADDRESS`: The address of the team multi-sig wallet
 
 ## Deployment
+
+*To deploy the contract from the development environment, make sure to have set the wallet's private key and address in the `.env` file.*
 
 Run the deployment script:
 ```bash
@@ -73,6 +75,6 @@ The deployment script will:
 1. Compile the contract
 2. Test the contract
 3. Deploy the contract
-4. Verify the contract on Etherscan and Basescan
-5. Update the `RPC_URL`, `WALLET_PRIVATE_KEY`, `CHAIN_ID` and `GAME_CONTRACT_ADDRESS` in `../teesa/.env`
+4. Verify the contract on Etherscan and Basescan (depending on the selected network)
+5. Update the `RPC_URL`, `CHAIN_ID` and `GAME_CONTRACT_ADDRESS` in `../teesa/.env`
 6. Copy the contract ABI to `../teesa/app/_contracts` (added in .gitignore)

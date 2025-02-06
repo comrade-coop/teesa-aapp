@@ -105,19 +105,6 @@ async function deploy(network: 'localhost' | 'sepolia' | 'base') {
       envContent += `\nRPC_URL=${rpcUrl}`;
     }
 
-    // Get corresponding private key based on network
-    const privateKey = network === 'localhost' ? process.env.WALLET_PRIVATE_KEY_LOCALHOST :
-      network === 'sepolia' ? process.env.WALLET_PRIVATE_KEY_SEPOLIA :
-        network === 'base' ? process.env.WALLET_PRIVATE_KEY_BASE :
-          '';
-
-    // Update WALLET_PRIVATE_KEY in .env
-    if (envContent.includes('WALLET_PRIVATE_KEY=')) {
-      envContent = envContent.replace(/WALLET_PRIVATE_KEY=.*/, `WALLET_PRIVATE_KEY=${privateKey}`);
-    } else {
-      envContent += `\nWALLET_PRIVATE_KEY=${privateKey}`;
-    }
-
     if (envContent.includes('GAME_CONTRACT_ADDRESS=')) {
       envContent = envContent.replace(
         /GAME_CONTRACT_ADDRESS=.*/,
