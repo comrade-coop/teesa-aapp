@@ -6,6 +6,7 @@ import { getAccountFundsAmount } from './_actions/get-wallet-details';
 import { useEffect, useState } from 'react';
 import { DeployContractResult } from './_models/deploy-contract-result-enum';
 import { transferFundsToTeesaWallet, TransferFundsToTeesaWalletResult } from '../_contracts/transfer-funds-to-teesa-wallet';
+import { getContractInitialized } from '../_actions/get-contract-initiliazed';
 
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -16,15 +17,22 @@ export default function Page() {
   const [transferFundsMessage, setTransferFundsMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState<number | ''>('');
+  const [contractInitialized, setContractInitialized] = useState(false);
 
   useEffect(() => {
     fetchWalletDetails();
+    fetchContractInitialized();
   }, []);
 
   async function fetchWalletDetails() {
     const { balance, address } = await getAccountFundsAmount();
     setWalletAddress(address);
     setWalletBalance(balance);
+  }
+
+  async function fetchContractInitialized() {
+    const contractInitializedResult = await getContractInitialized();
+    setContractInitialized(contractInitializedResult);
   }
 
   async function onClick() {
@@ -36,7 +44,7 @@ export default function Page() {
     setLoading(false);
 
     if (result == DeployContractResult.Success) {
-      setDeployContractMessage({ text: 'Contract deployed successfully', type: 'success' });
+      window.location.href = '/game';
     } else if (result == DeployContractResult.FailedInsufficientFunds) {
       setDeployContractMessage({ text: 'Insufficient funds in Teesa wallet to pay for gas fees. Please add funds to the Teesa wallet and try again.', type: 'error' });
     } else {
@@ -84,13 +92,17 @@ export default function Page() {
         <p>Teesa Wallet Balance: <span className="font-bold">{walletBalance || '0'} ETH</span></p>
       </div>
 
-      <button
-        onClick={onClick}
-        className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-        disabled={loading}
+      {contractInitialized ? (
+        <p className="text-green-400">Contract initialized successfully</p>
+      ) : (
+        <button
+          onClick={onClick}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          disabled={loading}
       >
-        Initialize contract
-      </button>
+          Initialize contract
+        </button>
+      )}
 
       {deployContractMessage && (
         <p className={`mt-2 ${
