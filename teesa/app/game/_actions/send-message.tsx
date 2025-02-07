@@ -2,8 +2,8 @@
 
 import { createStreamableUI } from "ai/rsc";
 import { LlmChatMessage } from "../_components/llm-chat-message";
-import { wordGame } from '@/app/_core/word-game';
-import { getLocaleServer } from "@/lib/server-utils";
+import { wordGame } from '../../_core/word-game';
+import { getLocaleServer } from "../../../lib/server-utils";
 import { UserChatMessage } from "../_components/user-chat-message";
 import { LlmChatMessagePlaceholder } from "../_components/llm-chat-message-placeholder";
 import { setWinner } from "./set-winner";

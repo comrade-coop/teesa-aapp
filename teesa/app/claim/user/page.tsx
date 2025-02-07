@@ -1,7 +1,7 @@
 'use client';
 
 import { ClaimInterface } from '../_components/claim-interface';
-import { claimAbandonedGameShare } from '@/app/claim/user/_actions/claim-abandoned-game-share';
+import { claimAbandonedGameShare } from './_actions/claim-abandoned-game-share';
 
 export default function Page() {
   return (

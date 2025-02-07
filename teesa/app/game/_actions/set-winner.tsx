@@ -1,5 +1,5 @@
 import 'server-only';
-import { executeContractActionServer } from '@/app/_contracts/execute-contract-action-server';
+import { executeContractActionServer } from '../../_contracts/execute-contract-action-server';
 
 export async function setWinner(userAddress: string) {
   if (process.env.NEXT_PUBLIC_ENV_MODE === 'dev') {

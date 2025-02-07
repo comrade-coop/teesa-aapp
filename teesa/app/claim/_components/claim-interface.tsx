@@ -14,7 +14,7 @@ export function ClaimInterface({ title, actionButtonText, onAction }: ClaimInter
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
@@ -24,7 +24,10 @@ export function ClaimInterface({ title, actionButtonText, onAction }: ClaimInter
     }
 
     setLoading(true);
+    setMessage({text: 'Action in progress...', type: 'info' });
+
     const result = await onAction(walletAddress, wallets);
+    
     setLoading(false);
 
     if(result == ClaimSharesResult.Success) {
@@ -70,7 +73,11 @@ export function ClaimInterface({ title, actionButtonText, onAction }: ClaimInter
                 </button>
               </div>
               {message && (
-                <p className={`mt-2 ${message.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                <p className={`mt-2 ${
+                  message.type === 'success' ? 'text-green-400' : 
+                  message.type === 'error' ? 'text-red-400' : 
+                  'text-white italic'
+                }`}>
                   {message.text}
                 </p>
               )}
