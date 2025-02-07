@@ -1,5 +1,5 @@
 import { ConnectedWallet } from "@privy-io/react-auth";
-import { executeContractActionClient, ExecuteContractActionClientResult } from "@/app/_contracts/execute-contract-action-client";
+import { executeContractActionClient, ExecuteContractActionClientResult } from "../../../_contracts/execute-contract-action-client";
 import { ClaimSharesResult } from "../../_models/claim-shares-result-enum";
 
 export async function withdrawTeamShare(walletAddress: string, wallets: ConnectedWallet[]): Promise<ClaimSharesResult> {

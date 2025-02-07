@@ -1,6 +1,6 @@
 'use server';
 
-import { callContractViewMethod } from "@/app/_contracts/call-contract-view-method";
+import { callContractViewMethod } from "../../_contracts/call-contract-view-method";
 import { ethers } from "ethers";
 
 export async function getContractInfo() {

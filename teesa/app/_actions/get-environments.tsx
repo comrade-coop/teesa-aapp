@@ -17,6 +17,7 @@ export async function getEnvironments() {
 
   const gameContractAddress = process.env.GAME_CONTRACT_ADDRESS;
   const rpcUrl = process.env.RPC_URL;
-
-  return { chainId, gameContractAddress, rpcUrl };
+  const teesaWalletAddress = process.env.WALLET_ADDRESS;
+  
+  return { chainId, gameContractAddress, rpcUrl, teesaWalletAddress };
 }

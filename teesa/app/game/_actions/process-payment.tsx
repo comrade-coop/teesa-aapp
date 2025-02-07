@@ -1,7 +1,7 @@
 import { ConnectedWallet } from "@privy-io/react-auth";
-import { getWalletBalance } from '@/app/_contracts/get-wallet-balance';
-import { executeContractActionClient, ExecuteContractActionClientResult } from '@/app/_contracts/execute-contract-action-client';
-import { callContractViewMethod } from '@/app/_contracts/call-contract-view-method';
+import { getWalletBalance } from '../../_contracts/get-wallet-balance';
+import { executeContractActionClient, ExecuteContractActionClientResult } from '../../_contracts/execute-contract-action-client';
+import { callContractViewMethod } from '../../_contracts/call-contract-view-method';
 
 export enum ProcessPaymentResult {
   Success,
