@@ -1,8 +1,8 @@
 import 'server-only'
-import { LlmMessage, gameState } from './game-state';
+import { HistoryEntry, gameState } from './game-state';
 import { sendMessageLlm, sendMessageOllama } from './llm-client';
 import { sendMessageEliza } from './eliza-client';
-import { SUCCESS_MESSAGE } from './game-const';
+import { WON_GAME_MESSAGE } from './game-const';
 
 export class WordGame {
   private readonly baseRules = `
@@ -214,7 +214,7 @@ Respond with ONLY the comment, nothing else.
       if (await this.checkGuess(guessedWord)) {
         gameState.setWinner(userAddress);
         wonGame = true;
-        response = SUCCESS_MESSAGE;
+        response = WON_GAME_MESSAGE;
       } else {
         response = await this.getIncorrectGuessResponse(userInput);
       }
@@ -222,7 +222,7 @@ Respond with ONLY the comment, nothing else.
       response = await this.getRandomResponse(userInput);
     }
 
-    const message: LlmMessage = {
+    const message: HistoryEntry = {
       id: messageId,
       userId: userAddress,
       timestamp: timestamp,

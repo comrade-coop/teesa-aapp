@@ -28,7 +28,7 @@ export async function sendMessage(userAddress: string, id: string, timestamp: nu
     responseUi.done();
 
     if (wonGame) {
-      await setWinner(userAddress);
+      setWinner(userAddress, timestamp);
     }
   })();
 

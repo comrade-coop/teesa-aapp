@@ -82,6 +82,10 @@ export default function Page() {
     const { gameEnded, winnerAddress } = await getGameState();
     setGameEnded(gameEnded);
     setWinnerAddress(winnerAddress);
+
+    if (gameEnded) {
+      setShowAllMesssages(true);
+    }
   }
 
   async function fetchContractInfo() {
@@ -105,15 +109,30 @@ export default function Page() {
     }
 
     const messagesIds = messages.map(m => m.id);
-    const newMessagesAsUiState = newMessages.filter(f => messagesIds.indexOf(f.id) == -1).map(m => ({
-      id: m.id,
-      userId: m.userId,
-      timestamp: m.timestamp,
-      display: <>
-        <UserChatMessage timestamp={m.timestamp} locale={getLocaleClient()} message={m.userMessage} userAddress={m.userId} />
-        <LlmChatMessage message={m.llmMessage} />
-      </>
-    }));
+    const newMessagesAsUiState = newMessages.filter(f => messagesIds.indexOf(f.id) == -1).map(m => {
+      // Standart chat messages
+      if (m.userMessage) {
+        return {
+          id: m.id,
+          userId: m.userId,
+          timestamp: m.timestamp,
+          display: <>
+            <UserChatMessage timestamp={m.timestamp} locale={getLocaleClient()} message={m.userMessage} userAddress={m.userId} />
+            <LlmChatMessage message={m.llmMessage} />
+          </>
+        };
+      }
+
+      // LLM only messages
+      return {
+        id: m.id,
+        userId: m.userId,
+        timestamp: m.timestamp,
+        display: <>
+          <LlmChatMessage message={m.llmMessage} />
+        </>
+      };
+    });
 
     setMessages(previousMessages => [
       ...previousMessages,

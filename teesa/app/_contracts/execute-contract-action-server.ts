@@ -6,7 +6,7 @@ export async function executeContractActionServer(
     contractMethod: string,
     params: any[],
     errorMessage?: string
-): Promise<boolean> {
+) {
     if (!errorMessage) {
         errorMessage = `Error executing contract action: ${contractMethod}`;
     }
@@ -35,9 +35,8 @@ export async function executeContractActionServer(
     try {
         const transaction = await gameContract[contractMethod](...params);
         await provider.waitForTransaction(transaction.hash, 1);
-        return true;
       } catch (error) {
         console.error(errorMessage, error);
-        return false;
+        throw error;
       }
 }
