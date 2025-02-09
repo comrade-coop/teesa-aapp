@@ -80,6 +80,7 @@ contract Game is ReentrancyGuard {
     error NotTeamAddress(); // The caller is not the team address
     error AbandonedGameUserShareAlreadyClaimed(); // The abandoned game user share is already claimed
     error InvalidWinnerAddress(); // The winner address is invalid
+    error AbandonedGameTimeElapsed(); // The abandoned game time has elapsed
 
     // Events
     // A new user fee payment is received
@@ -127,6 +128,9 @@ contract Game is ReentrancyGuard {
         bool isLastPlayer
     );
 
+    // Owner funds are transferred to the contract
+    event OwnerFundsTransferred(uint256 amount);
+
     constructor(address _teamAddress) {
         if (_teamAddress == address(0)) revert InvalidTeamAddress();
 
@@ -141,6 +145,7 @@ contract Game is ReentrancyGuard {
     function payFee() external payable nonReentrant {
         if (gameEnded) revert GameHasEnded();
         if (msg.value < currentFee) revert InsufficientFeePayment();
+        if (abandonedGameTimeElapsed()) revert AbandonedGameTimeElapsed();
 
         lastPlayerAddress = msg.sender;
         lastPaymentTime = block.timestamp;
@@ -259,6 +264,15 @@ contract Game is ReentrancyGuard {
 
     function abandonedGameTimeElapsed() public view returns (bool) {
         return block.timestamp >= lastPaymentTime + 3 days;
+    }
+
+    function transferOwnerFundsToContract() external payable nonReentrant {
+        if (msg.sender != owner) revert NotOwner();
+
+        teamShare += msg.value;
+        
+        emit OwnerFundsTransferred(msg.value);
+        emit TeamShareIncreased(teamShare);
     }
 
     function _sendUserShare(

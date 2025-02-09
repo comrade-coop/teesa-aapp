@@ -2,17 +2,17 @@ import 'server-only'
 import { Mutex } from 'async-mutex';
 import { wordsList } from './words-list';
 
-export interface LlmMessage {
+export interface HistoryEntry {
   id: string;
   userId: string;
   timestamp: number;
-  userMessage: string;
+  userMessage: string | undefined;
   llmMessage: string
 }
 
 class GameState {
   private secretWord: string;
-  private history: LlmMessage[];
+  private history: HistoryEntry[];
   private gameEnded: boolean;
   private winnerAddress: string | undefined;
 
@@ -39,11 +39,11 @@ class GameState {
     return this.secretWord;
   }
 
-  async getHistory(): Promise<LlmMessage[]> {
+  async getHistory(): Promise<HistoryEntry[]> {
     return this.history;
   }
 
-  async addToHistory(message: LlmMessage): Promise<any> {
+  async addToHistory(message: HistoryEntry): Promise<any> {
     await this.mutex.runExclusive(() => {
       this.history.push(message);
     });

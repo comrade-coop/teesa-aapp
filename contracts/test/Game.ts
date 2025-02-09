@@ -82,6 +82,22 @@ describe("Game", function () {
       await expect(game.connect(player).payFee({ value: INITIAL_FEE }))
         .to.be.revertedWithCustomError(game, "GameHasEnded");
     });
+
+    it("should revert if abandoned game time has elapsed", async function () {
+      // First payment
+      await game.connect(player).payFee({ value: INITIAL_FEE });
+      
+      // Get the new fee amount after first payment
+      const newFee = await game.currentFee();
+      
+      // Advance time past 3 days
+      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]); // 3 days + 1 second
+      await ethers.provider.send("evm_mine", []);
+      
+      // Try to pay fee after abandoned game time has elapsed
+      await expect(game.connect(player).payFee({ value: newFee }))
+        .to.be.revertedWithCustomError(game, "AbandonedGameTimeElapsed");
+    });
   });
 
   describe("Prize Distribution", function () {
@@ -223,6 +239,25 @@ describe("Game", function () {
     it("should revert if no unclaimed shares", async function () {
       await expect(game.connect(player).claimUserShare())
         .to.be.revertedWithCustomError(game, "NoUnclaimedShares");
+    });
+  });
+
+  describe("Owner Funds Transfer", function () {
+    it("should allow owner to transfer funds to contract", async function () {
+      const transferAmount = ethers.parseEther("1.0");
+      
+      await expect(game.connect(owner).transferOwnerFundsToContract({ value: transferAmount }))
+        .to.emit(game, "TeamShareIncreased")
+        .withArgs(transferAmount);
+
+      expect(await game.teamShare()).to.equal(transferAmount);
+    });
+
+    it("should revert if non-owner tries to transfer funds", async function () {
+      const transferAmount = ethers.parseEther("1.0");
+      
+      await expect(game.connect(player).transferOwnerFundsToContract({ value: transferAmount }))
+        .to.be.revertedWithCustomError(game, "NotOwner");
     });
   });
 });
