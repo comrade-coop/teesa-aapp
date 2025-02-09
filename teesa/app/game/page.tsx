@@ -147,6 +147,11 @@ export default function Page() {
 
     setShowAllMesssages(false);
 
+    const { gameEnded } = await getGameState();
+    if (gameEnded) {
+      return;
+    }
+
     setPaymentProcessing(true);
     const paymentResult = await processPayment(walletAddress, wallets);
     setPaymentProcessing(false);
