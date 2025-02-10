@@ -5,12 +5,13 @@ import { gameState } from '../../_core/game-state';
 import { HistoryEntry } from '../../_core/game-state';
 import { v4 as uuidv4 } from 'uuid';
 import { PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE } from '@/app/_core/game-const';
+import { transferTeesaFundsToContract } from './transfer-teesa-funds-to-contract';
 
 export function setWinner(userAddress: string, timestamp: number) {
   if (process.env.NEXT_PUBLIC_ENV_MODE === 'dev') {
     console.log('DEV MODE: Winner added:', userAddress);
     console.log('DEV MODE: Prize awarded');
-    //return;
+    return;
   }
 
   console.log('Setting winner:', userAddress);
@@ -57,4 +58,6 @@ async function onAwardPrizeSuccess(userAddress: string, timestamp: number) {
   };
 
   gameState.addToHistory(message);
+
+  transferTeesaFundsToContract();
 }
