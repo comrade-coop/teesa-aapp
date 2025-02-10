@@ -1,9 +1,7 @@
 name: Trigger on Release Tag
 
-# on:
-#   release:
-#     types:
-#       - published
+on:
+  workflow_dispatch: 
 
 jobs:
   release-trigger:
