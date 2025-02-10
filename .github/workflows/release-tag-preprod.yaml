@@ -28,6 +28,8 @@ jobs:
       - name: Replace placeholders in app-manifest-preprod.json
         run: |
           COMMIT_SHA=$(git rev-parse ${{ github.event.ref }})
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+
           sed -i "s/__AAPPTAG__/$COMMIT_SHA/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s/__AAPPTAGNAME__/$COMMIT_SHA/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s/__AAPPJOB__/${{ steps.get_job_id.outputs.result }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
@@ -43,7 +45,7 @@ jobs:
           subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           resource_group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          vm_name: "teesa-${{ github.event.release.tag_name }}"
+          vm_name: "teesa-${{ env.COMMIT_SHA }}"
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
