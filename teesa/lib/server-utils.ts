@@ -31,7 +31,7 @@ export function retryWithExponentialBackoff(
 
         return;
       } catch (error) {
-        console.error(`Attempt ${attempt} failed. Retrying...`);
+        console.error(`Attempt ${attempt} failed.`);
 
         if (onFailure) {
           await onFailure(attempt);
@@ -40,6 +40,8 @@ export function retryWithExponentialBackoff(
 
       // Exponential backoff
       const delay = Math.min(initialDelayMs * Math.pow(2, attempt), maxDelayMs);
+      console.log(`Retrying in ${delay / 1000}s...`);
+      
       await new Promise(resolve => setTimeout(resolve, delay));
       
       attempt++;
