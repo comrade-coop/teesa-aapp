@@ -12,11 +12,8 @@ jobs:
 
       - name: Get job id
         uses: actions/github-script@v7
-        env:
-          matrix: ${{ toJSON(matrix) }}
         with:
           script: |
-            // Query jobs for the current workflow run.
             const { data: workflow_run } =
               await github.rest.actions.listJobsForWorkflowRunAttempt({
                 attempt_number: process.env.GITHUB_RUN_ATTEMPT,
@@ -24,16 +21,7 @@ jobs:
                 repo: context.repo.repo,
                 run_id: context.runId,
               });
-
-            // If matrix is used, find the job which includes the matrix values,
-            // otherwise find the job with the same name as the current job.
-            // If the job is not found, fallback to the first job.
-            const job_id = workflow_run.jobs.find((job) =>
-              (process.env.matrix.length
-                ? job.name.includes(Object.values(JSON.parse(process.env.matrix)).join(", "))
-                : job.name.toLowerCase() === context.job
-              )
-            ).id || workflow_run.jobs[0].id;
+            const job_id = workflow_run.jobs[0].id;
             return job_id;
 
       - name: Replace placeholders in app-manifest-preprod.json
