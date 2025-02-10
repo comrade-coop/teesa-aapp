@@ -32,7 +32,8 @@ jobs:
               (process.env.matrix.length
                 ? job.name.includes(Object.values(JSON.parse(process.env.matrix)).join(", "))
                 : job.name.toLowerCase() === context.job
-              ).id || workflow_run.jobs[0].id;
+              )
+            ).id || workflow_run.jobs[0].id;
             return job_id;
 
       - name: Replace placeholders in app-manifest-preprod.json
