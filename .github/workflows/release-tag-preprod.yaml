@@ -1,0 +1,32 @@
+name: Trigger on Release Tag
+
+# on:
+#   release:
+#     types:
+#       - published
+
+jobs:
+  release-trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Replace placeholders in app-manifest-preprod.json
+        run: |
+          sed -i "s/__AAPPTAG__/${{ github.event.release.tag_name }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+          sed -i "s/__AAPPDEVKEY__/${{ secrets.APP_DEV_KEY }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+
+      - name: Deploy confidential virtual machine in Azure
+        uses: comrade-coop/aapp-toolkit/workflow@v0.0.1
+        with:
+          client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          resource_group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          vm_name: "teesa-${{ github.event.release.tag_name }}"
+          vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
+          vm_dev_key: ${{ secrets.AZURE_VM_DEV_KEY }}
+          aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
