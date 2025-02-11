@@ -11,7 +11,7 @@
     "container": {
       "build": {
         "repo": "https://github.com/comrade-coop/teesa-aapp.git",
-        "tag": "__AAPPTAG__",
+        "tag": "5b5d6bb7cbe4397103a65b081a7d4f476125937f",
         "job": "__AAPPJOB__",
         "dockerfile": "deploy/Dockerfile",
         "args": "__AAPPARGS__"
