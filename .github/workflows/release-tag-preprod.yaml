@@ -32,6 +32,7 @@ jobs:
 
           sed -i "s/__AAPPTAG__/$COMMIT_SHA/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s/__AAPPTAGNAME__/${COMMIT_SHA:0:5}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+          sed -i "s#__AAPPARGS__#${{ secrets.AAPP_ARGS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s/__AAPPJOB__/${{ steps.get_job_id.outputs.result }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s#__AAPPDEVPUBKEY__#${{ secrets.AAPP_DEV_PUB_KEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
 
