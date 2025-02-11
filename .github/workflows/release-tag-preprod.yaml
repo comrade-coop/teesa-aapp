@@ -44,7 +44,7 @@ jobs:
           client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-          resource_group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          resource_group: "teesa"
           vm_name: "teesa-${{ env.COMMIT_SHA }}"
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
