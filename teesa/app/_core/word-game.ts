@@ -61,15 +61,14 @@ All secret words are nouns. When determining the type:
 - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
 
 # EXAMPLES:
+- "alive" -> "question" (asking about a property)
+- "flower" -> "guess" (direct noun)
+- "is it a plant" -> "question" (asking about category since using "a")
+- "is it car" -> "guess" (direct noun, not asking about category or property)
 - "does it grow in gardens" -> "question" (asking about behavior/property)
 - "is it made of metal" -> "question" (asking about material property)
 - "is it abstract" -> "question" (asking about abstract property)
-- "is it a plant" -> "question" (asking about category)
 - "is your word about the future of economy" -> "question" (asking about abstract concepts and categories)
-- "is it car" -> "guess" (direct noun, not asking about category or property)
-- "flower" -> "guess" (direct noun)
-- "alive" -> "question" (asking about a property)
-
 
 # RESPONSE:
 Respond with ONLY "question", "guess", or "other".
