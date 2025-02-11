@@ -7,8 +7,6 @@ export function LlmChatMessage({
 }: {
   message: string
 }) {
-  const attestationUrl = process.env.NEXT_PUBLIC_ATTESTATION_URL
-
   return (
     <div className="flex items-start mb-8 flex-row">
       <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4 border border-blue-500/30 overflow-hidden">
@@ -40,7 +38,7 @@ export function LlmChatMessage({
           />
           {/* <div className="flex items-center justify-end">
             <a
-              href={attestationUrl}
+              href={process.env.NEXT_PUBLIC_ATTESTATION_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"

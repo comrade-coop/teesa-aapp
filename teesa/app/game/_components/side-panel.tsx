@@ -70,13 +70,13 @@ export function SidePanel({
         <div className="flex-1 space-y-6">
           <div className="flex justify-center">
             <a
-              href="https://github.com/comrade-coop/teesa-attestation"
+              href={process.env.NEXT_PUBLIC_ATTESTATION_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
             >
-              <ShieldCheck className="w-4 h-4 me-1" />
-              <span className="text-xs">
+              <ShieldCheck className="w-5 h-5 me-1.5" />
+              <span className="text-sm">
                 TEE secured
               </span>
             </a>
