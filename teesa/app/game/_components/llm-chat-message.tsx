@@ -38,7 +38,7 @@ export function LlmChatMessage({
                     : message
             }}
           />
-          <div className="flex items-center justify-end">
+          {/* <div className="flex items-center justify-end">
             <a
               href={attestationUrl}
               target="_blank"
@@ -50,7 +50,7 @@ export function LlmChatMessage({
                 TEE secured
               </span>
             </a>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>
