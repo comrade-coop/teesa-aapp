@@ -13,7 +13,8 @@
         "repo": "https://github.com/comrade-coop/teesa-aapp.git",
         "tag": "__AAPPTAG__",
         "job": "__AAPPJOB__",
-        "dockerfile": "deploy/Dockerfile"
+        "dockerfile": "deploy/Dockerfile",
+        "args": "__AAPPARGS__"
       }
     },
     "ingress": {
