@@ -14,6 +14,7 @@ export function UserChatMessage({
 }) {
   const formatedDate = timestampToFormatedDate(locale, timestamp);
   const avatarUrl = `https://api.dicebear.com/6.x/pixel-art/svg?seed=${userAddress}`;
+  const truncatedAddress = `${userAddress.slice(2, 7)}...${userAddress.slice(-5)}`;
 
   return (
     <div className="flex items-start mb-8 flex-row">
@@ -22,7 +23,7 @@ export function UserChatMessage({
         <Card className="relative border border-blue-500/15 bg-slate-900/10 sm:bg-slate-900/5 backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="mb-2 text-xs text-blue-400">
-              <span className="break-all">{userAddress}</span>
+              <span>{truncatedAddress}</span>
             </div>
             <p className="text-sm mb-2 text-slate-200">{message}</p>
             <div className="flex justify-end">
