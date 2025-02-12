@@ -3,7 +3,7 @@ import 'server-only'
 export async function sendMessageEliza(message: string, systemMessage?: string | undefined): Promise<string> {
   // Construct the full message by combining system message and user message if needed
   const fullMessage = systemMessage
-    ? `${systemMessage}\n\n${message}`
+    ? `${systemMessage}\n\n---\n${message}`
     : message;
 
   // Get environment variables
@@ -17,6 +17,7 @@ export async function sendMessageEliza(message: string, systemMessage?: string |
   // Create URLSearchParams for form data
   const formData = new URLSearchParams();
   formData.append('text', fullMessage);
+  formData.append('roomId', process.env.GAME_CONTRACT_ADDRESS || 'Teesa Word Guessing Game');
 
   // Make the API request
   const response = await fetch(`${apiUrl}/${agentId}/message`, {
