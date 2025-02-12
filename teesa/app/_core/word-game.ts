@@ -152,7 +152,7 @@ AGENT (answers with only "yes" or "no" based on common-sense logic): `;
 Secret word: "${secretWord}".
 User guess: "${guess}"
 
-Check if the User guess matches the Secret word exactly, or is a close synonym, plural form, or minor variation.
+Check if the User guess matches the secret word exactly, or is a close synonym, plural form, or minor variation.
 For example:
 - "cat" matches "cats" or "kitty"
 - "phone" matches "telephone" or "cellphone"
@@ -205,7 +205,9 @@ The answer is: ${answer}
 
 # TASK:
 Generate a short playful comment to add after the answer response. The comment should be relevent to the answer.
-DO NOT include Yes/No in your response - just the comment. DO NOT include any other words, explanation, or special formatting. Respond with ONLY the comment, nothing else.
+DO NOT include Yes/No in your response - just the comment. 
+DO NOT include any other words, explanation, or special formatting. 
+Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
@@ -223,9 +225,10 @@ Player's input:
 ${userInput}
 
 # TASK:
-Generate a short playful comment for an incorrect guess.
-Keep it encouraging but make it clear they haven't guessed correctly.
-DO NOT include any other words, explanation, or special formatting.
+The word is not what the player is guessing.
+Generate a short playful comment for the incorrect guess.
+Keep it encouraging but make it clear that the the word is not what the player guessed.
+DO NOT include any other words, explanation, or special formatting in your response.
 Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
