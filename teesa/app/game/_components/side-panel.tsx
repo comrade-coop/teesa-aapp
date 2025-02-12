@@ -73,11 +73,18 @@ export function SidePanel({
               href={process.env.NEXT_PUBLIC_ATTESTATION_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
+              className="flex items-center gap-2 group relative"
             >
-              <ShieldCheck className="w-5 h-5 me-1.5" />
-              <span className="text-sm">
-                TEE secured
+              <div className="absolute inset-0 bg-blue-400/5 blur-xl rounded-full"></div>
+              <ShieldCheck className="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-colors relative" />
+              <span className="text-sm font-medium relative flex items-center gap-2">
+                <span className="bg-gradient-to-r from-blue-300 to-blue-400 bg-clip-text text-transparent border-b border-blue-400/50 group-hover:border-blue-300 leading-none transition-colors">
+                  TEE secured
+                </span>
+                <span className="flex gap-1 items-center">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 group-hover:bg-blue-300 transition-colors animate-ping absolute"></span>
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 group-hover:bg-blue-300 transition-colors relative"></span>
+                </span>
               </span>
             </a>
           </div>
