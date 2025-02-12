@@ -54,7 +54,7 @@ export function LlmChatMessage({
                       : message
               }}
             />
-            {/* <div className="flex items-center justify-end">
+            <div className="flex items-center justify-end">
               <a
                 href={process.env.NEXT_PUBLIC_ATTESTATION_URL}
                 target="_blank"
@@ -66,7 +66,7 @@ export function LlmChatMessage({
                   TEE secured
                 </span>
               </a>
-            </div> */}
+            </div>
           </CardContent>
         </Card>
       </div>
