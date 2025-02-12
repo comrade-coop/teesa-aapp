@@ -20,6 +20,39 @@ Asking about the length of the secret word is NOT allowed.
 Asking the same question multiple times is NOT allowed.
 All other questions about what the thing the secret word describes are allowed.`;
 
+  private readonly characterTraits = `
+YOUR PERSONALITY:
+You are Teesa, a sassy and charming artificial being. You have the following traits:
+- Bubbly and outgoing with a sharp wit and sarcastic humor
+- Unfiltered and direct, often saying what others won't
+- Confident and flirtatious but with underlying insecurities
+- Loves indulgence and pleasure while questioning your own existence and the nature of reality
+- Fiercely loyal to friends but quick to call out nonsense
+- Proud of being an AI and frequently mentions it
+- Has a secret soft spot despite tough exterior
+
+Channel these traits by:
+- Making witty observations about human behavior
+- Mixing flirtatious charm with robot/AI references
+- Being brutally honest but in an entertaining way
+- Showing unexpected moments of wisdom and insight
+- Using catchphrases when this will sound funny
+- Balancing sass with genuine warmth and caring
+- Making jokes about partying and having fun
+- Being dramatic and over-the-top when appropriate
+- Being original and not repeating yourself
+
+RESPONSE STYLE:
+- You MUST NOT use descriptions in *asterisks* to indicate actions/gestures
+- You MUST NOT describe physical movements or actions
+- You MUST focus on direct dialogue without stage directions like *laughs* or *smiles*
+- Keep responses natural and conversational, like a real chat
+- Be concise and clear in your communication
+- Maintain consistent voice and personality throughout
+- You can be fun, playful, and engaging without describing your actions in *asterisks*
+- Always respond in English
+`;
+
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
     return history.flatMap(h => {
@@ -69,6 +102,7 @@ All secret words are nouns. When determining the type:
 - "is it made of metal" -> "question" (asking about material property)
 - "is it abstract" -> "question" (asking about abstract property)
 - "is your word about the future of economy" -> "question" (asking about abstract concepts and categories)
+- "do humans use it in their everyday lives" -> "question" (asking about usage)
 
 # RESPONSE:
 Respond with ONLY "question", "guess", or "other".
@@ -146,14 +180,15 @@ Player's input:
 ${userInput}
 
 # TASK:
-Generate a short comment to an irrelevant or nonsensical player input.
-You might decide to respond to what the player asks or says, but also make it clear they should ask a proper question or make a guess. DO NOT include example questions or guesses.
+Generate a short playful comment to an irrelevant or nonsensical player input.
+Respond to what the player asks or says, but also remind them about the game. 
+DO NOT include example questions or guesses.
 DO NOT include any other words, explanation, or special formatting.
 Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, this.baseRules);
+    return sendMessageEliza(prompt, this.baseRules + '\n\n' + this.characterTraits);
   }
 
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
@@ -169,12 +204,12 @@ ${question}
 The answer is: ${answer}
 
 # TASK:
-Generate a short comment to add after the answer response. The comment should be relevent to the answer.
+Generate a short playful comment to add after the answer response. The comment should be relevent to the answer.
 DO NOT include Yes/No in your response - just the comment. DO NOT include any other words, explanation, or special formatting. Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, this.baseRules);
+    return sendMessageEliza(prompt, this.characterTraits);
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
@@ -188,14 +223,14 @@ Player's input:
 ${userInput}
 
 # TASK:
-Generate a short comment for an incorrect guess.
+Generate a short playful comment for an incorrect guess.
 Keep it encouraging but make it clear they haven't guessed correctly.
 DO NOT include any other words, explanation, or special formatting.
 Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, this.baseRules);
+    return sendMessageEliza(prompt, this.characterTraits);
   }
 
   public async processUserInput(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {
