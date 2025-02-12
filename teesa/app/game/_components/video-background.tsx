@@ -237,8 +237,17 @@ export function VideoBackground({
       rafRef.current = requestAnimationFrame(render);
     }
 
-    // Video playback handling
-    const handleLoadedMetadata = () => {
+    // Add startPlayback function to ensure video playback is retried if it fails
+    const startPlayback = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        console.log("Video playback failed:", error);
+        setTimeout(startPlayback, 1000);
+      }
+    };
+
+    const handleCanPlay = () => {
       if (video.videoWidth) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -248,41 +257,33 @@ export function VideoBackground({
       }
     };
 
-    const startPlayback = async () => {
-      try {
-        await video.play();
-      } catch (error) {
-        console.log("Video playback failed:", error);
-        // Retry playback after a short delay
-        setTimeout(startPlayback, 1000);
-      }
-    };
-
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    video.addEventListener('timeupdate', () => {
+    const handleTimeUpdate = () => {
       const buffer = 0.2;
       if (video.currentTime > video.duration - buffer) {
         video.currentTime = 0;
       }
-    });
-    video.addEventListener('ended', () => { video.currentTime = 0 });
-    video.addEventListener('pause', startPlayback);
+    };
 
-    // Start immediately if video is already loaded
-    if (video.readyState >= 2 && video.videoWidth) {
-      handleLoadedMetadata();
+    const handleEnded = () => { video.currentTime = 0; };
+
+    const handlePause = () => { startPlayback(); };
+
+    video.addEventListener('canplay', handleCanPlay, { once: true });
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('ended', handleEnded);
+    video.addEventListener('pause', handlePause);
+
+    // Start immediately if video is already ready
+    if (video.readyState >= video.HAVE_ENOUGH_DATA && video.videoWidth) {
+      handleCanPlay();
     }
 
     return () => {
-      isInitializedRef.current = false;
-      video.removeEventListener('timeupdate', () => {
-        const buffer = 0.2;
-        if (video.currentTime > video.duration - buffer) {
-          video.currentTime = 0;
-        }
-      });
-      video.removeEventListener('ended', () => { video.currentTime = 0 });
-      video.removeEventListener('pause', startPlayback);
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('ended', handleEnded);
+      video.removeEventListener('pause', handlePause);
+      
       cancelAnimationFrame(rafRef.current);
       
       if (gl) {
@@ -319,8 +320,9 @@ export function VideoBackground({
               ref={videoRef}
               muted
               playsInline
+              autoPlay
               preload="auto"
-              className="hidden"
+              className="absolute opacity-0 pointer-events-none"
               webkit-playsinline="true"
               crossOrigin="anonymous"
               style={{
