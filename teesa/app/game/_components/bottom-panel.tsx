@@ -51,10 +51,10 @@ export function BottomPanel({
   const chatForm = (
     <div className="relative mb-4 mx-4">
       <div className="relative">
-        <div className="absolute -inset-[2px] bg-gradient-to-r from-blue-500/50 via-blue-500/50 to-purple-500/50 rounded-full blur-sm"></div>
+        <div className="absolute -inset-[2px] bg-gradient-to-r from-blue-500/20 via-blue-500/15 to-blue-400/20 rounded-full blur-sm"></div>
         <form onSubmit={handleSubmit} className="relative">
           <input
-            className="w-full p-4 pr-14 bg-slate-800/90 rounded-full shadow-xl text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+            className="w-full p-4 pr-14 bg-slate-900/15 focus:bg-slate-900/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
             name="message"
             placeholder="Write a message"
           />
