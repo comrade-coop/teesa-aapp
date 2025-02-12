@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 
 // WebGL shader programs
 const vertexShaderSource = `#version 300 es
@@ -114,143 +114,137 @@ export function VideoBackground({
   const glRef = useRef<WebGLRenderingContext | null>(null);
   const programRef = useRef<WebGLProgram | null>(null);
   const textureRef = useRef<WebGLTexture | null>(null);
-  const positionBufferRef = useRef<WebGLBuffer | null>(null);
-  const texCoordBufferRef = useRef<WebGLBuffer | null>(null);
-  const positionLocationRef = useRef<number>(-1);
-  const texCoordLocationRef = useRef<number>(-1);
   const rafRef = useRef<number>(0);
   const isInitializedRef = useRef(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const initAttemptsRef = useRef(0);
-  const maxInitAttempts = 3;
-
-  const initializeWebGL = useCallback(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return false;
-
-    try {
-      // Initialize WebGL 2
-      const gl = canvas.getContext('webgl2', { 
-        premultipliedAlpha: false, 
-        alpha: true,
-        antialias: false,
-        powerPreference: 'high-performance',
-        preserveDrawingBuffer: false,
-        depth: false,
-        stencil: false,
-        failIfMajorPerformanceCaveat: true,
-        desynchronized: true
-      });
-      
-      if (!gl) {
-        console.error('WebGL 2 not supported');
-        return false;
-      }
-      glRef.current = gl;
-
-      // Enable alpha blending with optimized settings
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      
-      // Clear to transparent
-      gl.clearColor(0, 0, 0, 0);
-
-      // Create shaders and program
-      const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-      const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-      const program = createProgram(gl, vertexShader, fragmentShader);
-      programRef.current = program;
-
-      // Set up geometry
-      const positionBuffer = gl.createBuffer();
-      positionBufferRef.current = positionBuffer;
-      const positions = new Float32Array([
-        -1, -1,
-         1, -1,
-        -1,  1,
-         1,  1,
-      ]);
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-      const texCoordBuffer = gl.createBuffer();
-      texCoordBufferRef.current = texCoordBuffer;
-      const texCoords = new Float32Array([
-        0.0, 1.0,
-        1.0, 1.0,
-        0.0, 0.0,
-        1.0, 0.0
-      ]);
-      gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
-
-      // Create and set up texture
-      const texture = gl.createTexture();
-      textureRef.current = texture;
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-      // Set up attributes
-      const positionLocation = gl.getAttribLocation(program, 'a_position');
-      const texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
-      positionLocationRef.current = positionLocation;
-      texCoordLocationRef.current = texCoordLocation;
-
-      gl.useProgram(program);
-
-      return true;
-    } catch (error) {
-      console.error('WebGL initialization error:', error);
-      return false;
-    }
-  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
-    // Reset initialization state when component mounts
-    isInitializedRef.current = false;
-    initAttemptsRef.current = 0;
+    // Prevent multiple initializations
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
 
-    const tryInitialize = () => {
-      if (initAttemptsRef.current >= maxInitAttempts) {
-        console.error('Max initialization attempts reached');
+    // Initialize WebGL 2
+    const gl = canvas.getContext('webgl2', { 
+      premultipliedAlpha: false, 
+      alpha: true,
+      antialias: false,
+      powerPreference: 'high-performance',
+      preserveDrawingBuffer: false,
+      depth: false,
+      stencil: false,
+      failIfMajorPerformanceCaveat: true,
+      desynchronized: true
+    });
+    if (!gl) {
+      console.error('WebGL 2 not supported');
+      return;
+    }
+    glRef.current = gl;
+
+    // Enable alpha blending with optimized settings
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    
+    // Clear to transparent
+    gl.clearColor(0, 0, 0, 0);
+
+    // Create shaders and program
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    const program = createProgram(gl, vertexShader, fragmentShader);
+    programRef.current = program;
+
+    // Set up geometry
+    const positionBuffer = gl.createBuffer();
+    const positions = new Float32Array([
+      -1, -1,
+       1, -1,
+      -1,  1,
+       1,  1,
+    ]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+    const texCoordBuffer = gl.createBuffer();
+    const texCoords = new Float32Array([
+      0.0, 1.0,
+      1.0, 1.0,
+      0.0, 0.0,
+      1.0, 0.0
+    ]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
+
+    // Create and set up texture
+    const texture = gl.createTexture();
+    textureRef.current = texture;
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    // Set up attributes
+    const positionLocation = gl.getAttribLocation(program, 'a_position');
+    const texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
+
+    gl.useProgram(program);
+    
+    // Render loop
+    function render() {
+      if (!gl || !video || !canvas || !program || !texture) {
+        rafRef.current = requestAnimationFrame(render);
         return;
       }
+      
+      try {
+        // Only update canvas size if video dimensions change
+        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        }
 
-      if (!video.videoWidth) {
-        // Video metadata not yet loaded, wait and retry
-        initAttemptsRef.current++;
-        setTimeout(tryInitialize, 500);
-        return;
-      }
+        // Ensure video is actually ready
+        if (video.readyState < video.HAVE_CURRENT_DATA || !video.videoWidth) {
+          rafRef.current = requestAnimationFrame(render);
+          return;
+        }
 
-      const success = initializeWebGL();
-      if (success) {
-        isInitializedRef.current = true;
-        setVideoLoaded(true);
-        startPlayback();
-        render();
-      } else if (initAttemptsRef.current < maxInitAttempts) {
-        // Retry initialization
-        initAttemptsRef.current++;
-        setTimeout(tryInitialize, 500);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        
+        // Update texture with new video frame
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+
+        // Draw
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        gl.enableVertexAttribArray(texCoordLocation);
+        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      } catch (error) {
+        console.error('Render error:', error);
       }
-    };
+      
+      rafRef.current = requestAnimationFrame(render);
+    }
 
     // Video playback handling
     const handleLoadedMetadata = () => {
       if (video.videoWidth) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        if (glRef.current) glRef.current.viewport(0, 0, canvas.width, canvas.height);
-        tryInitialize();
+        if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+        startPlayback();
+        render();
       }
     };
 
@@ -263,52 +257,6 @@ export function VideoBackground({
         setTimeout(startPlayback, 1000);
       }
     };
-
-    // Render loop
-    function render() {
-      if (!glRef.current || !video || !canvas || !programRef.current || !textureRef.current) {
-        rafRef.current = requestAnimationFrame(render);
-        return;
-      }
-      
-      try {
-        // Only update canvas size if video dimensions change
-        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          glRef.current.viewport(0, 0, canvas.width, canvas.height);
-        }
-
-        // Ensure video is actually ready
-        if (video.readyState < video.HAVE_CURRENT_DATA || !video.videoWidth) {
-          rafRef.current = requestAnimationFrame(render);
-          return;
-        }
-
-        glRef.current.clear(glRef.current.COLOR_BUFFER_BIT);
-        
-        // Update texture with new video frame
-        glRef.current.bindTexture(glRef.current.TEXTURE_2D, textureRef.current);
-        glRef.current.texImage2D(glRef.current.TEXTURE_2D, 0, glRef.current.RGBA, glRef.current.RGBA, glRef.current.UNSIGNED_BYTE, video);
-
-        // Draw
-        if (positionBufferRef.current && texCoordBufferRef.current && positionLocationRef.current >= 0 && texCoordLocationRef.current >= 0) {
-          glRef.current.bindBuffer(glRef.current.ARRAY_BUFFER, positionBufferRef.current);
-          glRef.current.enableVertexAttribArray(positionLocationRef.current);
-          glRef.current.vertexAttribPointer(positionLocationRef.current, 2, glRef.current.FLOAT, false, 0, 0);
-
-          glRef.current.bindBuffer(glRef.current.ARRAY_BUFFER, texCoordBufferRef.current);
-          glRef.current.enableVertexAttribArray(texCoordLocationRef.current);
-          glRef.current.vertexAttribPointer(texCoordLocationRef.current, 2, glRef.current.FLOAT, false, 0, 0);
-
-          glRef.current.drawArrays(glRef.current.TRIANGLE_STRIP, 0, 4);
-        }
-      } catch (error) {
-        console.error('Render error:', error);
-      }
-      
-      rafRef.current = requestAnimationFrame(render);
-    }
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', () => {
@@ -327,8 +275,6 @@ export function VideoBackground({
 
     return () => {
       isInitializedRef.current = false;
-      setVideoLoaded(false);
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', () => {
         const buffer = 0.2;
         if (video.currentTime > video.duration - buffer) {
@@ -339,17 +285,18 @@ export function VideoBackground({
       video.removeEventListener('pause', startPlayback);
       cancelAnimationFrame(rafRef.current);
       
-      if (glRef.current) {
-        const gl = glRef.current;
-        if (programRef.current) gl.deleteProgram(programRef.current);
-        if (textureRef.current) gl.deleteTexture(textureRef.current);
+      if (gl) {
+        gl.deleteProgram(program);
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader);
+        gl.deleteTexture(texture);
       }
     };
-  }, [initializeWebGL]);
+  }, []);
 
   return (
     <div className={cn("fixed inset-0 -z-10 overflow-hidden", className)}>
-      {/* Gradient background - show immediately as fallback */}
+      {/* Gradient background */}
       <div 
         className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.15)_0%,rgba(6,78,59,0.2)_45%,rgba(15,23,42,0.4)_100%)]"
         style={{ pointerEvents: 'none' }}
@@ -362,10 +309,7 @@ export function VideoBackground({
           <div className="flex items-end justify-center flex-1 px-4">
             <canvas 
               ref={canvasRef}
-              className={cn(
-                "h-[90vh] w-auto object-contain transition-opacity duration-500",
-                videoLoaded ? "opacity-100" : "opacity-0"
-              )}
+              className="h-[90vh] w-auto object-contain"
               style={{ 
                 imageRendering: 'crisp-edges',
                 transform: 'translateZ(0)', // Force GPU acceleration
