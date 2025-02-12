@@ -19,8 +19,8 @@ export function UserChatMessage({
   return (
     <div className="flex items-start mb-8 flex-row">
       <div className="relative flex-1">
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-blue-500/20 via-blue-500/15 to-blue-400/20 rounded-lg"></div>
-        <Card className="relative border border-blue-500/15 bg-slate-900/10 sm:bg-slate-900/5 backdrop-blur-sm">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-blue-500/15 to-blue-400/20 rounded-lg"></div>
+        <Card className="relative border border-blue-500/30 bg-slate-900/10 sm:bg-slate-900/5 backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="mb-2 text-xs text-blue-400">
               <span>{truncatedAddress}</span>
