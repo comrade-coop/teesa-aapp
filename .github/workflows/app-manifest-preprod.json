@@ -11,13 +11,13 @@
     "container": {
       "build": {
         "repo": "https://github.com/comrade-coop/teesa-aapp.git",
-        "tag": "5b5d6bb7cbe4397103a65b081a7d4f476125937f",
+        "tag": "__AAPPTAG__",
         "dockerfile": "deploy/Dockerfile",
         "args": "__AAPPARGS__"
       }
     },
     "ingress": {
-      "hostname": "__AAPPTAGNAME__.teesa-preprod.kubocloud.io",
+      "hostname": "__AAPPCNAME__.teesa-preprod.kubocloud.io",
       "port": 3000
     },
     "developer": {

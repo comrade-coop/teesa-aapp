@@ -1,7 +1,9 @@
 name: Trigger on Release Tag (Test)
 
 on:
-  workflow_dispatch: 
+  release:
+    types:
+      - published
 
 jobs:
   release-trigger:
@@ -27,11 +29,11 @@ jobs:
 
       - name: Replace placeholders in app-manifest-preprod.json
         run: |
-          COMMIT_SHA=$(git rev-parse ${{ github.event.ref }})
-          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+          AAPP_CNAME=$(echo "${{ github.event.release.tag_name }}" | sed 's/[^0-9]//g' | awk '{printf "v%04d", $0}')
+          echo "AAPP_CNAME=$AAPP_CNAME" >> $GITHUB_ENV
 
-          sed -i "s/__AAPPTAG__/$COMMIT_SHA/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
-          sed -i "s/__AAPPTAGNAME__/${COMMIT_SHA:0:5}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+          sed -i "s/__AAPPTAG__/${{ github.event.release.tag_name }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+          sed -i "s/__AAPPCNAME__/$AAPP_CNAME/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s#__AAPPARGS__#${{ secrets.AAPP_ARGS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s#__AAPPDEVPUBKEY__#${{ secrets.AAPP_DEV_PUB_KEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
 
@@ -45,7 +47,7 @@ jobs:
           subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           resource_group: "teesa"
-          vm_name: "teesa-${{ env.COMMIT_SHA }}"
+          vm_name: "teesa-${{ env.AAPP_CNAME }}"
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
