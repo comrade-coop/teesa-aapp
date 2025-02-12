@@ -10,8 +10,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get job id
-        id: get_job_id
+      - name: Get job html url
+        id: get_job_html_url
         uses: actions/github-script@v7
         with:
           script: |
@@ -22,8 +22,8 @@ jobs:
                 repo: context.repo.repo,
                 run_id: context.runId,
               });
-            const job_id = workflow_run.jobs[0].id;
-            return job_id;
+            const job_html_url = workflow_run.jobs[0].html_url;
+            return job_html_url;
 
       - name: Replace placeholders in app-manifest-preprod.json
         run: |
@@ -33,7 +33,6 @@ jobs:
           sed -i "s/__AAPPTAG__/$COMMIT_SHA/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s/__AAPPTAGNAME__/${COMMIT_SHA:0:5}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s#__AAPPARGS__#${{ secrets.AAPP_ARGS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
-          sed -i "s/__AAPPJOB__/${{ steps.get_job_id.outputs.result }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           sed -i "s#__AAPPDEVPUBKEY__#${{ secrets.AAPP_DEV_PUB_KEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
 
           cat "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
@@ -51,3 +50,4 @@ jobs:
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
           certbot_email: "dev@teesa.ai"
+          current_job_url: ${{ steps.get_job_html_url.outputs.result }}
