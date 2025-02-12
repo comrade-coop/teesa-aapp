@@ -12,15 +12,15 @@ export function LlmChatMessagePlaceholder() {
         />
       </div>
 
-      <Card className="flex-1 backdrop-blur-sm border border-slate-700/50 bg-slate-800/65 sm:bg-slate-800/50">
-        <CardContent className="p-3">
-          <Placeholder className="w-full h-4 mb-2" />
-          <Placeholder className="w-3/4 h-4 mb-2" />
-          <div className="flex justify-end">
-            <Placeholder className="w-16 h-3" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative flex-1">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-blue-400/15 to-purple-500/20 rounded-lg"></div>
+        <Card className="relative border border-purple-500/30 bg-slate-900/20 sm:bg-slate-900/10 backdrop-blur-sm">
+          <CardContent className="p-3">
+            <Placeholder className="w-full h-4 mb-2" />
+            <Placeholder className="w-3/4 h-4 mb-2" />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
