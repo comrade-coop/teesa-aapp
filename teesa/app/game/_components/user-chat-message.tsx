@@ -17,21 +17,24 @@ export function UserChatMessage({
 
   return (
     <div className="flex items-start mb-8 flex-row">
-      <Card className="flex-1 bg-blue-600/30 sm:bg-blue-600/10 border border-blue-500/20 backdrop-blur-sm">
-        <CardContent className="p-3">
-          <div className="mb-2 text-xs text-blue-400">
-            <span className="break-all">{userAddress}</span>
-          </div>
-          <p className="text-sm mb-2 text-slate-200">{message}</p>
-          <div className="flex justify-end">
-            <span className="text-xs text-blue-400">
-              {formatedDate}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="relative flex-1">
+        <div className="absolute -inset-[1.5px] bg-gradient-to-r from-blue-500/20 via-blue-500/15 to-blue-400/20 rounded-lg"></div>
+        <Card className="relative border border-blue-500/15 bg-blue-600/20 sm:bg-blue-600/5 backdrop-blur-sm">
+          <CardContent className="p-3">
+            <div className="mb-2 text-xs text-blue-400">
+              <span className="break-all">{userAddress}</span>
+            </div>
+            <p className="text-sm mb-2 text-slate-200">{message}</p>
+            <div className="flex justify-end">
+              <span className="text-xs text-blue-400">
+                {formatedDate}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center ml-4 border border-blue-500/30">
+      <div className="w-10 h-10 rounded-full bg-blue-600/15 flex items-center justify-center ml-4 border border-blue-500/20">
         <User className="w-6 h-6 text-blue-400" />
       </div>
     </div>
