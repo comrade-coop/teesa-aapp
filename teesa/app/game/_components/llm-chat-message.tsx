@@ -21,19 +21,25 @@ export function LlmChatMessage({
       </div>
 
       <div className="relative flex-1">
-        <div className={`absolute -inset-[1px] rounded-lg ${
+        <div className={`absolute inset-0 rounded-lg ${
           isSuccessMessage
             ? 'bg-gradient-to-r from-green-500/20 to-emerald-400/20'
             : isWarningMessage
               ? 'bg-gradient-to-r from-yellow-500/20 to-amber-400/20'
               : 'bg-gradient-to-r from-blue-500/20 via-blue-400/15 to-purple-500/20'
         }`}></div>
-        <Card className={`relative backdrop-blur-sm ${
+        <Card className={`relative backdrop-blur-sm border ${
           isSuccessMessage
-            ? 'border-green-500/30 bg-green-900/20 sm:bg-green-900/10'
+            ? 'border-green-500/30'
             : isWarningMessage
-              ? 'border-yellow-500/30 bg-yellow-900/20 sm:bg-yellow-900/10'
-              : 'border-slate-700/30 bg-slate-900/20 sm:bg-slate-900/10'
+              ? 'border-yellow-500/30'
+              : 'border-purple-500/30'
+          } ${
+          isSuccessMessage
+            ? 'bg-green-900/20 sm:bg-green-900/10'
+            : isWarningMessage
+              ? 'bg-yellow-900/20 sm:bg-yellow-900/10'
+              : 'bg-slate-900/20 sm:bg-slate-900/10'
           }`}>
           <CardContent className="p-3">
             <p 
