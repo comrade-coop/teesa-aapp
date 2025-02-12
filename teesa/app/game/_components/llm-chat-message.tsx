@@ -12,7 +12,7 @@ export function LlmChatMessage({
 
   return (
     <div className="flex items-start mb-8 flex-row">
-      <div className="w-10 h-10 rounded-full bg-blue-600/15 flex items-center justify-center mr-4 border border-blue-500/20 overflow-hidden">
+      <div className="w-10 h-10 rounded-full bg-slate-900/10 flex items-center justify-center mr-4 border border-blue-500/20 overflow-hidden">
         <img
           src="/teesa.png"
           alt="Teesa"
@@ -21,7 +21,7 @@ export function LlmChatMessage({
       </div>
 
       <div className="relative flex-1">
-        <div className={`absolute -inset-[1.5px] rounded-lg ${
+        <div className={`absolute -inset-[1px] rounded-lg ${
           isSuccessMessage
             ? 'bg-gradient-to-r from-green-500/20 to-emerald-400/20'
             : isWarningMessage
@@ -30,10 +30,10 @@ export function LlmChatMessage({
         }`}></div>
         <Card className={`relative backdrop-blur-sm ${
           isSuccessMessage
-            ? 'border-green-500/30 bg-green-800/30 sm:bg-green-800/10'
+            ? 'border-green-500/30 bg-green-900/20 sm:bg-green-900/10'
             : isWarningMessage
-              ? 'border-yellow-500/30 bg-yellow-800/40 sm:bg-yellow-800/20'
-              : 'border-slate-700/30 bg-slate-800/40 sm:bg-slate-800/20'
+              ? 'border-yellow-500/30 bg-yellow-900/20 sm:bg-yellow-900/10'
+              : 'border-slate-700/30 bg-slate-900/20 sm:bg-slate-900/10'
           }`}>
           <CardContent className="p-3">
             <p 
