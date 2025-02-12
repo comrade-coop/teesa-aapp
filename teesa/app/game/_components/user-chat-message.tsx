@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/card"
 import { timestampToFormatedDate } from "@/lib/utils"
-import { User } from 'lucide-react'
 
 export function UserChatMessage({
   timestamp,
@@ -14,6 +13,7 @@ export function UserChatMessage({
   userAddress: string
 }) {
   const formatedDate = timestampToFormatedDate(locale, timestamp);
+  const avatarUrl = `https://api.dicebear.com/6.x/pixel-art/svg?seed=${userAddress}`;
 
   return (
     <div className="flex items-start mb-8 flex-row">
@@ -34,8 +34,12 @@ export function UserChatMessage({
         </Card>
       </div>
 
-      <div className="w-10 h-10 rounded-full bg-slate-900/10 flex items-center justify-center ml-4 border border-blue-500/20">
-        <User className="w-6 h-6 text-blue-400" />
+      <div className="w-10 h-10 rounded-full bg-slate-900/10 flex items-center justify-center ml-4 border border-blue-500/20 overflow-hidden">
+        <img 
+          src={avatarUrl}
+          alt={`Avatar for ${userAddress}`}
+          className="w-full h-full"
+        />
       </div>
     </div>
   )
