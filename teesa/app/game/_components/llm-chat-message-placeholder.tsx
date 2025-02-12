@@ -18,6 +18,9 @@ export function LlmChatMessagePlaceholder() {
           <CardContent className="p-3">
             <Placeholder className="w-full h-4 mb-2" />
             <Placeholder className="w-3/4 h-4 mb-2" />
+            <div className="flex justify-end">
+              <Placeholder className="w-16 h-3" />
+            </div>
           </CardContent>
         </Card>
       </div>
