@@ -131,7 +131,7 @@ Respond with "NONE" if you cannot extract a word from the input.`;
     // Get playful comment
     const comment = await this.getPlayfulComment(question, yesNo);
 
-    const fullResponse = `${yesNo}! ${comment}`;
+    const fullResponse = `${comment}`;
     return fullResponse;
   }
 
@@ -204,8 +204,8 @@ ${question}
 The answer is: ${answer}
 
 # TASK:
-Generate a short playful comment to add after the answer response. The comment should be relevent to the answer.
-DO NOT include Yes/No in your response - just the comment. 
+Respond to the player's question starting with the direct answer "${answer}".
+Continue with a short playful comment relevant to what the player asked and the current game state.
 DO NOT include any other words, explanation, or special formatting. 
 Respond with ONLY the comment, nothing else.
 
@@ -227,6 +227,7 @@ ${userInput}
 # TASK:
 The word is not what the player is guessing.
 Generate a short playful comment for the incorrect guess.
+Start by saying that the word is not what the player guessed.
 Keep it encouraging but make it clear that the the word is not what the player guessed.
 DO NOT include any other words, explanation, or special formatting in your response.
 Respond with ONLY the comment, nothing else.
