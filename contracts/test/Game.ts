@@ -64,7 +64,7 @@ describe("Game", function () {
       const paymentAmount = INITIAL_FEE;
       await game.connect(player).payFee({ value: paymentAmount });
       
-      const expectedTeamShare = (paymentAmount * 30n) / 100n;
+      const expectedTeamShare = (paymentAmount * 20n) / 100n;
       const expectedPrizePool = paymentAmount - expectedTeamShare;
       
       expect(await game.teamShare()).to.equal(expectedTeamShare);
