@@ -27,7 +27,6 @@ fi
 docker run -d \
   -p "$ssh_port:22" \
   -p "3000:3000" \
-  -p "11434:11434" \
   -v "$root_directory:/teesa-aapp" \
   -v "$volumes_path/vscode:/root/.vscode-server" \
   -v "$volumes_path/cursor:/root/.cursor-server" \
