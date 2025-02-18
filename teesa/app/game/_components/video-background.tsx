@@ -25,7 +25,7 @@ const fragmentShaderSource = `#version 300 es
   // Transparency thresholds
   const float TRANSPARENT_THRESHOLD = 0.03;
   const float OPAQUE_THRESHOLD = 0.1;
-  const float MAX_OPACITY = 0.90;
+  const float MAX_OPACITY = 0.95;
   
   // Color adjustments
   const float COLOR_DARKENING = 0.95;
