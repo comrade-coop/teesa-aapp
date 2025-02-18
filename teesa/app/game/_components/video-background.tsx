@@ -310,7 +310,7 @@ export function VideoBackground({
           <div className="flex items-end justify-center flex-1 px-4">
             <canvas 
               ref={canvasRef}
-              className="h-[90vh] w-auto object-contain"
+              className="h-[95vh] w-auto object-contain"
               style={{ 
                 imageRendering: 'crisp-edges',
                 transform: 'translateZ(0)', // Force GPU acceleration
@@ -330,7 +330,7 @@ export function VideoBackground({
               }}
             >
               <source 
-                src="/teesa-idle.mp4"
+                src="/teesa.mp4"
                 type="video/mp4" 
               />
               Your browser does not support the video tag.
