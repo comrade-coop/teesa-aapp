@@ -1,4 +1,4 @@
-name: Trigger on Release Tag
+name: Update redirects
 
 on:
   release:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Private Cloud (Dev)
+      - name: Update default redirect to point to the latest version
         run: |
           curl --silent --show-error \
                --location 'https://github-confidential.kubocloud.io/teesa-aapp/deploy?tag=${{ github.event.release.tag_name }}' \
