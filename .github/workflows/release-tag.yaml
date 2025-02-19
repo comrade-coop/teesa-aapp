@@ -1,4 +1,4 @@
-name: Trigger on Release Tag (Test)
+name: Release tag
 
 on:
   release:
@@ -27,17 +27,17 @@ jobs:
             const job_html_url = workflow_run.jobs[0].html_url;
             return job_html_url;
 
-      - name: Replace placeholders in app-manifest-preprod.json
+      - name: Replace placeholders in app-manifest.json
         run: |
           AAPP_CNAME=$(echo "${{ github.event.release.tag_name }}" | sed 's/[^0-9]//g' | awk '{printf "v%04d", $0}')
           echo "AAPP_CNAME=$AAPP_CNAME" >> $GITHUB_ENV
 
-          sed -i "s/__AAPPTAG__/${{ github.event.release.tag_name }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
-          sed -i "s/__AAPPCNAME__/$AAPP_CNAME/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
-          sed -i "s#__AAPPARGS__#${{ secrets.AAPP_ARGS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
-          sed -i "s#__AAPPDEVPUBKEY__#${{ secrets.AAPP_DEV_PUB_KEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+          sed -i "s/__AAPPTAG__/${{ github.event.release.tag_name }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s/__AAPPCNAME__/$AAPP_CNAME/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPARGS__#${{ secrets.AAPP_ARGS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPDEVPUBKEY__#${{ secrets.AAPP_DEV_PUB_KEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
 
-          cat "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+          cat "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
 
       - name: Deploy confidential virtual machine in Azure
         uses: comrade-coop/aapp-toolkit/workflow@main
