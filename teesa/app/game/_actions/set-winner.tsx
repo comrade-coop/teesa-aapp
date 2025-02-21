@@ -11,6 +11,9 @@ export function setWinner(userAddress: string, timestamp: number) {
   if (process.env.NEXT_PUBLIC_ENV_MODE === 'dev') {
     console.log('DEV MODE: Winner added:', userAddress);
     console.log('DEV MODE: Prize awarded');
+
+    addAwardPrizeSuccessMessage(userAddress, timestamp);
+
     return;
   }
 
@@ -49,6 +52,12 @@ async function awardPrize(userAddress: string, timestamp: number) {
 }
 
 async function onAwardPrizeSuccess(userAddress: string, timestamp: number) {
+  await addAwardPrizeSuccessMessage(userAddress, timestamp);
+
+  transferTeesaFundsToContract();
+}
+
+async function addAwardPrizeSuccessMessage(userAddress: string, timestamp: number) {
   const message: HistoryEntry = {
     id: uuidv4(),
     userId: userAddress,
@@ -58,6 +67,4 @@ async function onAwardPrizeSuccess(userAddress: string, timestamp: number) {
   };
 
   gameState.addToHistory(message);
-
-  transferTeesaFundsToContract();
 }
