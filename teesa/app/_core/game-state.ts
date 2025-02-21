@@ -65,4 +65,18 @@ class GameState {
   }
 }
 
-export const gameState = new GameState();
+const globalState = globalThis as unknown as {
+  _gameState?: GameState;
+};
+
+export const gameState = (() => {
+  if (typeof window !== 'undefined') {
+    throw new Error('GameState should only be used on the server');
+  }
+
+  if (!globalState._gameState) {
+    globalState._gameState = new GameState();
+  }
+  
+  return globalState._gameState;
+})();
