@@ -6,9 +6,11 @@ import { LlmChatMessage } from "./llm-chat-message";
 
 export function MessagesList({
   messages,
+  showingAllMessages,
   scrollToBottom
 }: {
   messages: MessageUiStateModel[],
+  showingAllMessages: boolean,
   scrollToBottom: boolean
 }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -36,7 +38,7 @@ export function MessagesList({
 
     // Check initially and when messages change
     checkScrollPosition();
-    
+
     container.addEventListener('scroll', checkScrollPosition);
     return () => container.removeEventListener('scroll', checkScrollPosition);
   }, [messages]);
@@ -51,8 +53,8 @@ export function MessagesList({
     <div className="flex-1 overflow-auto my-4 relative" ref={containerRef}>
 
       <div className="mx-4">
-      
-        <LlmChatMessage message={INITIAL_MESSAGE} />
+
+        {showingAllMessages && <LlmChatMessage message={INITIAL_MESSAGE} />}
 
         {
           messages.map((message) => (
@@ -64,10 +66,10 @@ export function MessagesList({
       </div>
 
       <div ref={messagesEndRef} />
-      
+
       {showScrollButton && (
         <div className="sticky bottom-0 w-full flex justify-center pb-4 pointer-events-none">
-          <button 
+          <button
             onClick={scrollToBottomSmooth}
             className="bg-gradient-to-b from-purple-600 to-indigo-600 text-white p-3 rounded-full shadow-lg hover:opacity-90 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_rgba(147,51,234,0.5)] hover:from-purple-500 hover:to-indigo-500 z-10 pointer-events-auto"
             aria-label="Scroll to bottom"
