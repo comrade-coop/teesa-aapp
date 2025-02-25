@@ -50,16 +50,17 @@ export function MessagesList({
   return (
     <div className="flex-1 overflow-auto my-4 relative" ref={containerRef}>
 
-      <LlmChatMessage message={INITIAL_MESSAGE} />
-
       <div className="mx-4">
-      {
-        messages.map((message) => (
-          <div key={message.id}>
-            {message.display}
-          </div>
-        ))
-      }
+      
+        <LlmChatMessage message={INITIAL_MESSAGE} />
+
+        {
+          messages.map((message) => (
+            <div key={message.id}>
+              {message.display}
+            </div>
+          ))
+        }
       </div>
 
       <div ref={messagesEndRef} />
