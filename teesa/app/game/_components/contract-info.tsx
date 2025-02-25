@@ -3,11 +3,15 @@ import { ExternalLink } from 'lucide-react';
 export function ContractInfo({
   prizePool,
   currentFee,
+  prizePoolUsdc,
+  currentFeeUsdc,
   contractAddress,
   chainId
 }: {
   prizePool: string;
   currentFee: string;
+  prizePoolUsdc: string;
+  currentFeeUsdc: string;
   contractAddress: string | undefined;  
   chainId: number;
 }) {
@@ -28,11 +32,11 @@ export function ContractInfo({
       <div className="space-y-2">
         <div>
           <p className="text-sm text-slate-400">Prize Pool</p>
-          <p className="text-lg font-medium">{prizePool} ETH</p>
+          <p className="text-lg font-medium">{prizePool} ETH <span className="text-sm text-slate-400">(≈ ${prizePoolUsdc} USDC)</span></p>
         </div>
         <div>
           <p className="text-sm text-slate-400">Message Fee</p>
-          <p className="text-lg font-medium">{currentFee} ETH</p>
+          <p className="text-lg font-medium">{currentFee} ETH <span className="text-sm text-slate-400">(≈ ${currentFeeUsdc} USDC)</span></p>
         </div>
         {contractAddress && (
           <div>

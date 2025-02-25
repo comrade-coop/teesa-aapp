@@ -32,6 +32,8 @@ export default function Page() {
   const [gameAbandoned, setGameAbandoned] = useState<boolean>(false);
   const [prizePool, setPrizePool] = useState<string>('0');
   const [currentFee, setCurrentFee] = useState<string>('0');
+  const [prizePoolUsdc, setPrizePoolUsdc] = useState<string>('0');
+  const [currentFeeUsdc, setCurrentFeeUsdc] = useState<string>('0');
   const [contractAddress, setContractAddress] = useState<string | undefined>(undefined);
   const [chainId, setChainId] = useState<number>(0);
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
@@ -89,9 +91,11 @@ export default function Page() {
   }
 
   async function fetchContractInfo() {
-    const { prizePool, currentFee, gameAbandoned } = await getContractInfo();
+    const { prizePool, currentFee, prizePoolUsdc, currentFeeUsdc, gameAbandoned } = await getContractInfo();
     setPrizePool(prizePool);
     setCurrentFee(currentFee);
+    setPrizePoolUsdc(prizePoolUsdc);
+    setCurrentFeeUsdc(currentFeeUsdc);
     setGameAbandoned(gameAbandoned);
   }
 
@@ -246,6 +250,8 @@ export default function Page() {
           onLogout={logout}
           prizePool={prizePool}
           currentFee={currentFee}
+          prizePoolUsdc={prizePoolUsdc}
+          currentFeeUsdc={currentFeeUsdc}
           contractAddress={contractAddress}
           chainId={chainId}
           className="order-1 md:order-3" />
