@@ -26,6 +26,8 @@ export function SidePanel({
   onLogout,
   prizePool,
   currentFee,
+  prizePoolUsdc,
+  currentFeeUsdc,
   contractAddress,
   chainId,
   className
@@ -35,6 +37,8 @@ export function SidePanel({
   className?: string;
   prizePool: string;
   currentFee: string;
+  prizePoolUsdc: string;
+  currentFeeUsdc: string;
   contractAddress: string | undefined;
   chainId: number;
 }) {
@@ -92,6 +96,8 @@ export function SidePanel({
           <ContractInfo 
             prizePool={prizePool}
             currentFee={currentFee}
+            prizePoolUsdc={prizePoolUsdc}
+            currentFeeUsdc={currentFeeUsdc}
             contractAddress={contractAddress}
             chainId={chainId}
           />
