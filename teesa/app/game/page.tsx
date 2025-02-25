@@ -227,6 +227,7 @@ export default function Page() {
           {showMessages ?
             <MessagesList
               messages={getMessagesForList()}
+              showingAllMessages={showAllMessages}
               scrollToBottom={scrollMessagesToBottom} />
             :
             <div className="flex flex-col items-center justify-center h-full">
