@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageUiStateModel } from "../_models/message-ui-state-model";
 import { ChevronDown } from "lucide-react";
+import { INITIAL_MESSAGE } from "@/app/_core/game-const";
+import { LlmChatMessage } from "./llm-chat-message";
 
 export function MessagesList({
   messages,
@@ -47,6 +49,9 @@ export function MessagesList({
 
   return (
     <div className="flex-1 overflow-auto my-4 relative" ref={containerRef}>
+
+      <LlmChatMessage message={INITIAL_MESSAGE} />
+
       <div className="mx-4">
       {
         messages.map((message) => (

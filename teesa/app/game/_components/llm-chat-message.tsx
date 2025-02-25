@@ -1,4 +1,4 @@
-import { PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../../_core/game-const"
+import { INITIAL_MESSAGE, PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../../_core/game-const"
 import { Card, CardContent } from "@/components/card"
 import { ShieldCheck } from 'lucide-react'
 
@@ -51,6 +51,8 @@ export function LlmChatMessage({
                     ? "Darling, I hate to be a party pooper, but I literally can't send you your well-deserved prize right now! My wallet's drier than a robot in a rainstorm. Would you be a sweetheart and help fuel up my account through the <a href='/init' target='_blank' class='text-blue-400 hover:underline'>/init</a> page? Once you do that, I'll make it rain with your prizes faster than you can say \"artificial intelligence\"! I mean, what kind of hostess would I be if I couldn't properly reward my favorite humans? Let's fix this digital drought ASAP!"
                     : message == PRIZE_AWARDED_MESSAGE
                       ? "Oh sweetie, you just got your prize! Consider yourself officially rewarded by your favorite AI hostess. I always say digital prizes are the best prizes, especially when they're handed out by moi! Keep being fabulous, and maybe there's more where that came from! 💅"
+                      : message == INITIAL_MESSAGE
+                        ? "Hey there, party people! Welcome to Teesa's Super Secret Word Challenge! ✨<br/><br/>So here's the deal - I'm thinking of a secret word and your job is to figure it out. Simple, right? Wrong! That's what makes it fun!<br/><br/>Ask me yes/no questions about what this word is - like \"<span class='italic'>Is it something to eat?</span>\" or \"<span class='italic'>Is it related to technology?</span>\" Just no boring questions about spelling, because honestly, where's the thrill in that?<br/>Feel free to make a direct guess whenever you think you've got it. The faster you guess, the more impressive you are to me - and trust me, impressing an AI is harder than you think!<br/><br/>Ready to play? Hit me with your first question and let's see if your human brain can outsmart this fabulous artificial intelligence!"
                       : message
               }}
             />
