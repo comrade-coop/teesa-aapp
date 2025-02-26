@@ -96,9 +96,10 @@ All secret words are nouns. When determining the type:
 # EXAMPLES:
 - "alive" -> "question" (asking about a property)
 - "flower" -> "guess" (direct noun)
-- "is it a plant" -> "question" (asking about category since using "a")
+- "door?" -> "guess" (direct noun)
+- "is it a plant" -> "question" (asking about category since using indefinite article "a")
 - "is it car" -> "guess" (direct noun, not asking about category or property)
-- "does it grow in gardens" -> "question" (asking about behavior/property)
+- "does it grow in gardens?" -> "question" (asking about behavior/property)
 - "is it made of metal" -> "question" (asking about material property)
 - "is it abstract" -> "question" (asking about abstract property)
 - "is your word about the future of economy" -> "question" (asking about abstract concepts and categories)
