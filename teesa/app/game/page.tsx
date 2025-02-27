@@ -19,6 +19,8 @@ import { processPayment } from './_actions/process-payment';
 import { ProcessPaymentResult } from './_actions/process-payment';
 import { getContractInfo } from './_actions/get-contract-info';
 import { getEnvironments } from '../_actions/get-environments';
+import { WorldSummary } from './_components/world-summary';
+import { generateSummary } from './_actions/generate-summary';
 
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -37,6 +39,8 @@ export default function Page() {
   const [contractAddress, setContractAddress] = useState<string | undefined>(undefined);
   const [chainId, setChainId] = useState<number>(0);
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
+  const [worldSummary, setWorldSummary] = useState<string>('');
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
 
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
@@ -67,6 +71,7 @@ export default function Page() {
 
     fetchGameState();
     fetchContractInfo();
+    updateWorldSummary();
 
     // Get new messages only if we are not showing all messages
     if (showAllMessages) {
@@ -138,11 +143,27 @@ export default function Page() {
       };
     });
 
-    setMessages(previousMessages => [
-      ...previousMessages,
-      ...newMessagesAsUiState
-    ]);
+    if (newMessagesAsUiState.length > 0) {
+      setMessages(previousMessages => [
+        ...previousMessages,
+        ...newMessagesAsUiState
+      ]);
+    }
   };
+
+  async function updateWorldSummary() {
+    if (isGeneratingSummary) return;
+    
+    setIsGeneratingSummary(true);
+    try {
+      const summary = await generateSummary();
+      setWorldSummary(summary);
+    } catch (error) {
+      console.error('Error updating summary:', error);
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  }
 
   async function hadleChatMessage(message: string) {
     if (!walletAddress) {
@@ -224,15 +245,25 @@ export default function Page() {
             showAllMessages={showAllMessages}
             onTabChange={handleTabChange} />
 
-          {showMessages ?
-            <MessagesList
-              messages={getMessagesForList()}
-              showingAllMessages={showAllMessages}
-              scrollToBottom={scrollMessagesToBottom} />
-            :
+          {showMessages ? (
+            <>
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <MessagesList
+                  messages={getMessagesForList()}
+                  showingAllMessages={showAllMessages}
+                  scrollToBottom={scrollMessagesToBottom} />
+                
+                <WorldSummary 
+                  summary={worldSummary}
+                  className="mx-4 my-2" 
+                />
+              </div>
+            </>
+          ) : (
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-white">Connect your wallet to start playing</p>
-            </div>}
+            </div>
+          )}
 
           {ready && <BottomPanel
             className='mt-auto'
