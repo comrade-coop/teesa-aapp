@@ -66,10 +66,16 @@ export function ContractInfo({
           </div>
         )}
 
-        {/* Visual separator */}
-        <div className="h-4 w-full"></div>
+        {/* Add larger space before separator */}
+        <div className="h-6"></div>
         
-        <div className="border-t border-blue-500/30 pt-6 bg-slate-800/30 p-4 rounded-md">
+        {/* Flat separator */}
+        <div className="border-t border-blue-500/30"></div>
+        
+        {/* Add equal larger space after separator */}
+        <div className="h-6"></div>
+        
+        <div className="border-t-0 bg-slate-800/30 rounded-md">
           <p className="text-sm text-slate-400 mb-2">How it works</p>
           <ul className="space-y-2 text-sm text-slate-300">
             <li>• Message fee increases by 1% after each message</li>
