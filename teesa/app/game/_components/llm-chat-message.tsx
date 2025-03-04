@@ -1,6 +1,7 @@
 import { INITIAL_MESSAGE, PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../../_core/game-const"
 import { Card, CardContent } from "@/components/card"
 import { ShieldCheck } from 'lucide-react'
+import { openExternalLink } from "@/lib/external-link-utils"
 
 export function LlmChatMessage({
   message
@@ -9,6 +10,14 @@ export function LlmChatMessage({
 }) {
   const isSuccessMessage = message === WON_GAME_MESSAGE || message === PRIZE_AWARDED_MESSAGE;
   const isWarningMessage = message === TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE;
+  
+  // Handle the TEE secured link
+  const handleTeeSecuredClick = (e: any) => {
+    const url = process.env.NEXT_PUBLIC_ATTESTATION_URL || '';
+    if (url) {
+      openExternalLink(e, url);
+    }
+  };
 
   return (
     <div className="flex items-start mb-8 flex-row">
@@ -62,6 +71,7 @@ export function LlmChatMessage({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
+                onClick={handleTeeSecuredClick}
               >
                 <ShieldCheck className="w-4 h-4 me-1" />
                 <span className="text-xs">
