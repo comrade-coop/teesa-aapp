@@ -1,4 +1,5 @@
 import { ExternalLink } from 'lucide-react';
+import { openExternalLink } from '@/lib/external-link-utils';
 
 export function ContractInfo({
   prizePool,
@@ -26,25 +27,36 @@ export function ContractInfo({
   };
 
   const explorerInfo = getExplorerInfo();
+  
+  // Handle click events for the contract link
+  const handleLinkClick = (e: any) => {
+    const url = `${explorerInfo.url}/address/${contractAddress}`;
+    openExternalLink(e, url);
+  };
 
   return (
-    <div className="space-y-4 p-4 rounded-lg bg-slate-800/50 border border-blue-500/30">
-      <div className="space-y-2">
+    <div className="space-y-3 p-4 rounded-lg bg-slate-800/50 border border-blue-500/30">
+      <div className="space-y-0">
         <div>
-          <p className="text-sm text-slate-400">Prize Pool</p>
-          <p className="text-lg font-medium">{prizePool} ETH <span className="text-sm text-slate-400">(≈ ${prizePoolUsdc} USDC)</span></p>
+          <p className="text-sm text-slate-400 font-bold">Prize Pool</p>
+          <p className="text-lg font-medium">{prizePool} ETH</p>
+          <p className="text-sm text-slate-400">(≈ ${prizePoolUsdc} USDC)</p>
         </div>
-        <div>
-          <p className="text-sm text-slate-400">Message Fee</p>
-          <p className="text-lg font-medium">{currentFee} ETH <span className="text-sm text-slate-400">(≈ ${currentFeeUsdc} USDC)</span></p>
+
+        <div className="my-4 pt-4">
+          <p className="text-sm text-slate-400 font-bold">Message Fee</p>
+          <p className="text-lg font-medium">{currentFee} ETH</p>
+          <p className="text-sm text-slate-400">(≈ ${currentFeeUsdc} USDC)</p>
         </div>
+        
         {contractAddress && (
-          <div>
+          <div className="my-4 pt-4">
             <a
               href={`${explorerInfo.url}/address/${contractAddress}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
+              onClick={handleLinkClick}
             >
               Contract on {explorerInfo.name}
               <ExternalLink size={14} />
@@ -52,7 +64,10 @@ export function ContractInfo({
           </div>
         )}
 
-        <div className="pt-4 border-t border-blue-500/30">
+        {/* Visual separator */}
+        <div className="h-4 w-full"></div>
+        
+        <div className="border-t border-blue-500/30 pt-6 bg-slate-800/30 p-4 rounded-md">
           <p className="text-sm text-slate-400 mb-2">How it works</p>
           <ul className="space-y-2 text-sm text-slate-300">
             <li>• Message fee increases by 1% after each message</li>

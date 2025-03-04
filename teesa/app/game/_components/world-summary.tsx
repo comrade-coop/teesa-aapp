@@ -21,7 +21,7 @@ export function WorldSummary({
           className="flex items-center gap-2 hover:text-blue-300 transition-colors flex-grow text-left"
         >
           <BookOpen className="h-4 w-4 text-blue-400" />
-          <span className="font-medium text-sm">World Summary</span>
+          <span className="font-medium text-sm">Word Summary</span>
           {isExpanded ? (
             <ChevronUp className="h-4 w-4 text-blue-400 ml-1" />
           ) : (
@@ -37,7 +37,7 @@ export function WorldSummary({
               <p className="whitespace-pre-line text-sm">{summary}</p>
             </div>
           ) : (
-            <p className="text-gray-400 italic text-xs">No information about the world yet. The summary will update automatically as you play.</p>
+            <p className="text-gray-400 italic text-xs">No information about the word yet. The summary will update automatically as you play.</p>
           )}
         </div>
       )}
