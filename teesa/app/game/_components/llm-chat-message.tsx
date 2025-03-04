@@ -13,11 +13,28 @@ export function LlmChatMessage({
   
   // Handle the TEE secured link
   const handleTeeSecuredClick = (e: any) => {
-    const url = process.env.NEXT_PUBLIC_ATTESTATION_URL || '';
-    if (url) {
-      openExternalLink(e, url);
+    const href = e.currentTarget.getAttribute('href');
+    if (href) {
+      openExternalLink(e, href);
     }
   };
+
+  // Handle link clicks in the message
+  const handleMessageLinkClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'A' && target.classList.contains('external-link')) {
+      e.preventDefault();
+      const href = target.getAttribute('href');
+      if (href) {
+        openExternalLink(e as any, href);
+      }
+    }
+  };
+  
+  // Set up link click listener when the component mounts
+  if (typeof document !== 'undefined') {
+    document.addEventListener('click', handleMessageLinkClick as any);
+  }
 
   return (
     <div className="flex items-start mb-8 flex-row">
@@ -61,8 +78,8 @@ export function LlmChatMessage({
                     : message == PRIZE_AWARDED_MESSAGE
                       ? "Oh sweetie, you just got your prize! Consider yourself officially rewarded by your favorite AI hostess. I always say digital prizes are the best prizes, especially when they're handed out by moi! Keep being fabulous, and maybe there's more where that came from! 💅"
                       : message == INITIAL_MESSAGE
-                        ? "Hey there, party people! Welcome to Teesa's Super Secret Word Challenge! ✨<br/><br/>So here's the deal - I'm thinking of a secret word and your job is to figure it out. Simple, right? Wrong! That's what makes it fun!<br/><br/>Ask me yes/no questions about what this word is - like \"<span class='italic'>Is it something to eat?</span>\" or \"<span class='italic'>Is it related to technology?</span>\" Just no boring questions about spelling, because honestly, where's the thrill in that?<br/>Feel free to make a direct guess whenever you think you've got it. The faster you guess, the more impressive you are to me - and trust me, impressing an AI is harder than you think!<br/><br/>Ready to play? Hit me with your first question and let's see if your human brain can outsmart this fabulous artificial intelligence!"
-                      : message
+                        ? `Hey there! Welcome to Teesa's Secret Word Challenge! ✨<br/><br/>I'm thinking of a secret word and your job is to guess it. Ask me yes/no questions like "<span class='italic'>Is it something to eat?</span>" or "<span class='italic'>Is it related to technology?</span>" No spelling questions please!<br/><br/>What makes this game special? I'm an autonomous agent running in a Trusted Execution Environment (TEE), which means the secret word is securely stored where not even my creators can peek at it! You can verify this by checking my <a href='https://github.com/comrade-coop/teesa-aapp' target='_blank' class='text-blue-400 hover:underline external-link'>open-source code</a> and the <a href='${process.env.NEXT_PUBLIC_ATTESTATION_URL}' target='_blank' class='text-blue-400 hover:underline external-link'>TEE attestation report</a>.<br/><br/>Ready to play? Ask your first question and let's see if you can outsmart me!`
+                        : message
               }}
             />
             <div className="flex items-center justify-end">

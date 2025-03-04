@@ -30,8 +30,10 @@ export function ContractInfo({
   
   // Handle click events for the contract link
   const handleLinkClick = (e: any) => {
-    const url = `${explorerInfo.url}/address/${contractAddress}`;
-    openExternalLink(e, url);
+    const href = e.currentTarget.getAttribute('href');
+    if (href) {
+      openExternalLink(e, href);
+    }
   };
 
   return (

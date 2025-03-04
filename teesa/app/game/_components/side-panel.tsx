@@ -52,16 +52,18 @@ export function SidePanel({
   
   // Handle TEE secured link
   const handleTeeSecuredClick = (e: any) => {
-    const url = process.env.NEXT_PUBLIC_ATTESTATION_URL || '';
-    if (url) {
-      openExternalLink(e, url);
+    const href = e.currentTarget.getAttribute('href');
+    if (href) {
+      openExternalLink(e, href);
     }
   };
   
   // Handle social media links
   const handleSocialLinkClick = (e: any) => {
-    const url = e.currentTarget.href;
-    openExternalLink(e, url);
+    const href = e.currentTarget.getAttribute('href');
+    if (href) {
+      openExternalLink(e, href);
+    }
   };
 
   return (
