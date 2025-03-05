@@ -36,7 +36,7 @@ Make sure you have the following installed:
 3. Build the production Docker image:
    ```bash
    docker build \
-      --build-arg NETWORK=<network> \ # localhost, sepolia, base
+      --build-arg NETWORK=<network> \ # localhost, sepolia, baseSepolia, base
       --build-arg RPC_URL=<rpc_url> \ # RPC URL for the network
       --build-arg BLOCKCHAINSCAN_API_KEY=<blockchainscan_api_key> \ # API key for the blockchain scanner (Etherscan or Basescan, depending on the network. We automatically use the correct API key based on the network.)
       --build-arg TEAM_ADDRESS=<team_address> \ # The address of the team multi-sig wallet

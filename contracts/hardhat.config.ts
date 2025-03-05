@@ -26,6 +26,10 @@ const config: HardhatUserConfig = {
       url: process.env.RPC_URL_SEPOLIA,
       accounts: [process.env.WALLET_PRIVATE_KEY!]
     },
+    baseSepolia: {
+      url: process.env.RPC_URL_BASE_SEPOLIA,
+      accounts: [process.env.WALLET_PRIVATE_KEY!]
+    },
     base: {
       url: process.env.RPC_URL_BASE,
       accounts: [process.env.WALLET_PRIVATE_KEY!]
@@ -34,6 +38,7 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       sepolia: process.env.ETHERSCAN_API_KEY!,
+      baseSepolia: process.env.BASESCAN_API_KEY!,
       base: process.env.BASESCAN_API_KEY!
     }
   }
