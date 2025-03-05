@@ -50,6 +50,7 @@ contract Game is ReentrancyGuard {
     bool public gameEnded;
 
     uint256 public teamShare;
+    uint256 public nextGameShare;
 
     uint256 public prizePool;
     uint256 public currentFee;
@@ -85,6 +86,8 @@ contract Game is ReentrancyGuard {
     error AbandonedGameUserShareAlreadyClaimed(); // The abandoned game user share is already claimed
     error InvalidWinnerAddress(); // The winner address is invalid
     error AbandonedGameTimeElapsed(); // The abandoned game time has elapsed
+    error NoNextGameShareToSend(); // No next game share to send
+    error NextGameShareSendFailed(); // The next game share send failed
 
     // Events
     // A new user fee payment is received
@@ -124,6 +127,12 @@ contract Game is ReentrancyGuard {
 
     // The team share is increased
     event TeamShareIncreased(uint256 amount);
+
+    // The next game share is increased
+    event NextGameShareIncreased(uint256 amount);
+
+    // The next game share is sent
+    event NextGameShareSent(uint256 amount, address recipient);
 
     // An abandoned game user share is claimed
     event AbandonedGameUserShareClaimed(
@@ -167,13 +176,17 @@ contract Game is ReentrancyGuard {
             totalPaymentsPerUser[msg.sender]
         );
 
-        uint256 teamShareAmount = (msg.value * 20) / 100;
+        uint256 teamShareAmount = (msg.value * 10) / 100;
         teamShare += teamShareAmount;
 
-        uint256 prizePoolShare = msg.value - teamShareAmount;
+        uint256 nextGameShareAmount = (msg.value * 10) / 100;
+        nextGameShare += nextGameShareAmount;
+
+        uint256 prizePoolShare = msg.value - teamShareAmount - nextGameShareAmount;
         prizePool += prizePoolShare;
 
         emit TeamShareIncreased(teamShare);
+        emit NextGameShareIncreased(nextGameShare);
         emit PrizePoolIncreased(prizePool);
 
         unchecked {
@@ -323,5 +336,22 @@ contract Game is ReentrancyGuard {
         uint256 proportionalShare = (prizePool * totalPaymentsPerUser[lastPlayerAddress]) / totalPayments;
 
         return tenPercent > proportionalShare ? tenPercent : proportionalShare;
+    }
+
+    function sendNextGameShare(address payable recipient) external nonReentrant {
+        if (msg.sender != owner) revert NotOwner();
+        if (!gameEnded) revert GameNotEnded();
+        if (nextGameShare == 0) revert NoNextGameShareToSend();
+
+        uint256 amount = nextGameShare;
+        nextGameShare = 0;
+
+        (bool success, ) = recipient.call{value: amount}("");
+        if (!success) {
+            nextGameShare = amount;
+            revert NextGameShareSendFailed();
+        }
+
+        emit NextGameShareSent(amount, recipient);
     }
 }
