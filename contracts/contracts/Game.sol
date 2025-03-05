@@ -88,6 +88,7 @@ contract Game is ReentrancyGuard {
     error AbandonedGameTimeElapsed(); // The abandoned game time has elapsed
     error NoNextGameShareToSend(); // No next game share to send
     error NextGameShareSendFailed(); // The next game share send failed
+    error TeamShareSendFailed(); // The team share send failed
 
     // Events
     // A new user fee payment is received
@@ -134,15 +135,15 @@ contract Game is ReentrancyGuard {
     // The next game share is sent
     event NextGameShareSent(uint256 amount, address recipient);
 
+    // The team share is sent
+    event TeamShareSent(uint256 amount);
+
     // An abandoned game user share is claimed
     event AbandonedGameUserShareClaimed(
         address indexed userAddress,
         uint256 amount,
         bool isLastPlayer
     );
-
-    // Owner funds are transferred to the contract
-    event OwnerFundsTransferred(uint256 amount);
 
     // The prize pool is funded directly
     event PrizePoolFunded(uint256 amount);
@@ -284,17 +285,40 @@ contract Game is ReentrancyGuard {
         emit TeamShareWithdrawn(teamAmount);
     }
 
-    function abandonedGameTimeElapsed() public view returns (bool) {
-        return block.timestamp >= lastPaymentTime + 30 days;
+    function sendTeamShare() external nonReentrant {
+        if (msg.sender != owner) revert NotOwner();
+        if (!gameEnded) revert GameNotEnded();
+        if (teamShare == 0) revert NoTeamShareToWithdraw();
+
+        uint256 amount = teamShare;
+        teamShare = 0;
+
+        (bool success, ) = payable(teamAddress).call{value: amount}("");
+        if (!success) {
+            teamShare = amount;
+            revert TeamShareSendFailed();
+        }
+
+        emit TeamShareSent(amount);
     }
 
-    function transferOwnerFundsToContract() external payable nonReentrant {
+    function sendNextGameShare(address payable recipient) external nonReentrant {
         if (msg.sender != owner) revert NotOwner();
+        if (!gameEnded) revert GameNotEnded();
+        if (nextGameShare == 0) revert NoNextGameShareToSend();
 
-        teamShare += msg.value;
-        
-        emit OwnerFundsTransferred(msg.value);
-        emit TeamShareIncreased(teamShare);
+        uint256 amount = nextGameShare;
+        nextGameShare = 0;
+
+        (bool success, ) = recipient.call{value: amount}(
+            abi.encodeWithSignature("fundPrizePool()")
+        );
+        if (!success) {
+            nextGameShare = amount;
+            revert NextGameShareSendFailed();
+        }
+
+        emit NextGameShareSent(amount, recipient);
     }
 
     function fundPrizePool() external payable nonReentrant {
@@ -306,6 +330,10 @@ contract Game is ReentrancyGuard {
         
         emit PrizePoolFunded(msg.value);
         emit PrizePoolIncreased(prizePool);
+    }
+
+    function abandonedGameTimeElapsed() public view returns (bool) {
+        return block.timestamp >= lastPaymentTime + 30 days;
     }
 
     function _sendUserShare(
@@ -336,22 +364,5 @@ contract Game is ReentrancyGuard {
         uint256 proportionalShare = (prizePool * totalPaymentsPerUser[lastPlayerAddress]) / totalPayments;
 
         return tenPercent > proportionalShare ? tenPercent : proportionalShare;
-    }
-
-    function sendNextGameShare(address payable recipient) external nonReentrant {
-        if (msg.sender != owner) revert NotOwner();
-        if (!gameEnded) revert GameNotEnded();
-        if (nextGameShare == 0) revert NoNextGameShareToSend();
-
-        uint256 amount = nextGameShare;
-        nextGameShare = 0;
-
-        (bool success, ) = recipient.call{value: amount}("");
-        if (!success) {
-            nextGameShare = amount;
-            revert NextGameShareSendFailed();
-        }
-
-        emit NextGameShareSent(amount, recipient);
     }
 }
