@@ -24,7 +24,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *   - The owner sends the prize to the winner
  *
  * ClaimAbandonedGameShare:
- *   - If no message is sent within 3 days, the game is abandoned -> the game ends
+ *   - If no message is sent within 30 days, the game is abandoned -> the game ends
  *   - The users can claim the abandoned game shares:
  *     - If the user is the last player, they receive the bigger of:
  *         - 10% of the prize pool
@@ -37,6 +37,9 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *
  * WithdrawTeamShare:
  *   - The team can withdraw their share
+ * 
+ * FundPrizePool:
+ *   - Anyone can fund the prize pool
  */
 
 contract Game is ReentrancyGuard {
@@ -60,6 +63,7 @@ contract Game is ReentrancyGuard {
 
     mapping(address => uint256) public unclaimedShares;
 
+    bool public gameAbandoned;
     mapping(address => bool) public claimedAbandonedGameUserShares;
     uint256 private abandonedGameLastPlayerShare;
     uint256 private abandonedGameRemainingPrize;
@@ -143,12 +147,12 @@ contract Game is ReentrancyGuard {
         owner = msg.sender;
         deploymentTime = block.timestamp;
         lastPaymentTime = block.timestamp;
+        gameAbandoned = false;
     }
 
     function payFee() external payable nonReentrant {
         if (gameEnded) revert GameHasEnded();
         if (msg.value < currentFee) revert InsufficientFeePayment();
-        if (abandonedGameTimeElapsed()) revert AbandonedGameTimeElapsed();
 
         lastPlayerAddress = msg.sender;
         lastPaymentTime = block.timestamp;
@@ -215,6 +219,8 @@ contract Game is ReentrancyGuard {
 
         if (!gameEnded) {
             gameEnded = true;
+            gameAbandoned = true;
+
             emit GameEnded();
             emit GameAbandoned();
 
@@ -266,7 +272,7 @@ contract Game is ReentrancyGuard {
     }
 
     function abandonedGameTimeElapsed() public view returns (bool) {
-        return block.timestamp >= lastPaymentTime + 3 days;
+        return block.timestamp >= lastPaymentTime + 30 days;
     }
 
     function transferOwnerFundsToContract() external payable nonReentrant {

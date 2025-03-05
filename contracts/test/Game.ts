@@ -5,6 +5,7 @@ import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("Game", function () {
   const INITIAL_FEE = ethers.parseEther("0.001");
+  const ABANDONED_GAME_TIME = 30 * 24 * 60 * 60 + 1; // 30 days + 1 second
 
   let game: Game;
   let owner: SignerWithAddress;
@@ -18,6 +19,11 @@ describe("Game", function () {
     const GameFactory = await ethers.getContractFactory("Game");
     game = await GameFactory.deploy(teamAddress.address) as Game;
   });
+
+  async function advanceToAbandonedGameTime() {
+    await ethers.provider.send("evm_increaseTime", [ABANDONED_GAME_TIME]);
+    await ethers.provider.send("evm_mine", []);
+  }
 
   describe("Constructor", function () {
     it("should set the correct initial values", async function () {
@@ -81,22 +87,6 @@ describe("Game", function () {
       // Try to pay fee after game has ended
       await expect(game.connect(player).payFee({ value: INITIAL_FEE }))
         .to.be.revertedWithCustomError(game, "GameHasEnded");
-    });
-
-    it("should revert if abandoned game time has elapsed", async function () {
-      // First payment
-      await game.connect(player).payFee({ value: INITIAL_FEE });
-      
-      // Get the new fee amount after first payment
-      const newFee = await game.currentFee();
-      
-      // Advance time past 3 days
-      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]); // 3 days + 1 second
-      await ethers.provider.send("evm_mine", []);
-      
-      // Try to pay fee after abandoned game time has elapsed
-      await expect(game.connect(player).payFee({ value: newFee }))
-        .to.be.revertedWithCustomError(game, "AbandonedGameTimeElapsed");
     });
   });
 
@@ -188,8 +178,7 @@ describe("Game", function () {
     });
 
     it("should allow claiming abandoned game share after time elapsed", async function () {
-      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]); // 3 days + 1 second
-      await ethers.provider.send("evm_mine", []);
+      await advanceToAbandonedGameTime();
 
       await expect(game.connect(player).claimAbandonedGameShare())
         .to.emit(game, "GameEnded")
@@ -197,6 +186,7 @@ describe("Game", function () {
         .to.emit(game, "AbandonedGameUserShareClaimed");
 
       expect(await game.gameEnded()).to.be.true;
+      expect(await game.gameAbandoned()).to.be.true;
       expect(await game.claimedAbandonedGameUserShares(player.address)).to.be.true;
     });
 
@@ -206,16 +196,14 @@ describe("Game", function () {
     });
 
     it("should revert if user has not made any fee payments", async function () {
-      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]);
-      await ethers.provider.send("evm_mine", []);
+      await advanceToAbandonedGameTime();
 
       await expect(game.connect(nonPlayer).claimAbandonedGameShare())
         .to.be.revertedWithCustomError(game, "NoFeePaymentMade");
     });
 
     it("should revert if user has already claimed abandoned game share", async function () {
-      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]);
-      await ethers.provider.send("evm_mine", []);
+      await advanceToAbandonedGameTime();
 
       await game.connect(player).claimAbandonedGameShare();
       
@@ -227,8 +215,7 @@ describe("Game", function () {
       await game.connect(owner).setWinner(player.address);
       await game.connect(owner).awardPrize(); // Empty the prize pool
       
-      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]);
-      await ethers.provider.send("evm_mine", []);
+      await advanceToAbandonedGameTime();
 
       await expect(game.connect(player).claimAbandonedGameShare())
         .to.be.revertedWithCustomError(game, "EmptyPrizePool");
@@ -296,9 +283,7 @@ describe("Game", function () {
       // Calculate the initial prize pool contribution (80% of INITIAL_FEE)
       const initialPrizePoolContribution = (INITIAL_FEE * 80n) / 100n;
       
-      // Advance time past 3 days
-      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]); // 3 days + 1 second
-      await ethers.provider.send("evm_mine", []);
+      await advanceToAbandonedGameTime();
       
       const fundAmount = ethers.parseEther("1.0");
       await expect(game.connect(player).fundPrizePool({ value: fundAmount }))
