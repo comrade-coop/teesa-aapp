@@ -33,7 +33,7 @@ export async function getContractInfo() {
     const [prizePool, currentFee, gameAbandoned] = await Promise.all([
         callContractViewMethod('prizePool'),
         callContractViewMethod('currentFee'),
-        callContractViewMethod('abandonedGameTimeElapsed')
+        callContractViewMethod('gameAbandoned')
     ]);
 
     if (gameAbandoned) {
