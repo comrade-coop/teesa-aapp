@@ -1,10 +1,9 @@
 import 'server-only';
-import { executeContractActionServer } from '../../_contracts/execute-contract-action-server';
-import { retryWithExponentialBackoff } from '@/lib/server-utils';
-import { gameState } from '../../_core/game-state';
-import { HistoryEntry } from '../../_core/game-state';
-import { v4 as uuidv4 } from 'uuid';
 import { PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE } from '@/app/_core/game-const';
+import { retryWithExponentialBackoff } from '@/lib/server-utils';
+import { v4 as uuidv4 } from 'uuid';
+import { executeContractActionServer } from '../../_contracts/execute-contract-action-server';
+import { gameState, HistoryEntry } from '../../_core/game-state';
 import { transferTeesaFundsToContract } from './transfer-teesa-funds-to-contract';
 
 export function setWinner(userAddress: string, timestamp: number) {

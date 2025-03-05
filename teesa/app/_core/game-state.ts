@@ -3,6 +3,7 @@ import { Mutex } from 'async-mutex';
 import { wordsList } from './words-list';
 import fs from 'fs';
 import path from 'path';
+import { getEnv } from '@/lib/environments';
 
 export interface HistoryEntry {
   id: string;
@@ -29,7 +30,7 @@ class GameState {
 
   constructor() {
     this.mutex = new Mutex();
-    this.stateFilePath = process.env.GAME_STATE_FILE_PATH || path.join(process.cwd(), 'game-state.json');
+    this.stateFilePath = getEnv('GAME_STATE_FILE_PATH') || path.join(process.cwd(), 'game-state.json');
     
     // Load state from file or initialize new state
     const state = this.loadState();

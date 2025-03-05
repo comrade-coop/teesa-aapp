@@ -1,7 +1,9 @@
 'use server';
 
+import { getEnv } from '@/lib/environments';
+
 export async function getContractInitialized() {
-  const contractAddress = process.env.GAME_CONTRACT_ADDRESS;
+  const contractAddress = getEnv('GAME_CONTRACT_ADDRESS');
   
   return !!contractAddress;
 }
