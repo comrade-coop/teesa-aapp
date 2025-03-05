@@ -45,5 +45,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# game state
+# storage
 game-state.json
+environment-variables.json

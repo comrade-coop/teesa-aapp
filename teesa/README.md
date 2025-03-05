@@ -47,7 +47,7 @@ Ensure you have completed the following:
       - `BLOCKCHAIN_NETWORK` - Blockchain network for the contract - `localhost`, `sepolia`, `baseSepolia`, `base`
       - `CHAIN_ID` - Chain ID for the network
       - `RPC_URL` - RPC URL for the network
-   - `GAME_CONTRACT_ADDRESS` - Address of the game contract. **In development mode we use the address from the .env file. In production we set the address when we initialize the app using `process.env`**
+   - `GAME_CONTRACT_ADDRESS` - Address of the game contract.
    - `NEXT_PUBLIC_ATTESTATION_URL` - Url for serving attestation verification by aApp Toolkit
 ## Start the Application
 

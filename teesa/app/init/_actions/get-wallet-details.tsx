@@ -1,11 +1,11 @@
 'use server';
 
 import { ethers } from 'ethers';
-
+import { getEnv } from '@/lib/environments';
 export async function getAccountFundsAmount() {
-  const address = process.env.WALLET_ADDRESS as string;
+  const address = getEnv('WALLET_ADDRESS') as string;
   
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+  const provider = new ethers.JsonRpcProvider(getEnv('RPC_URL'));
   const balance = await provider.getBalance(address);
   
   // Convert balance from wei to ether

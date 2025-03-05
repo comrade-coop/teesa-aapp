@@ -3,6 +3,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { DeployContractResult } from '../_models/deploy-contract-result-enum';
+import { getEnv, setEnv } from '@/lib/environments';
 
 export async function deployContract(): Promise<DeployContractResult> {
   const execAsync = promisify(exec);
@@ -10,7 +11,7 @@ export async function deployContract(): Promise<DeployContractResult> {
   try {
     console.log('Deploying contract...');
 
-    const network = process.env.BLOCKCHAIN_NETWORK;
+    const network = getEnv('BLOCKCHAIN_NETWORK');
     const { stdout, stderr } = await execAsync(`cd ../contracts && npx hardhat deploy-contract ${network}`);
 
     console.log('Deployment output:');
@@ -25,7 +26,7 @@ export async function deployContract(): Promise<DeployContractResult> {
     }
 
     console.log(`Contract address: ${contractAddress}`);
-    process.env.GAME_CONTRACT_ADDRESS = contractAddress;
+    setEnv('GAME_CONTRACT_ADDRESS', contractAddress);
 
     return DeployContractResult.Success;
   } catch (error: any) {

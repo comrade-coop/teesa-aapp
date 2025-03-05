@@ -1,4 +1,5 @@
 import 'server-only'
+import { getEnv } from '@/lib/environments';
 
 export async function sendMessageEliza(message: string, systemMessage?: string | undefined): Promise<string> {
   // Construct the full message by combining system message and user message if needed
@@ -7,8 +8,8 @@ export async function sendMessageEliza(message: string, systemMessage?: string |
     : message;
 
   // Get environment variables
-  const apiUrl = process.env.ELIZA_API_URL;
-  const agentId = process.env.ELIZA_AGENT_ID;
+  const apiUrl = getEnv('ELIZA_API_URL');
+  const agentId = getEnv('ELIZA_AGENT_ID');
 
   if (!apiUrl || !agentId) {
     throw new Error('Missing required environment variables: ELIZA_API_URL or ELIZA_AGENT_ID');
@@ -17,7 +18,7 @@ export async function sendMessageEliza(message: string, systemMessage?: string |
   // Create URLSearchParams for form data
   const formData = new URLSearchParams();
   formData.append('text', fullMessage);
-  formData.append('roomId', process.env.GAME_CONTRACT_ADDRESS || 'Teesa Word Guessing Game');
+  formData.append('roomId', getEnv('GAME_CONTRACT_ADDRESS') || 'Teesa Word Guessing Game');
 
   // Make the API request
   const response = await fetch(`${apiUrl}/${agentId}/message`, {
