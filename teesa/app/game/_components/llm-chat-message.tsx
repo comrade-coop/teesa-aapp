@@ -1,7 +1,7 @@
-import { INITIAL_MESSAGE, PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../../_core/game-const"
-import { Card, CardContent } from "@/components/card"
-import { ShieldCheck } from 'lucide-react'
-import { openExternalLink } from "@/lib/external-link-utils"
+import { Card, CardContent } from "@/components/card";
+import { openExternalLink } from "@/lib/external-link-utils";
+import { ShieldCheck } from 'lucide-react';
+import { INITIAL_MESSAGE, PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../../_core/game-const";
 
 export function LlmChatMessage({
   message
@@ -33,7 +33,7 @@ export function LlmChatMessage({
   
   // Set up link click listener when the component mounts
   if (typeof document !== 'undefined') {
-    document.addEventListener('click', handleMessageLinkClick as any);
+    // document.addEventListener('click', handleMessageLinkClick as any);
   }
 
   return (
@@ -88,7 +88,7 @@ export function LlmChatMessage({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
-                onClick={handleTeeSecuredClick}
+                // onClick={handleTeeSecuredClick}
               >
                 <ShieldCheck className="w-4 h-4 me-1" />
                 <span className="text-xs">
