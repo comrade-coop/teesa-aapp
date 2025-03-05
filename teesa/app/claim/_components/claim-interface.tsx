@@ -40,51 +40,70 @@ export function ClaimInterface({ title, actionButtonText, onAction }: ClaimInter
   }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full gap-4 p-4">
-      <h1 className="text-2xl font-bold text-white mb-4">{title}</h1>
-      
-      {ready && (
-        <>
-          {!authenticated && (
-            <button
-              onClick={login}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-fit text-base"
-            >
-              Connect Wallet
-            </button>
-          )}
+    <div className="h-full bg-gray-900 overflow-auto">
+      <div className="py-8">
+        <div className="w-full max-w-2xl mx-auto px-4 space-y-8">
+          {/* Header */}
+          <h1 className="text-3xl font-bold text-white text-center mb-8">{title}</h1>
+
+          {/* Action Section */}
           {authenticated && (
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-white">Connected wallet: {walletAddress}</p>
-              <div className="flex gap-3">
+            <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+              <h2 className="text-xl font-semibold text-white mb-4">Claim Action</h2>
+              <div className="space-y-4">
                 <button
                   disabled={loading}
                   onClick={handleAction}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
                   {actionButtonText}
                 </button>
-                <button
-                  disabled={loading}
-                  onClick={logout}
-                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Disconnect
-                </button>
+                {message && (
+                  <p className={`text-sm ${
+                    message.type === 'success' ? 'text-green-400' : 
+                    message.type === 'error' ? 'text-red-400' : 
+                    'text-white italic'
+                  }`}>
+                    {message.text}
+                  </p>
+                )}
               </div>
-              {message && (
-                <p className={`mt-2 ${
-                  message.type === 'success' ? 'text-green-400' : 
-                  message.type === 'error' ? 'text-red-400' : 
-                  'text-white italic'
-                }`}>
-                  {message.text}
-                </p>
-              )}
             </div>
           )}
-        </>
-      )}
+
+          {/* Wallet Connection Section */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4">Wallet Connection</h2>
+            {ready && (
+              <>
+                {!authenticated ? (
+                  <button
+                    onClick={login}
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    disabled={loading}
+                  >
+                    Connect Wallet
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">Connected Address:</span>
+                      <span className="font-mono text-white">{walletAddress}</span>
+                    </div>
+                    <button
+                      onClick={logout}
+                      className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                      disabled={loading}
+                    >
+                      Disconnect Wallet
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 } 

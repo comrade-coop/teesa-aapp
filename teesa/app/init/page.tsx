@@ -71,7 +71,6 @@ export default function Page() {
 
   async function handleSendToTeesa() {
     if (!userWalletAddress) {
-      setSendEthMessage({ text: 'Please connect your wallet first', type: 'error' });
       return;
     }
 
@@ -107,7 +106,6 @@ export default function Page() {
 
   async function handleFundPrizePool() {
     if (!userWalletAddress) {
-      setFundPrizePoolMessage({ text: 'Please connect your wallet first', type: 'error' });
       return;
     }
 
@@ -162,61 +160,9 @@ export default function Page() {
           </div>
 
           {/* Send ETH to Teesa Wallet Section */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-            <h2 className="text-xl font-semibold text-white mb-4">Send ETH to Teesa Wallet</h2>
-            <div className="space-y-4">
-              <input
-                type="number"
-                placeholder="Amount in ETH"
-                className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                step="0.000001"
-                min="0.000001"
-                value={teesaAmount}
-                onChange={(e) => setTeesaAmount(Number(e.target.value))}
-              />
-              <button
-                onClick={handleSendToTeesa}
-                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                disabled={loading}
-              >
-                Send ETH
-              </button>
-              {sendEthMessage && (
-                <p className={`text-sm ${
-                  sendEthMessage.type === 'success' ? 'text-green-400' : 
-                  sendEthMessage.type === 'error' ? 'text-red-400' : 
-                  'text-white italic'
-                }`}>
-                  {sendEthMessage.text}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Contract Deployment or Prize Pool Section */}
-          {!contractInitialized ? (
+          {authenticated && (
             <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-              <h2 className="text-xl font-semibold text-white mb-4">Deploy Contract</h2>
-              <button
-                onClick={onClick}
-                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                disabled={loading}
-              >
-                Deploy Contract
-              </button>
-              {deployContractMessage && (
-                <p className={`mt-2 text-sm ${
-                  deployContractMessage.type === 'success' ? 'text-green-400' : 
-                  deployContractMessage.type === 'error' ? 'text-red-400' : 
-                  'text-white italic'
-                }`}>
-                  {deployContractMessage.text}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-              <h2 className="text-xl font-semibold text-white mb-4">Fund Prize Pool</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">Send ETH to Teesa Wallet</h2>
               <div className="space-y-4">
                 <input
                   type="number"
@@ -224,54 +170,114 @@ export default function Page() {
                   className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   step="0.000001"
                   min="0.000001"
-                  value={prizePoolAmount}
-                  onChange={(e) => setPrizePoolAmount(Number(e.target.value))}
+                  value={teesaAmount}
+                  onChange={(e) => setTeesaAmount(Number(e.target.value))}
                 />
                 <button
-                  onClick={handleFundPrizePool}
+                  onClick={handleSendToTeesa}
                   className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   disabled={loading}
                 >
-                  Fund Prize Pool
+                  Send ETH
                 </button>
-                {fundPrizePoolMessage && (
+                {sendEthMessage && (
                   <p className={`text-sm ${
-                    fundPrizePoolMessage.type === 'success' ? 'text-green-400' : 
-                    fundPrizePoolMessage.type === 'error' ? 'text-red-400' : 
+                    sendEthMessage.type === 'success' ? 'text-green-400' : 
+                    sendEthMessage.type === 'error' ? 'text-red-400' : 
                     'text-white italic'
                   }`}>
-                    {fundPrizePoolMessage.text}
+                    {sendEthMessage.text}
                   </p>
                 )}
               </div>
             </div>
           )}
 
+          {/* Contract Deployment or Prize Pool Section */}
+          {authenticated && (
+            !contractInitialized ? (
+              <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4">Deploy Contract</h2>
+                <button
+                  onClick={onClick}
+                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  disabled={loading}
+                >
+                  Deploy Contract
+                </button>
+                {deployContractMessage && (
+                  <p className={`mt-2 text-sm ${
+                    deployContractMessage.type === 'success' ? 'text-green-400' : 
+                    deployContractMessage.type === 'error' ? 'text-red-400' : 
+                    'text-white italic'
+                  }`}>
+                    {deployContractMessage.text}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4">Fund Prize Pool</h2>
+                <div className="space-y-4">
+                  <input
+                    type="number"
+                    placeholder="Amount in ETH"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    step="0.000001"
+                    min="0.000001"
+                    value={prizePoolAmount}
+                    onChange={(e) => setPrizePoolAmount(Number(e.target.value))}
+                  />
+                  <button
+                    onClick={handleFundPrizePool}
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    disabled={loading}
+                  >
+                    Fund Prize Pool
+                  </button>
+                  {fundPrizePoolMessage && (
+                    <p className={`text-sm ${
+                      fundPrizePoolMessage.type === 'success' ? 'text-green-400' : 
+                      fundPrizePoolMessage.type === 'error' ? 'text-red-400' : 
+                      'text-white italic'
+                    }`}>
+                      {fundPrizePoolMessage.text}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )
+          )}
+
           {/* Wallet Connection Section */}
           <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
             <h2 className="text-xl font-semibold text-white mb-4">Wallet Connection</h2>
-            {!authenticated ? (
-              <button
-                onClick={login}
-                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                disabled={loading}
-              >
-                Connect Wallet
-              </button>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Connected Address:</span>
-                  <span className="font-mono text-white">{userWalletAddress}</span>
-                </div>
-                <button
-                  onClick={logout}
-                  className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                  disabled={loading}
-                >
-                  Disconnect Wallet
-                </button>
-              </div>
+            {ready && (
+              <>
+                {!authenticated ? (
+                  <button
+                    onClick={login}
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    disabled={loading}
+                  >
+                    Connect Wallet
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">Connected Address:</span>
+                      <span className="font-mono text-white">{userWalletAddress}</span>
+                    </div>
+                    <button
+                      onClick={logout}
+                      className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                      disabled={loading}
+                    >
+                      Disconnect Wallet
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
