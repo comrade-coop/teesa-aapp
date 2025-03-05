@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 import { DeployContractResult } from './_models/deploy-contract-result-enum';
 import { transferFundsToTeesaWallet, TransferFundsToTeesaWalletResult } from '../_contracts/transfer-funds-to-teesa-wallet';
 import { getContractInitialized } from '../_actions/get-contract-initiliazed';
+import { fundPrizePool } from './_actions/fund-prize-pool';
+import { ExecuteContractActionClientResult } from '../_contracts/execute-contract-action-client';
 
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -14,10 +16,14 @@ export default function Page() {
   const [walletAddress, setWalletAddress] = useState<string>();
   const [walletBalance, setWalletBalance] = useState('');
   const [deployContractMessage, setDeployContractMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [transferFundsMessage, setTransferFundsMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [sendEthMessage, setSendEthMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [fundPrizePoolMessage, setFundPrizePoolMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [amount, setAmount] = useState<number | ''>('');
+  const [teesaAmount, setTeesaAmount] = useState<number | ''>('');
+  const [prizePoolAmount, setPrizePoolAmount] = useState<number | ''>('');
   const [contractInitialized, setContractInitialized] = useState(false);
+
+  const userWalletAddress = (ready && authenticated && user?.wallet?.address) ? user.wallet.address : undefined;
 
   useEffect(() => {
     fetchWalletDetails();
@@ -25,14 +31,25 @@ export default function Page() {
   }, []);
 
   async function fetchWalletDetails() {
-    const { balance, address } = await getAccountFundsAmount();
-    setWalletAddress(address);
-    setWalletBalance(balance);
+    try {
+      const { balance, address } = await getAccountFundsAmount();
+      setWalletAddress(address);
+      setWalletBalance(balance);
+    } catch (error) {
+      console.error('Failed to fetch wallet details:', error);
+      setWalletAddress(undefined);
+      setWalletBalance('0');
+    }
   }
 
   async function fetchContractInitialized() {
-    const contractInitializedResult = await getContractInitialized();
-    setContractInitialized(contractInitializedResult);
+    try {
+      const contractInitializedResult = await getContractInitialized();
+      setContractInitialized(contractInitializedResult);
+    } catch (error) {
+      console.error('Failed to fetch contract initialization status:', error);
+      setContractInitialized(false);
+    }
   }
 
   async function onClick() {
@@ -52,123 +69,213 @@ export default function Page() {
     }
   }
 
-  async function handleSend() {
-    if (!userWalletAddress || amount === '') {
+  async function handleSendToTeesa() {
+    if (!userWalletAddress) {
+      setSendEthMessage({ text: 'Please connect your wallet first', type: 'error' });
+      return;
+    }
+
+    if (teesaAmount === '' || teesaAmount <= 0) {
+      setSendEthMessage({ text: 'Please enter a valid amount greater than 0', type: 'error' });
       return;
     }
 
     try {
       setLoading(true);
-      setTransferFundsMessage({text: 'Sending ETH...', type: 'info' });
+      setSendEthMessage({text: 'Sending ETH...', type: 'info' });
       
-      const result = await transferFundsToTeesaWallet(userWalletAddress, wallets, amount);
+      const result = await transferFundsToTeesaWallet(userWalletAddress, wallets, teesaAmount);
       
       setLoading(false);
 
       if (result == TransferFundsToTeesaWalletResult.Success) {
-        setTransferFundsMessage({ text: 'ETH sent successfully', type: 'success' });
-        setAmount('' as any);
+        setSendEthMessage({ text: 'ETH sent successfully', type: 'success' });
+        setTeesaAmount('');
         await fetchWalletDetails();
       } else if (result == TransferFundsToTeesaWalletResult.FailedInsufficientFunds) {
-        setTransferFundsMessage({ text: 'Insufficient funds in Teesa wallet to pay for gas fees. Please add funds to the Teesa wallet and try again.', type: 'error' });
+        setSendEthMessage({ text: 'Insufficient funds in Teesa wallet to pay for gas fees. Please add funds to the Teesa wallet and try again.', type: 'error' });
       } else if (result == TransferFundsToTeesaWalletResult.FailedWalletNotFound) {
-        setTransferFundsMessage({ text: 'Wallet not found. Please connect to the correct wallet and try again.', type: 'error' });
+        setSendEthMessage({ text: 'Wallet not found. Please connect to the correct wallet and try again.', type: 'error' });
       } else {
-        setTransferFundsMessage({ text: 'Failed to send ETH', type: 'error' });
+        setSendEthMessage({ text: 'Failed to send ETH', type: 'error' });
       }
     } catch (error) {
       console.error('Failed to send ETH:', error);
+      setSendEthMessage({ text: 'Failed to send ETH', type: 'error' });
     }
   }
 
-  const userWalletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
+  async function handleFundPrizePool() {
+    if (!userWalletAddress) {
+      setFundPrizePoolMessage({ text: 'Please connect your wallet first', type: 'error' });
+      return;
+    }
+
+    if (prizePoolAmount === '' || prizePoolAmount <= 0) {
+      setFundPrizePoolMessage({ text: 'Please enter a valid amount greater than 0', type: 'error' });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setFundPrizePoolMessage({text: 'Funding prize pool...', type: 'info' });
+      
+      const result = await fundPrizePool(userWalletAddress, wallets, prizePoolAmount);
+      
+      setLoading(false);
+
+      if (result == ExecuteContractActionClientResult.Success) {
+        setFundPrizePoolMessage({ text: 'Prize pool funded successfully', type: 'success' });
+        setPrizePoolAmount('');
+        await fetchWalletDetails();
+      } else if (result == ExecuteContractActionClientResult.FailedWalletNotFound) {
+        setFundPrizePoolMessage({ text: 'Wallet not found. Please connect to the correct wallet and try again.', type: 'error' });
+      } else {
+        setFundPrizePoolMessage({ text: 'Failed to fund prize pool', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Failed to fund prize pool:', error);
+      setFundPrizePoolMessage({ text: 'Failed to fund prize pool', type: 'error' });
+    }
+  }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full px-4">
-      <h1 className="text-2xl font-bold text-white mb-4">Initialize Game Contract</h1>
+    <div className="h-full bg-gray-900 overflow-auto">
+      <div className="py-8">
+        <div className="w-full max-w-2xl mx-auto px-4 space-y-8">
+          {/* Header */}
+          <h1 className="text-3xl font-bold text-white text-center mb-8">Teesa Game Contract</h1>
 
-      <div className="text-white mb-4">
-        <p>Teesa Wallet Address: <span className="font-bold">{walletAddress || ''}</span></p>
-        <p>Teesa Wallet Balance: <span className="font-bold">{walletBalance || '0'} ETH</span></p>
-      </div>
+          {/* Teesa Wallet Section */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4">Teesa Wallet</h2>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Address:</span>
+                <span className="font-mono text-white">{walletAddress || 'Not available'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Balance:</span>
+                <span className="font-mono text-white">{walletBalance || '0'} ETH</span>
+              </div>
+            </div>
+          </div>
 
-      {contractInitialized ? (
-        <p className="text-green-400">Contract initialized successfully</p>
-      ) : (
-        <button
-          onClick={onClick}
-          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          disabled={loading}
-      >
-          Initialize contract
-        </button>
-      )}
+          {/* Send ETH to Teesa Wallet Section */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4">Send ETH to Teesa Wallet</h2>
+            <div className="space-y-4">
+              <input
+                type="number"
+                placeholder="Amount in ETH"
+                className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                step="0.000001"
+                min="0.000001"
+                value={teesaAmount}
+                onChange={(e) => setTeesaAmount(Number(e.target.value))}
+              />
+              <button
+                onClick={handleSendToTeesa}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                disabled={loading}
+              >
+                Send ETH
+              </button>
+              {sendEthMessage && (
+                <p className={`text-sm ${
+                  sendEthMessage.type === 'success' ? 'text-green-400' : 
+                  sendEthMessage.type === 'error' ? 'text-red-400' : 
+                  'text-white italic'
+                }`}>
+                  {sendEthMessage.text}
+                </p>
+              )}
+            </div>
+          </div>
 
-      {deployContractMessage && (
-        <p className={`mt-2 ${
-          deployContractMessage.type === 'success' ? 'text-green-400' : 
-          deployContractMessage.type === 'error' ? 'text-red-400' : 
-          'text-white italic'
-        }`}>
-          {deployContractMessage.text}
-        </p>
-      )}
-
-      {ready && (
-        <div className="flex flex-col items-center justify-center mt-12">
-          {!authenticated && (
-            <button
-              onClick={login}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-fit text-base"
-              disabled={loading}
-            >
-              Connect Wallet
-            </button>
-          )}
-          {authenticated && (
-            <>
-              <p className="text-white">Connected wallet: {userWalletAddress}</p>
-
-              <div className="flex gap-2 items-center mt-4">
+          {/* Contract Deployment or Prize Pool Section */}
+          {!contractInitialized ? (
+            <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+              <h2 className="text-xl font-semibold text-white mb-4">Deploy Contract</h2>
+              <button
+                onClick={onClick}
+                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                disabled={loading}
+              >
+                Deploy Contract
+              </button>
+              {deployContractMessage && (
+                <p className={`mt-2 text-sm ${
+                  deployContractMessage.type === 'success' ? 'text-green-400' : 
+                  deployContractMessage.type === 'error' ? 'text-red-400' : 
+                  'text-white italic'
+                }`}>
+                  {deployContractMessage.text}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+              <h2 className="text-xl font-semibold text-white mb-4">Fund Prize Pool</h2>
+              <div className="space-y-4">
                 <input
                   type="number"
                   placeholder="Amount in ETH"
-                  className="px-4 py-2 rounded-lg bg-gray-700 text-white"
+                  className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   step="0.000001"
                   min="0.000001"
-                  value={amount}
-                  onChange={(e) => setAmount(Number(e.target.value))}
+                  value={prizePoolAmount}
+                  onChange={(e) => setPrizePoolAmount(Number(e.target.value))}
                 />
                 <button
-                  onClick={handleSend}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  onClick={handleFundPrizePool}
+                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   disabled={loading}
                 >
-                  Send ETH
+                  Fund Prize Pool
                 </button>
+                {fundPrizePoolMessage && (
+                  <p className={`text-sm ${
+                    fundPrizePoolMessage.type === 'success' ? 'text-green-400' : 
+                    fundPrizePoolMessage.type === 'error' ? 'text-red-400' : 
+                    'text-white italic'
+                  }`}>
+                    {fundPrizePoolMessage.text}
+                  </p>
+                )}
               </div>
+            </div>
+          )}
 
-              {transferFundsMessage && (
-                <p className={`mt-2 ${
-                  transferFundsMessage.type === 'success' ? 'text-green-400' : 
-                  transferFundsMessage.type === 'error' ? 'text-red-400' : 
-                  'text-white italic'
-                }`}>
-                  {transferFundsMessage.text}
-                </p>
-              )}
-
+          {/* Wallet Connection Section */}
+          <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4">Wallet Connection</h2>
+            {!authenticated ? (
               <button
-                onClick={logout}
-                className="px-6 py-3 mt-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                onClick={login}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 disabled={loading}
               >
-                Disconnect
+                Connect Wallet
               </button>
-            </>
-          )}
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">Connected Address:</span>
+                  <span className="font-mono text-white">{userWalletAddress}</span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                  disabled={loading}
+                >
+                  Disconnect Wallet
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 } 
