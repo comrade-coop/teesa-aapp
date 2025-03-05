@@ -260,4 +260,55 @@ describe("Game", function () {
         .to.be.revertedWithCustomError(game, "NotOwner");
     });
   });
+
+  describe("Prize Pool Funding", function () {
+    it("should allow anyone to fund the prize pool", async function () {
+      const fundAmount = ethers.parseEther("1.0");
+      
+      await expect(game.connect(player).fundPrizePool({ value: fundAmount }))
+        .to.emit(game, "PrizePoolFunded")
+        .withArgs(fundAmount)
+        .to.emit(game, "PrizePoolIncreased")
+        .withArgs(fundAmount);
+
+      expect(await game.prizePool()).to.equal(fundAmount);
+    });
+
+    it("should revert if game has ended", async function () {
+      // End the game
+      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(owner).setWinner(player.address);
+      
+      const fundAmount = ethers.parseEther("1.0");
+      await expect(game.connect(player).fundPrizePool({ value: fundAmount }))
+        .to.be.revertedWithCustomError(game, "GameHasEnded");
+    });
+
+    it("should revert if funding amount is zero", async function () {
+      await expect(game.connect(player).fundPrizePool({ value: 0 }))
+        .to.be.revertedWith("Amount must be greater than 0");
+    });
+
+    it("should allow funding after abandonment time and reset the timer", async function () {
+      // First payment
+      await game.connect(player).payFee({ value: INITIAL_FEE });
+      
+      // Calculate the initial prize pool contribution (80% of INITIAL_FEE)
+      const initialPrizePoolContribution = (INITIAL_FEE * 80n) / 100n;
+      
+      // Advance time past 3 days
+      await ethers.provider.send("evm_increaseTime", [3 * 24 * 60 * 60 + 1]); // 3 days + 1 second
+      await ethers.provider.send("evm_mine", []);
+      
+      const fundAmount = ethers.parseEther("1.0");
+      await expect(game.connect(player).fundPrizePool({ value: fundAmount }))
+        .to.emit(game, "PrizePoolFunded")
+        .withArgs(fundAmount)
+        .to.emit(game, "PrizePoolIncreased")
+        .withArgs(initialPrizePoolContribution + fundAmount);
+
+      expect(await game.prizePool()).to.equal(initialPrizePoolContribution + fundAmount);
+      expect(await game.lastPaymentTime()).to.equal(await ethers.provider.getBlock("latest").then(b => b?.timestamp ?? 0));
+    });
+  });
 });

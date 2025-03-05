@@ -131,6 +131,9 @@ contract Game is ReentrancyGuard {
     // Owner funds are transferred to the contract
     event OwnerFundsTransferred(uint256 amount);
 
+    // The prize pool is funded directly
+    event PrizePoolFunded(uint256 amount);
+
     constructor(address _teamAddress) {
         if (_teamAddress == address(0)) revert InvalidTeamAddress();
 
@@ -273,6 +276,17 @@ contract Game is ReentrancyGuard {
         
         emit OwnerFundsTransferred(msg.value);
         emit TeamShareIncreased(teamShare);
+    }
+
+    function fundPrizePool() external payable nonReentrant {
+        if (gameEnded) revert GameHasEnded();
+        if (msg.value == 0) revert("Amount must be greater than 0");
+
+        prizePool += msg.value;
+        lastPaymentTime = block.timestamp;
+        
+        emit PrizePoolFunded(msg.value);
+        emit PrizePoolIncreased(prizePool);
     }
 
     function _sendUserShare(
