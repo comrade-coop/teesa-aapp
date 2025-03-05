@@ -99,6 +99,9 @@ export function setEnv(key: string, value: string): void {
     if (!envCache) {
         envCache = readEnvironmentFile();
     }
+
+    // Update process.env
+    process.env[key] = value;
     
     // Update the variable
     envCache[key] = value;
