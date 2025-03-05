@@ -47,6 +47,7 @@ describe("Game", function () {
       await expect(game.connect(player).payFee({ value: paymentAmount }))
         .to.emit(game, "FeePaymentReceived")
         .to.emit(game, "TeamShareIncreased")
+        .to.emit(game, "NextGameShareIncreased")
         .to.emit(game, "PrizePoolIncreased")
         .to.emit(game, "FeeIncreased");
 
@@ -66,14 +67,16 @@ describe("Game", function () {
         .to.be.revertedWithCustomError(game, "InsufficientFeePayment");
     });
 
-    it("should distribute fees correctly between team and prize pool", async function () {
+    it("should distribute fees correctly between team, next game share and prize pool", async function () {
       const paymentAmount = INITIAL_FEE;
       await game.connect(player).payFee({ value: paymentAmount });
       
-      const expectedTeamShare = (paymentAmount * 20n) / 100n;
-      const expectedPrizePool = paymentAmount - expectedTeamShare;
+      const expectedTeamShare = (paymentAmount * 10n) / 100n;
+      const expectedNextGameShare = (paymentAmount * 10n) / 100n;
+      const expectedPrizePool = paymentAmount - expectedTeamShare - expectedNextGameShare;
       
       expect(await game.teamShare()).to.equal(expectedTeamShare);
+      expect(await game.nextGameShare()).to.equal(expectedNextGameShare);
       expect(await game.prizePool()).to.equal(expectedPrizePool);
     });
 
@@ -294,6 +297,54 @@ describe("Game", function () {
 
       expect(await game.prizePool()).to.equal(initialPrizePoolContribution + fundAmount);
       expect(await game.lastPaymentTime()).to.equal(await ethers.provider.getBlock("latest").then(b => b?.timestamp ?? 0));
+    });
+  });
+
+  describe("Next Game Share", function () {
+    beforeEach(async function () {
+      // Make a payment to create next game share
+      await game.connect(player).payFee({ value: INITIAL_FEE });
+    });
+
+    it("should allow owner to send next game share after game has ended", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      const nextGameShareAmount = (INITIAL_FEE * 10n) / 100n;
+      const recipientBalanceBefore = await ethers.provider.getBalance(nonPlayer.address);
+      
+      await expect(game.connect(owner).sendNextGameShare(nonPlayer))
+        .to.emit(game, "NextGameShareSent")
+        .withArgs(nextGameShareAmount, nonPlayer.address);
+
+      const recipientBalanceAfter = await ethers.provider.getBalance(nonPlayer.address);
+      expect(recipientBalanceAfter).to.be.gt(recipientBalanceBefore);
+      expect(await game.nextGameShare()).to.equal(0);
+    });
+
+    it("should revert if non-owner tries to send next game share", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      await expect(game.connect(player).sendNextGameShare(nonPlayer))
+        .to.be.revertedWithCustomError(game, "NotOwner");
+    });
+
+    it("should revert if trying to send next game share before game has ended", async function () {
+      await expect(game.connect(owner).sendNextGameShare(nonPlayer))
+        .to.be.revertedWithCustomError(game, "GameNotEnded");
+    });
+
+    it("should revert if trying to send next game share when there is none", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      // Send the next game share first
+      await game.connect(owner).sendNextGameShare(nonPlayer);
+      
+      // Try to send again
+      await expect(game.connect(owner).sendNextGameShare(nonPlayer))
+        .to.be.revertedWithCustomError(game, "NoNextGameShareToSend");
     });
   });
 });
