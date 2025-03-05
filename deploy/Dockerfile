@@ -4,7 +4,7 @@ FROM ubuntu:latest AS base
 
 
 # Add build arguments
-# `localhost`, `sepolia` or `base`
+# `localhost`, `sepolia`, `baseSepolia` or `base`
 ARG NETWORK
 # RPC URL of the network to use for the contract deployment
 ARG RPC_URL

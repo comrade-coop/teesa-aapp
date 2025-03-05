@@ -6,16 +6,16 @@ import path from 'path';
 task("deploy-contract", "Deploy the game contract")
   .addPositionalParam(
     "targetNetwork",
-    "Network to deploy to (localhost, sepolia, or base)"
+    "Network to deploy to (localhost, sepolia, baseSepolia, or base)"
   )
   .setAction(async (args) => {
     await deploy(args.targetNetwork);
   });
 
-async function deploy(network: 'localhost' | 'sepolia' | 'base') {
+async function deploy(network: 'localhost' | 'sepolia' | 'baseSepolia' | 'base') {
   // Validate network parameter
-  if (!['localhost', 'sepolia', 'base'].includes(network)) {
-    throw new Error(`Invalid network: ${network}. Must be one of: localhost, sepolia, base`);
+  if (!['localhost', 'sepolia', 'baseSepolia', 'base'].includes(network)) {
+    throw new Error(`Invalid network: ${network}. Must be one of: localhost, sepolia, baseSepolia, base`);
   }
 
   try {

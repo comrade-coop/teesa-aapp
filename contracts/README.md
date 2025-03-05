@@ -10,6 +10,7 @@ This project includes the contract and associated tools for deploying and testin
 - **hardhat.config.ts:** Deployment configurations are available for the following networks:
   - Hardhat Localhost Network
   - Sepolia
+  - Base Sepolia
   - Base Ethereum Mainnet
 
 
@@ -40,6 +41,7 @@ Ensure you have completed the following:
    - RPC URLs for the networks:
       - `RPC_URL_LOCALHOST`: RPC URL for Hardhat localhost network
       - `RPC_URL_SEPOLIA`: RPC URL for Sepolia testnet (we are using Alchemy, but you can use any other RPC provider)
+      - `RPC_URL_BASE_SEPOLIA`: RPC URL for Base Sepolia testnet (we are using Alchemy, but you can use any other RPC provider)
       - `RPC_URL_BASE`: RPC URL for Base mainnet (we are using Alchemy, but you can use any other RPC provider)
    - Etherscan and Basescan API keys:
       - `ETHERSCAN_API_KEY`: Etherscan API key
@@ -54,7 +56,7 @@ Run the deployment script:
 ```bash
 npx hardhat compile-and-deploy-contract <network>
 ```
-Replace `<network>` with desired target (`localhost`, `sepolia`, `base`)
+Replace `<network>` with desired target (`localhost`, `sepolia`, `baseSepolia`, `base`)
 
 **Copy the contract address from the deployment output and set it in the `../teesa/.env` file as `GAME_CONTRACT_ADDRESS`**
 

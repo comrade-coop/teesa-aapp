@@ -6,13 +6,13 @@ import path from 'path';
 task("compile-contract", "Compile the game contract")
   .addPositionalParam(
     "targetNetwork",
-    "Network to deploy to (localhost, sepolia, or base)"
+    "Network to deploy to (localhost, sepolia, baseSepolia, or base)"
   )
   .setAction(async (args) => {
     await compile(args.targetNetwork);
   });
 
-async function compile(network: 'localhost' | 'sepolia' | 'base') {
+async function compile(network: 'localhost' | 'sepolia' | 'baseSepolia' | 'base') {
   try {
     // Remove artifacts, cache, and ignition deployments
     console.log('Removing artifacts, cache, and ignition deployments...');
@@ -76,8 +76,9 @@ async function compile(network: 'localhost' | 'sepolia' | 'base') {
     // Set CHAIN ID based on network
     const chainId = network === 'localhost' ? 31337 :
       network === 'sepolia' ? 11155111 :
-        network === 'base' ? 8453 :
-          -1;
+        network === 'baseSepolia' ? 84532 :
+          network === 'base' ? 8453 :
+            -1;
 
     // Set CHAIN ID in .env
     if (envContent.includes('CHAIN_ID=')) {
@@ -89,8 +90,9 @@ async function compile(network: 'localhost' | 'sepolia' | 'base') {
     // Update RPC URL based on network
     const rpcUrl = network === 'localhost' ? process.env.RPC_URL_LOCALHOST :
       network === 'sepolia' ? process.env.RPC_URL_SEPOLIA :
-        network === 'base' ? process.env.RPC_URL_BASE :
-          '';
+        network === 'baseSepolia' ? process.env.RPC_URL_BASE_SEPOLIA :
+          network === 'base' ? process.env.RPC_URL_BASE :
+            '';
 
     // Update RPC_URL in .env
     if (envContent.includes('RPC_URL=')) {
