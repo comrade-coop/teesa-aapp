@@ -232,25 +232,6 @@ describe("Game", function () {
     });
   });
 
-  describe("Owner Funds Transfer", function () {
-    it("should allow owner to transfer funds to contract", async function () {
-      const transferAmount = ethers.parseEther("1.0");
-      
-      await expect(game.connect(owner).transferOwnerFundsToContract({ value: transferAmount }))
-        .to.emit(game, "TeamShareIncreased")
-        .withArgs(transferAmount);
-
-      expect(await game.teamShare()).to.equal(transferAmount);
-    });
-
-    it("should revert if non-owner tries to transfer funds", async function () {
-      const transferAmount = ethers.parseEther("1.0");
-      
-      await expect(game.connect(player).transferOwnerFundsToContract({ value: transferAmount }))
-        .to.be.revertedWithCustomError(game, "NotOwner");
-    });
-  });
-
   describe("Prize Pool Funding", function () {
     it("should allow anyone to fund the prize pool", async function () {
       const fundAmount = ethers.parseEther("1.0");
@@ -301,9 +282,17 @@ describe("Game", function () {
   });
 
   describe("Next Game Share", function () {
+    let mockGame: Game;
+    let mockGameAddress: string;
+    
     beforeEach(async function () {
       // Make a payment to create next game share
       await game.connect(player).payFee({ value: INITIAL_FEE });
+      
+      // Deploy a mock game contract that will receive the next game share
+      const GameFactory = await ethers.getContractFactory("Game");
+      mockGame = await GameFactory.deploy(teamAddress.address) as Game;
+      mockGameAddress = await mockGame.getAddress();
     });
 
     it("should allow owner to send next game share after game has ended", async function () {
@@ -311,14 +300,14 @@ describe("Game", function () {
       await game.connect(owner).setWinner(player.address);
       
       const nextGameShareAmount = (INITIAL_FEE * 10n) / 100n;
-      const recipientBalanceBefore = await ethers.provider.getBalance(nonPlayer.address);
+      const mockGamePrizePoolBefore = await mockGame.prizePool();
       
-      await expect(game.connect(owner).sendNextGameShare(nonPlayer))
+      await expect(game.connect(owner).sendNextGameShare(mockGame))
         .to.emit(game, "NextGameShareSent")
-        .withArgs(nextGameShareAmount, nonPlayer.address);
+        .withArgs(nextGameShareAmount, mockGameAddress);
 
-      const recipientBalanceAfter = await ethers.provider.getBalance(nonPlayer.address);
-      expect(recipientBalanceAfter).to.be.gt(recipientBalanceBefore);
+      const mockGamePrizePoolAfter = await mockGame.prizePool();
+      expect(mockGamePrizePoolAfter).to.equal(mockGamePrizePoolBefore + nextGameShareAmount);
       expect(await game.nextGameShare()).to.equal(0);
     });
 
@@ -326,12 +315,12 @@ describe("Game", function () {
       // End the game
       await game.connect(owner).setWinner(player.address);
       
-      await expect(game.connect(player).sendNextGameShare(nonPlayer))
+      await expect(game.connect(player).sendNextGameShare(mockGame))
         .to.be.revertedWithCustomError(game, "NotOwner");
     });
 
     it("should revert if trying to send next game share before game has ended", async function () {
-      await expect(game.connect(owner).sendNextGameShare(nonPlayer))
+      await expect(game.connect(owner).sendNextGameShare(mockGame))
         .to.be.revertedWithCustomError(game, "GameNotEnded");
     });
 
@@ -340,11 +329,70 @@ describe("Game", function () {
       await game.connect(owner).setWinner(player.address);
       
       // Send the next game share first
-      await game.connect(owner).sendNextGameShare(nonPlayer);
+      await game.connect(owner).sendNextGameShare(mockGame);
       
       // Try to send again
-      await expect(game.connect(owner).sendNextGameShare(nonPlayer))
+      await expect(game.connect(owner).sendNextGameShare(mockGame))
         .to.be.revertedWithCustomError(game, "NoNextGameShareToSend");
+    });
+
+    it("should revert if recipient contract call fails", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      // End the mock game to make fundPrizePool revert
+      await mockGame.connect(owner).setWinner(player.address);
+      
+      await expect(game.connect(owner).sendNextGameShare(mockGame))
+        .to.be.revertedWithCustomError(game, "NextGameShareSendFailed");
+    });
+  });
+
+  describe("Send Team Share", function () {
+    beforeEach(async function () {
+      // Make a payment to create team share
+      await game.connect(player).payFee({ value: INITIAL_FEE });
+    });
+
+    it("should allow owner to send team share after game has ended", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      const teamShareAmount = (INITIAL_FEE * 10n) / 100n;
+      const teamBalanceBefore = await ethers.provider.getBalance(teamAddress.address);
+      
+      await expect(game.connect(owner).sendTeamShare())
+        .to.emit(game, "TeamShareSent")
+        .withArgs(teamShareAmount);
+
+      const teamBalanceAfter = await ethers.provider.getBalance(teamAddress.address);
+      expect(teamBalanceAfter).to.be.gt(teamBalanceBefore);
+      expect(await game.teamShare()).to.equal(0);
+    });
+
+    it("should revert if non-owner tries to send team share", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      await expect(game.connect(player).sendTeamShare())
+        .to.be.revertedWithCustomError(game, "NotOwner");
+    });
+
+    it("should revert if trying to send team share before game has ended", async function () {
+      await expect(game.connect(owner).sendTeamShare())
+        .to.be.revertedWithCustomError(game, "GameNotEnded");
+    });
+
+    it("should revert if trying to send team share when there is none", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      // Send the team share first
+      await game.connect(owner).sendTeamShare();
+      
+      // Try to send again
+      await expect(game.connect(owner).sendTeamShare())
+        .to.be.revertedWithCustomError(game, "NoTeamShareToWithdraw");
     });
   });
 });
