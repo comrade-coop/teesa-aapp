@@ -23,9 +23,9 @@ export function WorldSummary({
           <BookOpen className="h-4 w-4 text-blue-400" />
           <span className="font-medium text-sm">Word Summary</span>
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-blue-400 ml-1" />
-          ) : (
             <ChevronDown className="h-4 w-4 text-blue-400 ml-1" />
+          ) : (
+            <ChevronUp className="h-4 w-4 text-blue-400 ml-1" />
           )}
         </button>
       </div>
