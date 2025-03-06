@@ -1,11 +1,9 @@
-import 'server-only'
 import { Mutex } from 'async-mutex';
-import { wordsList } from './words-list';
 import fs from 'fs';
-import path from 'path';
-import { getEnv } from '@/lib/environments';
+import 'server-only';
+import { wordsList } from './words-list';
 
-const stateFilePath = getEnv('GAME_STATE_FILE_PATH') || path.join(process.cwd(), 'game-state.json');
+const STATE_FILE_PATH = "./game-state.json";
 
 export interface HistoryEntry {
   id: string;
@@ -43,8 +41,8 @@ class GameState {
 
   private loadState(): GameStateData {
     try {
-      if (fs.existsSync(stateFilePath)) {
-        const data = fs.readFileSync(stateFilePath, 'utf-8');
+      if (fs.existsSync(STATE_FILE_PATH)) {
+        const data = fs.readFileSync(STATE_FILE_PATH, 'utf-8');
         return JSON.parse(data);
       }
     } catch (error) {
@@ -56,7 +54,7 @@ class GameState {
 
     // Create the file with default state
     try {
-      fs.writeFileSync(stateFilePath, JSON.stringify(defaultState, null, 2));
+      fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(defaultState, null, 2));
     } catch (error) {
       console.error('Error creating game state file:', error);
     }
@@ -81,7 +79,7 @@ class GameState {
         gameEnded: this.gameEnded,
         winnerAddress: this.winnerAddress
       };
-      await fs.promises.writeFile(stateFilePath, JSON.stringify(state, null, 2));
+      await fs.promises.writeFile(STATE_FILE_PATH, JSON.stringify(state, null, 2));
     } catch (error) {
       console.error('Error saving game state:', error);
     }
@@ -125,8 +123,8 @@ class GameState {
 
   async reset() {
     // Delete the state file first
-    if (fs.existsSync(stateFilePath)) {
-      await fs.promises.unlink(stateFilePath);
+    if (fs.existsSync(STATE_FILE_PATH)) {
+      await fs.promises.unlink(STATE_FILE_PATH);
     }
     
     const defaultState = this.createDefaultState();
