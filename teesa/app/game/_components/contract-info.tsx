@@ -49,7 +49,7 @@ export function ContractInfo({
         </div>
 
         <div className="my-4 pt-4">
-          <p className="text-sm text-slate-400 font-bold">Message Fee</p>
+          <p className="text-sm text-slate-400 font-bold">Guess Fee</p>
           <p className="text-lg font-medium">{currentFee} ETH</p>
           <p className="text-sm text-slate-400">(≈ ${currentFeeUsdc} USDC)</p>
         </div>
@@ -81,10 +81,13 @@ export function ContractInfo({
         <div className="border-t-0 bg-slate-800/30 rounded-md">
           <p className="text-sm text-slate-400 mb-2">How it works</p>
           <ul className="space-y-2 text-sm text-slate-300">
-            <li>• Message fee increases by 1% after each message</li>
+            <li>• Asking questions and chatting with Teesa is free</li>
+            <li>• To make a guess, you pay a fee</li>
+            <li>• The fee increases by 10% after each question</li>
             <li>• Winner gets 80% of the accumulated fees</li>
-            <li>• Teesa DAO receives 20%</li>
-            <li className="pt-2 text-slate-400">If no activity for 3 days:</li>
+            <li>• 10% is sent to the prize pool of the next game</li>
+            <li>• Teesa DAO receives 10%</li>
+            <li className="pt-2 text-slate-400">If no activity for 30 days:</li>
             <li>• Last player gets at least 10%</li>
             <li>• Remaining prize split among players</li>
           </ul>

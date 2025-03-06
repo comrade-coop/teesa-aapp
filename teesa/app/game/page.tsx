@@ -1,27 +1,28 @@
 'use client';
 
-import { sendMessage } from './_actions/send-message';
-import { MessageUiStateModel } from './_models/message-ui-state-model';
-import { UserChatMessage } from './_components/user-chat-message';
 import { getLocaleClient, getTimestamp, stringIsNullOrEmpty } from '@/lib/utils';
-import { MessagesList } from './_components/messages-list';
-import { useEffect, useState } from 'react';
-import { BottomPanel } from './_components/bottom-panel';
-import { getMessages } from './_actions/get-messages';
-import { LlmChatMessage } from './_components/llm-chat-message';
-import { v4 as uuidv4 } from 'uuid';
-import { MessageTabs } from './_components/message-tabs';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { SidePanel } from './_components/side-panel';
-import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
-import { getGameState } from './_actions/get-game-state';
-import { processPayment } from './_actions/process-payment';
-import { ProcessPaymentResult } from './_actions/process-payment';
-import { getContractInfo } from './_actions/get-contract-info';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { getEnvironments } from '../_actions/get-environments';
-import { WorldSummary } from './_components/world-summary';
+import { InputTypeEnum } from '../_core/input-type-enum';
+import { checkMessageType } from './_actions/check-message-type';
 import { generateSummary } from './_actions/generate-summary';
-import { redirect, useRouter } from 'next/navigation';
+import { getContractInfo } from './_actions/get-contract-info';
+import { getGameState } from './_actions/get-game-state';
+import { getMessages } from './_actions/get-messages';
+import { processPayment, ProcessPaymentResult } from './_actions/process-payment';
+import { sendMessage } from './_actions/send-message';
+import { BottomPanel } from './_components/bottom-panel';
+import { LlmChatMessage } from './_components/llm-chat-message';
+import { MessageTabs } from './_components/message-tabs';
+import { MessagesList } from './_components/messages-list';
+import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
+import { SidePanel } from './_components/side-panel';
+import { UserChatMessage } from './_components/user-chat-message';
+import { WorldSummary } from './_components/world-summary';
+import { MessageUiStateModel } from './_models/message-ui-state-model';
 
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -29,7 +30,7 @@ export default function Page() {
   const [messages, setMessages] = useState<MessageUiStateModel[]>([]);
   const [lastTimestamp, setLastTimestamp] = useState<number | undefined>(undefined);
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
-  const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [winnerAddress, setWinnerAddress] = useState<string | undefined>(undefined);
   const [gameAbandoned, setGameAbandoned] = useState<boolean>(false);
@@ -160,7 +161,7 @@ export default function Page() {
 
   async function updateWorldSummary() {
     if (isGeneratingSummary) return;
-    
+
     setIsGeneratingSummary(true);
     try {
       const summary = await generateSummary();
@@ -175,8 +176,8 @@ export default function Page() {
   async function checkGameRestarted() {
     const { gameContractAddress } = await getEnvironments();
 
-    if(!stringIsNullOrEmpty(gameContractAddress) && currentGameContractAddress != gameContractAddress) {
-      if(currentGameContractAddress != undefined) {
+    if (!stringIsNullOrEmpty(gameContractAddress) && currentGameContractAddress != gameContractAddress) {
+      if (currentGameContractAddress != undefined) {
         console.log('Game restarted');
         window.location.reload();
       }
@@ -197,26 +198,34 @@ export default function Page() {
       return;
     }
 
-    setPaymentProcessing(true);
-    const paymentResult = await processPayment(walletAddress, wallets);
-    setPaymentProcessing(false);
+    setLoading(true);
 
-    if (paymentResult != ProcessPaymentResult.Success) {
-      setMessages(previousMessages => [
-        ...previousMessages,
-        {
-          id: uuidv4(),
-          userId: walletAddress,
-          timestamp: getTimestamp(),
-          display: <PaymentErrorChatMessage error={paymentResult} />
-        }
-      ]);
-      return;
+    const [messageWithFixedSpelling, inputType] = await checkMessageType(message);
+
+    if (inputType == InputTypeEnum.GUESS) {
+      const paymentResult = await processPayment(walletAddress, wallets);
+
+      setLoading(false);
+
+      if (paymentResult != ProcessPaymentResult.Success) {
+        setMessages(previousMessages => [
+          ...previousMessages,
+          {
+            id: uuidv4(),
+            userId: walletAddress,
+            timestamp: getTimestamp(),
+            display: <PaymentErrorChatMessage error={paymentResult} />
+          }
+        ]);
+        return;
+      }
+    } else {
+      setLoading(false);
     }
 
     const id = uuidv4();
     const timestamp = getTimestamp();
-    const response = await sendMessage(walletAddress, id, timestamp, message);
+    const response = await sendMessage(walletAddress, id, timestamp, messageWithFixedSpelling, inputType);
 
     setMessages(previousMessages => [
       ...previousMessages,
@@ -272,10 +281,10 @@ export default function Page() {
                   messages={getMessagesForList()}
                   showingAllMessages={showAllMessages}
                   scrollToBottom={scrollMessagesToBottom} />
-                
-                <WorldSummary 
+
+                <WorldSummary
                   summary={worldSummary}
-                  className="mx-4 my-2" 
+                  className="mx-4 my-2"
                 />
               </div>
             </>
@@ -291,7 +300,7 @@ export default function Page() {
             winnerAddress={winnerAddress}
             isLoggedIn={authenticated}
             gameAbandoned={gameAbandoned}
-            loading={paymentProcessing}
+            loading={loading}
             onLogin={login}
             onChatMessage={hadleChatMessage} />}
         </div>
