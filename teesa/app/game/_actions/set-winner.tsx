@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { executeContractActionServer } from '../../_contracts/execute-contract-action-server';
 import { gameState, HistoryEntry } from '../../_core/game-state';
 import { restartGame } from './restart-game';
+import { MessageTypeEnum } from '@/app/_core/message-type-enum';
 
 export function setWinner(userAddress: string, timestamp: number) {
   if (process.env.NEXT_PUBLIC_ENV_MODE === 'dev') {
@@ -34,6 +35,7 @@ async function onSetWinnerFailure(attempt: number, userAddress: string, timestam
     id: uuidv4(),
     userId: userAddress,
     timestamp: timestamp + 1000,
+    messageType: MessageTypeEnum.SYSTEM,
     userMessage: undefined,
     llmMessage: TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE
   };
@@ -55,6 +57,7 @@ async function onAwardPrizeSuccess(userAddress: string, timestamp: number) {
     id: uuidv4(),
     userId: userAddress,
     timestamp: timestamp + 1000,
+    messageType: MessageTypeEnum.SYSTEM,
     userMessage: undefined,
     llmMessage: PRIZE_AWARDED_MESSAGE
   };
