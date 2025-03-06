@@ -1,3 +1,4 @@
+import { MessageTypeEnum } from "@/app/_core/message-type-enum";
 import { gameState } from "../../_core/game-state";
 
 export async function GET(request: Request) {
@@ -9,7 +10,7 @@ export async function GET(request: Request) {
     const history = await gameState.getHistory();
     const result = includeSystemMessages 
         ? history 
-        : history.filter(msg => msg.userMessage != undefined);
+        : history.filter(msg => msg.messageType != MessageTypeEnum.SYSTEM);
     
     return Response.json(result);
 }
