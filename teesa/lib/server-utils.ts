@@ -12,7 +12,7 @@ export async function getLocaleServer() {
 
 export function retryWithExponentialBackoff(
   operation: () => Promise<any>,
-  onSuccess?: () => Promise<void>,
+  onSuccess?: (result?: any) => Promise<void>,
   onFailure?: (attempt: number) => Promise<void>
 ) {
   // Start a new task to handle retries
@@ -23,10 +23,10 @@ export function retryWithExponentialBackoff(
     let attempt = 1;
     while(true) {
       try {
-        await operation();
+        const result = await operation();
         
         if (onSuccess) {
-          await onSuccess();
+          await onSuccess(result);
         }
 
         return;

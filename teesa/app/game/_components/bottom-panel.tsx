@@ -91,6 +91,9 @@ export function BottomPanel({
             <span className="text-green-500 font-bold drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]"> {winnerAddress} </span>
           </span>
         )}
+        <div className="mt-2 text-sm text-blue-400 animate-[pulse_2s_ease-in-out_infinite] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
+          🔄 Game will restart soon...
+        </div>
       </div>
     </div>
   );
@@ -102,6 +105,9 @@ export function BottomPanel({
         <a href="/claim/user" className="text-yellow-400 hover:text-yellow-300 hover:shadow-[0_0_8px_rgba(234,179,8,0.5)] underline ml-2 transition-all duration-300">
           Claim your share
         </a>
+      </p>
+      <p className="text-center mt-2 text-blue-400 animate-[pulse_2s_ease-in-out_infinite] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
+        🔄 Game will restart soon...
       </p>
     </div>
   );
