@@ -33,13 +33,13 @@ export function restartGame() {
         return;
     }
 
-    console.log('Starting restart game flow in 10 minutes');
+    console.log('Starting restart game flow in 5 minutes');
 
     // Timeout before starting
     setTimeout(() => {
         console.log('Restarting game');
         sendTeamShare();
-    }, 10 * 60 * 1000); // 10 minutes
+    }, 5 * 60 * 1000); // 5 minutes
 }
 
 function sendTeamShare() {
