@@ -1,8 +1,7 @@
 import { ConnectedWallet } from "@privy-io/react-auth";
 import { getWalletBalance } from '../../_contracts/get-wallet-balance';
 import { executeContractActionClient, ExecuteContractActionClientResult } from '../../_contracts/execute-contract-action-client';
-import { callContractViewMethod } from '../../_contracts/call-contract-view-method';
-
+import { calculateCurrentFee } from "@/app/game/_actions/calculate-current-fee";
 export enum ProcessPaymentResult {
   Success,
   FailedInsufficientFunds,
@@ -20,7 +19,7 @@ export async function processPayment(walletAddress: string, wallets: ConnectedWa
     return ProcessPaymentResult.FailedWalletNotFound;
   }
 
-  const currentFee = await callContractViewMethod('currentFee');
+  const currentFee = await calculateCurrentFee();
 
   if(balance.lt(currentFee)) {
     return ProcessPaymentResult.FailedInsufficientFunds;

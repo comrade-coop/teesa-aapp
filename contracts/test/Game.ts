@@ -4,7 +4,6 @@ import { Game } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("Game", function () {
-  const INITIAL_FEE = ethers.parseEther("0.001");
   const ABANDONED_GAME_TIME = 30 * 24 * 60 * 60 + 1; // 30 days + 1 second
 
   let game: Game;
@@ -12,12 +11,16 @@ describe("Game", function () {
   let teamAddress: SignerWithAddress;
   let player: SignerWithAddress;
   let nonPlayer: SignerWithAddress;
+  let initialFee: bigint;
 
   beforeEach(async function () {
     [owner, teamAddress, player, nonPlayer] = await ethers.getSigners();
     
     const GameFactory = await ethers.getContractFactory("Game");
     game = await GameFactory.deploy(teamAddress.address) as Game;
+    
+    // Get the initialFee from the contract
+    initialFee = await game.initialFee();
   });
 
   async function advanceToAbandonedGameTime() {
@@ -29,7 +32,7 @@ describe("Game", function () {
     it("should set the correct initial values", async function () {
       expect(await game.owner()).to.equal(owner.address);
       expect(await game.teamAddress()).to.equal(teamAddress.address);
-      expect(await game.currentFee()).to.equal(INITIAL_FEE);
+      expect(await game.lastPaidFee()).to.equal(initialFee);
       expect(await game.gameEnded()).to.equal(false);
       expect(await game.deploymentTime()).to.not.equal(0);
     });
@@ -43,32 +46,30 @@ describe("Game", function () {
 
   describe("PayFee", function () {
     it("should accept fee payment and update state correctly", async function () {
-      const paymentAmount = INITIAL_FEE;
+      const paymentAmount = initialFee;
       await expect(game.connect(player).payFee({ value: paymentAmount }))
         .to.emit(game, "FeePaymentReceived")
         .to.emit(game, "TeamShareIncreased")
         .to.emit(game, "NextGameShareIncreased")
-        .to.emit(game, "PrizePoolIncreased")
-        .to.emit(game, "FeeIncreased");
+        .to.emit(game, "PrizePoolIncreased");
 
       expect(await game.lastPlayerAddress()).to.equal(player.address);
       expect(await game.totalPaymentsPerUser(player.address)).to.equal(paymentAmount);
       expect(await game.totalPayments()).to.equal(paymentAmount);
       expect(await game.lastPaymentTime()).to.not.equal(0);
       
-      // Check new fee amount (1% increase)
-      const expectedNewFee = (paymentAmount * 101n) / 100n;
-      expect(await game.currentFee()).to.equal(expectedNewFee);
+      // Check the lastPaidFee is updated to the payment amount
+      expect(await game.lastPaidFee()).to.equal(paymentAmount);
     });
 
     it("should revert if payment is insufficient", async function () {
-      const insufficientAmount = INITIAL_FEE - 1n;
+      const insufficientAmount = initialFee - 1n;
       await expect(game.connect(player).payFee({ value: insufficientAmount }))
         .to.be.revertedWithCustomError(game, "InsufficientFeePayment");
     });
 
     it("should distribute fees correctly between team, next game share and prize pool", async function () {
-      const paymentAmount = INITIAL_FEE;
+      const paymentAmount = initialFee;
       await game.connect(player).payFee({ value: paymentAmount });
       
       const expectedTeamShare = (paymentAmount * 10n) / 100n;
@@ -80,22 +81,38 @@ describe("Game", function () {
       expect(await game.prizePool()).to.equal(expectedPrizePool);
     });
 
+    it("should update lastPaidFee to the amount paid", async function () {
+      // Pay with higher amount than the initial fee
+      const higherAmount = initialFee * 2n;
+      await game.connect(player).payFee({ value: higherAmount });
+      
+      // Verify lastPaidFee is updated to the payment amount
+      expect(await game.lastPaidFee()).to.equal(higherAmount);
+      
+      // Make another payment with different amount
+      const nextAmount = initialFee * 3n;
+      await game.connect(player).payFee({ value: nextAmount });
+      
+      // Verify lastPaidFee is updated to the new payment amount
+      expect(await game.lastPaidFee()).to.equal(nextAmount);
+    });
+
     it("should revert if game has ended", async function () {
       // First payment
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
       
       // End the game by setting a winner
       await game.connect(owner).setWinner(player.address);
       
       // Try to pay fee after game has ended
-      await expect(game.connect(player).payFee({ value: INITIAL_FEE }))
+      await expect(game.connect(player).payFee({ value: initialFee }))
         .to.be.revertedWithCustomError(game, "GameHasEnded");
     });
   });
 
   describe("Prize Distribution", function () {
     beforeEach(async function () {
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
     });
 
     it("should allow owner to set winner", async function () {
@@ -151,7 +168,7 @@ describe("Game", function () {
 
   describe("Team Share Withdrawal", function () {
     it("should allow team address to withdraw share", async function () {
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
       
       const initialBalance = await ethers.provider.getBalance(teamAddress.address);
       await expect(game.connect(teamAddress).withdrawTeamShare())
@@ -163,7 +180,7 @@ describe("Game", function () {
     });
 
     it("should revert if non-team address tries to withdraw", async function () {
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
       
       await expect(game.connect(player).withdrawTeamShare())
         .to.be.revertedWithCustomError(game, "NotTeamAddress");
@@ -177,7 +194,7 @@ describe("Game", function () {
 
   describe("Abandoned Game Claims", function () {
     beforeEach(async function () {
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
     });
 
     it("should allow claiming abandoned game share after time elapsed", async function () {
@@ -247,7 +264,7 @@ describe("Game", function () {
 
     it("should revert if game has ended", async function () {
       // End the game
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
       await game.connect(owner).setWinner(player.address);
       
       const fundAmount = ethers.parseEther("1.0");
@@ -262,10 +279,10 @@ describe("Game", function () {
 
     it("should allow funding after abandonment time and reset the timer", async function () {
       // First payment
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
       
-      // Calculate the initial prize pool contribution (80% of INITIAL_FEE)
-      const initialPrizePoolContribution = (INITIAL_FEE * 80n) / 100n;
+      // Calculate the initial prize pool contribution (80% of initialFee)
+      const initialPrizePoolContribution = initialFee - ((initialFee * 10n) / 100n) - ((initialFee * 10n) / 100n);
       
       await advanceToAbandonedGameTime();
       
@@ -287,7 +304,7 @@ describe("Game", function () {
     
     beforeEach(async function () {
       // Make a payment to create next game share
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
       
       // Deploy a mock game contract that will receive the next game share
       const GameFactory = await ethers.getContractFactory("Game");
@@ -299,7 +316,7 @@ describe("Game", function () {
       // End the game
       await game.connect(owner).setWinner(player.address);
       
-      const nextGameShareAmount = (INITIAL_FEE * 10n) / 100n;
+      const nextGameShareAmount = (initialFee * 10n) / 100n;
       const mockGamePrizePoolBefore = await mockGame.prizePool();
       
       await expect(game.connect(owner).sendNextGameShare(mockGame))
@@ -352,14 +369,14 @@ describe("Game", function () {
   describe("Send Team Share", function () {
     beforeEach(async function () {
       // Make a payment to create team share
-      await game.connect(player).payFee({ value: INITIAL_FEE });
+      await game.connect(player).payFee({ value: initialFee });
     });
 
     it("should allow owner to send team share after game has ended", async function () {
       // End the game
       await game.connect(owner).setWinner(player.address);
       
-      const teamShareAmount = (INITIAL_FEE * 10n) / 100n;
+      const teamShareAmount = (initialFee * 10n) / 100n;
       const teamBalanceBefore = await ethers.provider.getBalance(teamAddress.address);
       
       await expect(game.connect(owner).sendTeamShare())

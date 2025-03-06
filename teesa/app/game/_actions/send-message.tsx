@@ -1,15 +1,15 @@
 'use server';
 
 import { createStreamableUI } from "ai/rsc";
-import { LlmChatMessage } from "../_components/llm-chat-message";
-import { wordGame } from '../../_core/word-game';
-import { InputTypeEnum } from '../../_core/input-type-enum';
 import { getLocaleServer } from "../../../lib/server-utils";
-import { UserChatMessage } from "../_components/user-chat-message";
+import { MessageTypeEnum } from '../../_core/message-type-enum';
+import { wordGame } from '../../_core/word-game';
+import { LlmChatMessage } from "../_components/llm-chat-message";
 import { LlmChatMessagePlaceholder } from "../_components/llm-chat-message-placeholder";
+import { UserChatMessage } from "../_components/user-chat-message";
 import { setWinner } from "./set-winner";
 
-export async function sendMessage(userAddress: string, id: string, timestamp: number, message: string, inputType: InputTypeEnum) {
+export async function sendMessage(userAddress: string, id: string, timestamp: number, message: string, inputType: MessageTypeEnum) {
   const responseUi = createStreamableUI();
   const locale = await getLocaleServer();
 
@@ -21,7 +21,7 @@ export async function sendMessage(userAddress: string, id: string, timestamp: nu
   (async () => {
     let llmMessage = '';
 
-    if (inputType == InputTypeEnum.GUESS) {
+    if (inputType == MessageTypeEnum.GUESS) {
       const [wonGame, response] = await wordGame.checkGuessMessage(userAddress, id, timestamp, message);
 
       llmMessage = response;
