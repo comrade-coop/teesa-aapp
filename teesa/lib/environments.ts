@@ -1,9 +1,7 @@
 import "server-only";
 import * as fs from 'fs';
-import * as path from 'path';
 
-const DEFAULT_ENV_FILE_PATH = path.join(process.cwd(), '.env');
-const ENV_FILE_PATH = process.env.ENV_FILE_PATH || DEFAULT_ENV_FILE_PATH;
+const ENV_FILE_PATH = "./.env";
 
 interface EnvironmentVariables {
     [key: string]: string;

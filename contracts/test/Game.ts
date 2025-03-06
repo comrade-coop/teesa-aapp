@@ -324,18 +324,6 @@ describe("Game", function () {
         .to.be.revertedWithCustomError(game, "GameNotEnded");
     });
 
-    it("should revert if trying to send next game share when there is none", async function () {
-      // End the game
-      await game.connect(owner).setWinner(player.address);
-      
-      // Send the next game share first
-      await game.connect(owner).sendNextGameShare(mockGame);
-      
-      // Try to send again
-      await expect(game.connect(owner).sendNextGameShare(mockGame))
-        .to.be.revertedWithCustomError(game, "NoNextGameShareToSend");
-    });
-
     it("should revert if recipient contract call fails", async function () {
       // End the game
       await game.connect(owner).setWinner(player.address);
@@ -345,6 +333,19 @@ describe("Game", function () {
       
       await expect(game.connect(owner).sendNextGameShare(mockGame))
         .to.be.revertedWithCustomError(game, "NextGameShareSendFailed");
+    });
+
+    it("should emit event with zero amount when trying to send next game share when there is none", async function () {
+      // End the game
+      await game.connect(owner).setWinner(player.address);
+      
+      // Send the next game share first
+      await game.connect(owner).sendNextGameShare(mockGame);
+      
+      // Try to send again - should emit event with 0 amount
+      await expect(game.connect(owner).sendNextGameShare(mockGame))
+        .to.emit(game, "NextGameShareSent")
+        .withArgs(0, mockGameAddress);
     });
   });
 
@@ -383,16 +384,17 @@ describe("Game", function () {
         .to.be.revertedWithCustomError(game, "GameNotEnded");
     });
 
-    it("should revert if trying to send team share when there is none", async function () {
+    it("should emit event with zero amount when trying to send team share when there is none", async function () {
       // End the game
       await game.connect(owner).setWinner(player.address);
       
       // Send the team share first
       await game.connect(owner).sendTeamShare();
       
-      // Try to send again
+      // Try to send again - should emit event with 0 amount
       await expect(game.connect(owner).sendTeamShare())
-        .to.be.revertedWithCustomError(game, "NoTeamShareToWithdraw");
+        .to.emit(game, "TeamShareSent")
+        .withArgs(0);
     });
   });
 });

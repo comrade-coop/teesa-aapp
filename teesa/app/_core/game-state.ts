@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import { getEnv } from '@/lib/environments';
 
+const stateFilePath = getEnv('GAME_STATE_FILE_PATH') || path.join(process.cwd(), 'game-state.json');
+
 export interface HistoryEntry {
   id: string;
   userId: string;
@@ -21,16 +23,15 @@ interface GameStateData {
 }
 
 class GameState {
+  private mutex: Mutex;
+
   private secretWord: string;
   private history: HistoryEntry[];
   private gameEnded: boolean;
   private winnerAddress: string | undefined;
-  private mutex: Mutex;
-  private stateFilePath: string;
 
   constructor() {
     this.mutex = new Mutex();
-    this.stateFilePath = getEnv('GAME_STATE_FILE_PATH') || path.join(process.cwd(), 'game-state.json');
     
     // Load state from file or initialize new state
     const state = this.loadState();
@@ -42,8 +43,8 @@ class GameState {
 
   private loadState(): GameStateData {
     try {
-      if (fs.existsSync(this.stateFilePath)) {
-        const data = fs.readFileSync(this.stateFilePath, 'utf-8');
+      if (fs.existsSync(stateFilePath)) {
+        const data = fs.readFileSync(stateFilePath, 'utf-8');
         return JSON.parse(data);
       }
     } catch (error) {
@@ -51,16 +52,11 @@ class GameState {
     }
     
     // Create default state
-    const defaultState: GameStateData = {
-      secretWord: process.env.NEXT_PUBLIC_ENV_MODE === 'dev' ? 'car' : this.selectRandomWord(),
-      history: [],
-      gameEnded: false,
-      winnerAddress: undefined
-    };
+    const defaultState = this.createDefaultState();
 
     // Create the file with default state
     try {
-      fs.writeFileSync(this.stateFilePath, JSON.stringify(defaultState, null, 2));
+      fs.writeFileSync(stateFilePath, JSON.stringify(defaultState, null, 2));
     } catch (error) {
       console.error('Error creating game state file:', error);
     }
@@ -68,7 +64,16 @@ class GameState {
     return defaultState;
   }
 
-  private async saveState(): Promise<void> {
+  private createDefaultState(): GameStateData {
+    return {
+      secretWord: process.env.NEXT_PUBLIC_ENV_MODE === 'dev' ? 'car' : this.selectRandomWord(),
+      history: [],
+      gameEnded: false,
+      winnerAddress: undefined
+    };
+  }
+
+  async saveState(): Promise<void> {
     try {
       const state: GameStateData = {
         secretWord: this.secretWord,
@@ -76,7 +81,7 @@ class GameState {
         gameEnded: this.gameEnded,
         winnerAddress: this.winnerAddress
       };
-      await fs.promises.writeFile(this.stateFilePath, JSON.stringify(state, null, 2));
+      await fs.promises.writeFile(stateFilePath, JSON.stringify(state, null, 2));
     } catch (error) {
       console.error('Error saving game state:', error);
     }
@@ -117,6 +122,22 @@ class GameState {
       await this.saveState();
     });
   }
+
+  async reset() {
+    // Delete the state file first
+    if (fs.existsSync(stateFilePath)) {
+      await fs.promises.unlink(stateFilePath);
+    }
+    
+    const defaultState = this.createDefaultState();
+    
+    this.secretWord = defaultState.secretWord;
+    this.history = defaultState.history;
+    this.gameEnded = defaultState.gameEnded;
+    this.winnerAddress = defaultState.winnerAddress;
+    
+    await this.saveState();
+  }
 }
 
 const globalState = globalThis as unknown as {
@@ -134,3 +155,16 @@ export const gameState = (() => {
   
   return globalState._gameState;
 })();
+
+export async function resetState() {
+  if (typeof window !== 'undefined') {
+    throw new Error('GameState should only be used on the server');
+  }
+  
+  try {
+    await gameState.reset();
+  } catch (error) {
+    console.error('Error resetting game state:', error);
+    throw error;
+  }
+};

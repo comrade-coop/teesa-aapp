@@ -3,7 +3,7 @@
 import { sendMessage } from './_actions/send-message';
 import { MessageUiStateModel } from './_models/message-ui-state-model';
 import { UserChatMessage } from './_components/user-chat-message';
-import { getLocaleClient, getTimestamp } from '@/lib/utils';
+import { getLocaleClient, getTimestamp, stringIsNullOrEmpty } from '@/lib/utils';
 import { MessagesList } from './_components/messages-list';
 import { useEffect, useState } from 'react';
 import { BottomPanel } from './_components/bottom-panel';
@@ -21,6 +21,7 @@ import { getContractInfo } from './_actions/get-contract-info';
 import { getEnvironments } from '../_actions/get-environments';
 import { WorldSummary } from './_components/world-summary';
 import { generateSummary } from './_actions/generate-summary';
+import { redirect, useRouter } from 'next/navigation';
 
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();
@@ -41,6 +42,11 @@ export default function Page() {
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
   const [worldSummary, setWorldSummary] = useState<string>('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
+
+  // Used to refresh the page when the game is restarted
+  const [currentGameContractAddress, setCurrentGameContractAddress] = useState<string | undefined>(undefined);
+
+  const router = useRouter();
 
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
 
@@ -72,6 +78,7 @@ export default function Page() {
     fetchGameState();
     fetchContractInfo();
     updateWorldSummary();
+    checkGameRestarted();
 
     // Get new messages only if we are not showing all messages
     if (showAllMessages) {
@@ -162,6 +169,19 @@ export default function Page() {
       console.error('Error updating summary:', error);
     } finally {
       setIsGeneratingSummary(false);
+    }
+  }
+
+  async function checkGameRestarted() {
+    const { gameContractAddress } = await getEnvironments();
+
+    if(!stringIsNullOrEmpty(gameContractAddress) && currentGameContractAddress != gameContractAddress) {
+      if(currentGameContractAddress != undefined) {
+        console.log('Game restarted');
+        window.location.reload();
+      }
+
+      setCurrentGameContractAddress(gameContractAddress);
     }
   }
 

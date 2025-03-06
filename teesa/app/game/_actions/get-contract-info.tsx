@@ -2,11 +2,11 @@
 
 import { callContractViewMethod } from "../../_contracts/call-contract-view-method";
 import { ethers } from "ethers";
-import { transferTeesaFundsToContract } from "./transfer-teesa-funds-to-contract";
 import { Mutex } from 'async-mutex';
+import { restartGame } from "./restart-game";
 
-const transferMutex = new Mutex();
-let transferExecuted = false;
+const restartGameMutex = new Mutex();
+let restartGameExecuted = false;
 
 // Function to get ETH price in USD from CoinGecko
 async function getEthToUsdPrice(): Promise<number> {
@@ -37,10 +37,10 @@ export async function getContractInfo() {
     ]);
 
     if (gameAbandoned) {
-        await transferMutex.runExclusive(async () => {
-            if (!transferExecuted) {
-                transferTeesaFundsToContract();
-                transferExecuted = true;
+        await restartGameMutex.runExclusive(async () => {
+            if (!restartGameExecuted) {
+                restartGame()
+                restartGameExecuted = true;
             }
         });
     }

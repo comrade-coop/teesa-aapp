@@ -28,3 +28,7 @@ export function timestampToFormatedDate(locale: string, timestamp: number): stri
 
   return result;
 }
+
+export function stringIsNullOrEmpty(string: string | undefined | null): boolean {
+  return string == null || string == undefined || string.trim() == '';
+}

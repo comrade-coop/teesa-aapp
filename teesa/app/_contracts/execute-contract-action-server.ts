@@ -23,10 +23,10 @@ export async function executeContractActionServer(
     if (!getEnv('GAME_CONTRACT_ADDRESS')) {
         throw new Error('GAME_CONTRACT_ADDRESS environment variable is not set');
     }
-    
+
     const provider = new ethers.JsonRpcProvider(getEnv('RPC_URL'));
     const wallet = new ethers.Wallet(getEnv('WALLET_PRIVATE_KEY')!, provider);
-    
+
     const gameContract = new ethers.Contract(
         getEnv('GAME_CONTRACT_ADDRESS')!,
         GameContract.abi,
@@ -36,8 +36,8 @@ export async function executeContractActionServer(
     try {
         const transaction = await gameContract[contractMethod](...params);
         await provider.waitForTransaction(transaction.hash, 1);
-      } catch (error) {
+    } catch (error) {
         console.error(errorMessage, error);
         throw error;
-      }
+    }
 }

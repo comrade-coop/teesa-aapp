@@ -288,9 +288,13 @@ contract Game is ReentrancyGuard {
     function sendTeamShare() external nonReentrant {
         if (msg.sender != owner) revert NotOwner();
         if (!gameEnded) revert GameNotEnded();
-        if (teamShare == 0) revert NoTeamShareToWithdraw();
 
         uint256 amount = teamShare;
+        if (amount == 0) {
+            emit TeamShareSent(0);
+            return;
+        }
+
         teamShare = 0;
 
         (bool success, ) = payable(teamAddress).call{value: amount}("");
@@ -305,9 +309,13 @@ contract Game is ReentrancyGuard {
     function sendNextGameShare(address payable recipient) external nonReentrant {
         if (msg.sender != owner) revert NotOwner();
         if (!gameEnded) revert GameNotEnded();
-        if (nextGameShare == 0) revert NoNextGameShareToSend();
 
         uint256 amount = nextGameShare;
+        if (amount == 0) {
+            emit NextGameShareSent(0, recipient);
+            return;
+        }
+
         nextGameShare = 0;
 
         (bool success, ) = recipient.call{value: amount}(
