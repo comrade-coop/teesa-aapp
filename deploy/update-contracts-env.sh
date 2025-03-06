@@ -3,6 +3,7 @@
 # Update all RPC URLs regardless of network
 sed -i "s|RPC_URL_LOCALHOST=.*|RPC_URL_LOCALHOST=$DOCKER_RPC_URL|g" .env
 sed -i "s|RPC_URL_SEPOLIA=.*|RPC_URL_SEPOLIA=$DOCKER_RPC_URL|g" .env
+sed -i "s|RPC_URL_BASE_SEPOLIA=.*|RPC_URL_BASE_SEPOLIA=$DOCKER_RPC_URL|g" .env
 sed -i "s|RPC_URL_BASE=.*|RPC_URL_BASE=$DOCKER_RPC_URL|g" .env
 
 # Update network-specific scan API keys based on network
