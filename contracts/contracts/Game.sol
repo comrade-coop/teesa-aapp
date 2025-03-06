@@ -12,9 +12,9 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  * PayFee:
  *   - The user pays a fee to play the game
  *   - The fee is split into:
- *     - 20% to the team
+ *     - 10% to the team
+ *     - 10% to the prize pool of the next game
  *     - 80% to the prize pool
- *   - The fee is increased by 1%, till a cap of 1 ether is reached
  *
  * SetWinner:
  *   - The owner sets the winner address
@@ -46,6 +46,7 @@ contract Game is ReentrancyGuard {
     address public immutable owner;
     address public immutable teamAddress;
     uint256 public immutable deploymentTime;
+    uint256 public immutable initialFee;
 
     bool public gameEnded;
 
@@ -53,7 +54,7 @@ contract Game is ReentrancyGuard {
     uint256 public nextGameShare;
 
     uint256 public prizePool;
-    uint256 public currentFee;
+    uint256 public lastPaidFee;
 
     mapping(address => uint256) public totalPaymentsPerUser;
     uint256 public totalPayments;
@@ -101,9 +102,6 @@ contract Game is ReentrancyGuard {
 
     // The prize pool is increased
     event PrizePoolIncreased(uint256 newPrizePool);
-
-    // The fee is increased
-    event FeeIncreased(uint256 newFee);
 
     // The game ended - when the first winner is added
     event GameEnded();
@@ -153,7 +151,8 @@ contract Game is ReentrancyGuard {
 
         teamAddress = _teamAddress;
         gameEnded = false;
-        currentFee = 0.001 ether;
+        initialFee = 0.01 ether;
+        lastPaidFee = initialFee;
         owner = msg.sender;
         deploymentTime = block.timestamp;
         lastPaymentTime = block.timestamp;
@@ -162,7 +161,7 @@ contract Game is ReentrancyGuard {
 
     function payFee() external payable nonReentrant {
         if (gameEnded) revert GameHasEnded();
-        if (msg.value < currentFee) revert InsufficientFeePayment();
+        if (msg.value < lastPaidFee) revert InsufficientFeePayment();
 
         lastPlayerAddress = msg.sender;
         lastPaymentTime = block.timestamp;
@@ -186,17 +185,11 @@ contract Game is ReentrancyGuard {
         uint256 prizePoolShare = msg.value - teamShareAmount - nextGameShareAmount;
         prizePool += prizePoolShare;
 
+        lastPaidFee = msg.value;
+
         emit TeamShareIncreased(teamShare);
         emit NextGameShareIncreased(nextGameShare);
         emit PrizePoolIncreased(prizePool);
-
-        unchecked {
-            uint256 newFeePrice = (currentFee * 101) / 100;
-            uint256 maxFeePrice = 1 ether;
-            currentFee = newFeePrice > maxFeePrice ? maxFeePrice : newFeePrice;
-        }
-
-        emit FeeIncreased(currentFee);
     }
 
     function setWinner(address _winnerAddress) external nonReentrant {

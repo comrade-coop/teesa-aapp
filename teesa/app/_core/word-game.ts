@@ -3,7 +3,7 @@ import { HistoryEntry, gameState } from './game-state';
 import { sendMessageLlm, sendMessageOllama } from './llm-client';
 import { sendMessageEliza } from './eliza-client';
 import { WON_GAME_MESSAGE } from './game-const';
-import { InputTypeEnum } from './input-type-enum';
+import { MessageTypeEnum } from './message-type-enum';
 
 export class WordGame {
   private readonly baseRules = `
@@ -239,21 +239,21 @@ Respond with ONLY the comment, nothing else.
     return sendMessageEliza(prompt, this.characterTraits);
   }
 
-  public async getInputTypeForMessage(input: string): Promise<[string, InputTypeEnum]> {
+  public async getInputTypeForMessage(input: string): Promise<[string, MessageTypeEnum]> {
     const inputWithFixedSpelling = (await this.fixSpelling(input)).trim();
     const inputType = await this.getInputType(inputWithFixedSpelling);
 
     const inputTypeResult = inputType === 'question'
-      ? InputTypeEnum.QUESTION : inputType === 'guess'
-        ? InputTypeEnum.GUESS : InputTypeEnum.OTHER;
+      ? MessageTypeEnum.QUESTION : inputType === 'guess'
+        ? MessageTypeEnum.GUESS : MessageTypeEnum.OTHER;
 
     return [inputWithFixedSpelling, inputTypeResult];
   }
 
-  public async processUserMessage(userAddress: string, messageId: string, timestamp: number, input: string, inputType: InputTypeEnum): Promise<string> {
+  public async processUserMessage(userAddress: string, messageId: string, timestamp: number, input: string, inputType: MessageTypeEnum): Promise<string> {
     let response: string = '';
 
-    if (inputType == InputTypeEnum.QUESTION) {
+    if (inputType == MessageTypeEnum.QUESTION) {
       response = await this.answerQuestion(input);
     } else {
       response = await this.getRandomResponse(input);
@@ -263,6 +263,7 @@ Respond with ONLY the comment, nothing else.
       id: messageId,
       userId: userAddress,
       timestamp: timestamp,
+      messageType: inputType,
       userMessage: input,
       llmMessage: response
     };
@@ -290,6 +291,7 @@ Respond with ONLY the comment, nothing else.
       id: messageId,
       userId: userAddress,
       timestamp: timestamp,
+      messageType: MessageTypeEnum.GUESS,
       userMessage: input,
       llmMessage: response
     };

@@ -1,10 +1,10 @@
 'use server';
 
-import { callContractViewMethod } from "../../_contracts/call-contract-view-method";
-import { ethers } from "ethers";
+import { calculateCurrentFee } from "@/app/game/_actions/calculate-current-fee";
 import { Mutex } from 'async-mutex';
+import { ethers } from "ethers";
+import { callContractViewMethod } from "../../_contracts/call-contract-view-method";
 import { restartGame } from "./restart-game";
-
 const restartGameMutex = new Mutex();
 let restartGameExecuted = false;
 
@@ -30,11 +30,12 @@ async function getEthToUsdPrice(): Promise<number> {
 }
 
 export async function getContractInfo() {
-    const [prizePool, currentFee, gameAbandoned] = await Promise.all([
+    const [prizePool, gameAbandoned] = await Promise.all([
         callContractViewMethod('prizePool'),
-        callContractViewMethod('currentFee'),
         callContractViewMethod('gameAbandoned')
     ]);
+
+    const currentFee = await calculateCurrentFee();
 
     if (gameAbandoned) {
         await restartGameMutex.runExclusive(async () => {

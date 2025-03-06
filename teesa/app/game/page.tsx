@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getEnvironments } from '../_actions/get-environments';
-import { InputTypeEnum } from '../_core/input-type-enum';
+import { MessageTypeEnum } from '../_core/message-type-enum';
 import { checkMessageType } from './_actions/check-message-type';
 import { generateSummary } from './_actions/generate-summary';
 import { getContractInfo } from './_actions/get-contract-info';
@@ -202,7 +202,7 @@ export default function Page() {
 
     const [messageWithFixedSpelling, inputType] = await checkMessageType(message);
 
-    if (inputType == InputTypeEnum.GUESS) {
+    if (inputType == MessageTypeEnum.GUESS) {
       const paymentResult = await processPayment(walletAddress, wallets);
 
       setLoading(false);

@@ -2,6 +2,7 @@ import { Mutex } from 'async-mutex';
 import fs from 'fs';
 import 'server-only';
 import { wordsList } from './words-list';
+import { MessageTypeEnum } from './message-type-enum';
 
 const STATE_FILE_PATH = "./game-state.json";
 
@@ -9,6 +10,7 @@ export interface HistoryEntry {
   id: string;
   userId: string;
   timestamp: number;
+  messageType: MessageTypeEnum;
   userMessage: string | undefined;
   llmMessage: string
 }
