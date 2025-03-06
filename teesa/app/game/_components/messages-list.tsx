@@ -46,7 +46,7 @@ export function MessagesList({
   const scrollToBottomSmooth = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    }, 250);
   };
 
   return (

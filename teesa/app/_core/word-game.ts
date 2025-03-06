@@ -3,6 +3,7 @@ import { HistoryEntry, gameState } from './game-state';
 import { sendMessageLlm, sendMessageOllama } from './llm-client';
 import { sendMessageEliza } from './eliza-client';
 import { WON_GAME_MESSAGE } from './game-const';
+import { InputTypeEnum } from './input-type-enum';
 
 export class WordGame {
   private readonly baseRules = `
@@ -238,27 +239,51 @@ Respond with ONLY the comment, nothing else.
     return sendMessageEliza(prompt, this.characterTraits);
   }
 
-  public async processUserInput(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {
-    const userInput = (await this.fixSpelling(input)).trim();
-    const inputType = await this.getInputType(userInput);
+  public async getInputTypeForMessage(input: string): Promise<[string, InputTypeEnum]> {
+    const inputWithFixedSpelling = (await this.fixSpelling(input)).trim();
+    const inputType = await this.getInputType(inputWithFixedSpelling);
 
+    const inputTypeResult = inputType === 'question'
+      ? InputTypeEnum.QUESTION : inputType === 'guess'
+        ? InputTypeEnum.GUESS : InputTypeEnum.OTHER;
+
+    return [inputWithFixedSpelling, inputTypeResult];
+  }
+
+  public async processUserMessage(userAddress: string, messageId: string, timestamp: number, input: string, inputType: InputTypeEnum): Promise<string> {
+    let response: string = '';
+
+    if (inputType == InputTypeEnum.QUESTION) {
+      response = await this.answerQuestion(input);
+    } else {
+      response = await this.getRandomResponse(input);
+    }
+
+    const message: HistoryEntry = {
+      id: messageId,
+      userId: userAddress,
+      timestamp: timestamp,
+      userMessage: input,
+      llmMessage: response
+    };
+
+    gameState.addToHistory(message);
+
+    return response;
+  }
+
+  public async checkGuessMessage(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {
     let wonGame = false;
     let response: string = '';
 
-    if (inputType == 'question') {
-      response = await this.answerQuestion(userInput);
-    } else if (inputType == 'guess') {
-      const guessedWord = await this.extractGuess(userInput);
+    const guessedWord = await this.extractGuess(input);
 
-      if (await this.checkGuess(guessedWord)) {
-        gameState.setWinner(userAddress);
-        wonGame = true;
-        response = WON_GAME_MESSAGE;
-      } else {
-        response = await this.getIncorrectGuessResponse(userInput);
-      }
+    if (await this.checkGuess(guessedWord)) {
+      gameState.setWinner(userAddress);
+      wonGame = true;
+      response = WON_GAME_MESSAGE;
     } else {
-      response = await this.getRandomResponse(userInput);
+      response = await this.getIncorrectGuessResponse(input);
     }
 
     const message: HistoryEntry = {
