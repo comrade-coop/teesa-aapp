@@ -25,9 +25,12 @@ fi
 
 # Start the Docker container
 docker run -d \
+  --memory=10g \
+  --memory-swap=10g \
   -p "$ssh_port:22" \
   -p "3000:3000" \
   -v "$root_directory:/teesa-aapp" \
+  -v "container_node_modules:/teesa-aapp/teesa/node_modules" \
   -v "$volumes_path/vscode:/root/.vscode-server" \
   -v "$volumes_path/cursor:/root/.cursor-server" \
   -v "$volumes_path/ollama:/root/.ollama" \
