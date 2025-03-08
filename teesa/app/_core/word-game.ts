@@ -19,6 +19,7 @@ The player can make direct guesses at any time, and you will tell them if they'r
 Asking about the spelling of the secret word or parts of it is NOT allowed.
 Asking about the length of the secret word is NOT allowed.
 Asking the same question multiple times is NOT allowed.
+Asking if the word is within a certain list of words is NOT allowed.
 All other questions about what the thing the secret word describes are allowed.`;
 
   private readonly characterTraits = `
@@ -93,6 +94,7 @@ All secret words are nouns. When determining the type:
 - Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move") are "question"
 - Direct statements or questions that name a specific noun (e.g. "is it a cat", "I think it's a flower", "dog") are "guess"
 - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
+- If the input is a question is not compliant with the rules, respond with "other"
 
 # EXAMPLES:
 - "alive" -> "question" (asking about a property)

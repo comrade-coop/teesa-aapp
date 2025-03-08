@@ -16,6 +16,10 @@ export function ContractInfo({
   contractAddress: string | undefined;  
   chainId: number;
 }) {
+  // Format ETH values to 3 decimal places
+  const formattedPrizePool = Number(prizePool).toFixed(3);
+  const formattedCurrentFee = Number(currentFee).toFixed(3);
+
   const getExplorerInfo = () => {
     if (chainId === 8453) {
       return { url: 'https://basescan.org', name: 'Base' };
@@ -44,13 +48,13 @@ export function ContractInfo({
       <div className="space-y-0">
         <div>
           <p className="text-sm text-slate-400 font-bold">Prize Pool</p>
-          <p className="text-lg font-medium">{prizePool} ETH</p>
+          <p className="text-lg font-medium">{formattedPrizePool} ETH</p>
           <p className="text-sm text-slate-400">(≈ ${prizePoolUsdc} USDC)</p>
         </div>
 
         <div className="my-4 pt-4">
           <p className="text-sm text-slate-400 font-bold">Guess Fee</p>
-          <p className="text-lg font-medium">{currentFee} ETH</p>
+          <p className="text-lg font-medium">{formattedCurrentFee} ETH</p>
           <p className="text-sm text-slate-400">(≈ ${currentFeeUsdc} USDC)</p>
         </div>
         
@@ -83,7 +87,7 @@ export function ContractInfo({
           <ul className="space-y-2 text-sm text-slate-300">
             <li>• Asking questions and chatting with Teesa is free</li>
             <li>• To make a guess, you pay a fee</li>
-            <li>• The fee increases by 10% after each question</li>
+            <li>• The fee increases by 1% after each question</li>
             <li>• Winner gets 80% of the accumulated fees</li>
             <li>• 10% is sent to the prize pool of the next game</li>
             <li>• Teesa DAO receives 10%</li>

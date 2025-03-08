@@ -7,7 +7,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { getEnv } from '@/lib/environments';
 
 const createLlm = () => new ChatAnthropic({
-  model: 'claude-3-sonnet-20240229',
+  model: 'claude-3-7-sonnet-20250219',
   temperature: 0,
 });
 
