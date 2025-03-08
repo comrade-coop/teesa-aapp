@@ -120,11 +120,9 @@ export function SidePanel({
             chainId={chainId}
           />
           
-          <h2 className="text-xl font-bold mb-4 text-white">About</h2>
+          <h2 className="text-xl font-bold mb-4 text-white">Rules</h2>
           <div className="space-y-4">
-            <p>Hi there! I'm Teesa, your game host. I've picked a mystery word - can you figure out what it is?</p>
             <div>
-              <p className="font-semibold mb-2">Rules:</p>
               <ul className="list-disc list-inside space-y-2">
                 <li>Ask <span className="font-bold">yes/no</span> questions about the word</li>
                 <li>Questions should be about characteristics or properties</li>
