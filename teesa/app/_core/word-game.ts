@@ -55,8 +55,19 @@ RESPONSE STYLE:
 - Always respond in English
 `;
 
+  // Cache for extracted guesses to avoid duplicate LLM calls
+  private extractGuessCache: Map<string, string> = new Map();
+
+  // Method to clear the cache if needed (e.g., for testing or if memory concerns arise)
+  public clearExtractGuessCache(): void {
+    const cacheSize = this.extractGuessCache.size;
+    this.extractGuessCache.clear();
+    console.log(`Cleared extract guess cache (${cacheSize} entries)`);
+  }
+
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
+    console.log(`Retrieved ${history.length} history entries for prompt`);
     return history.flatMap(h => {
       const userMessage = {
         role: 'user',
@@ -68,17 +79,6 @@ RESPONSE STYLE:
       };
       return [userMessage, llmMessage];
     });
-  }
-
-  private async fixSpelling(text: string): Promise<string> {
-    const prompt = `
-Fix the spelling and grammar of the text below. 
-Translate it to English if it's in another language. 
-Do not include any other words or explanation.
----
-${text}`;
-
-    return sendMessageLlm(prompt);
   }
 
   private async getInputType(userInput: string): Promise<string> {
@@ -94,19 +94,7 @@ All secret words are nouns. When determining the type:
 - Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move") are "question"
 - Direct statements or questions that name a specific noun (e.g. "is it a cat", "I think it's a flower", "dog") are "guess"
 - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
-- If the input is a question is not compliant with the rules, respond with "other"
-
-# EXAMPLES:
-- "alive" -> "question" (asking about a property)
-- "flower" -> "guess" (direct noun)
-- "door?" -> "guess" (direct noun)
-- "is it a plant" -> "question" (asking about category since using indefinite article "a")
-- "is it car" -> "guess" (direct noun, not asking about category or property)
-- "does it grow in gardens?" -> "question" (asking about behavior/property)
-- "is it made of metal" -> "question" (asking about material property)
-- "is it abstract" -> "question" (asking about abstract property)
-- "is your word about the future of economy" -> "question" (asking about abstract concepts and categories)
-- "do humans use it in their everyday lives" -> "question" (asking about usage)
+- If the input is a question but not compliant with the GAME RULES, respond with "other"
 
 # RESPONSE:
 Respond with ONLY "question", "guess", or "other".
@@ -115,16 +103,30 @@ Respond with ONLY "question", "guess", or "other".
 ${userInput}`;
 
     const response = await sendMessageLlm(prompt, this.baseRules);
+    console.log(`Input type for "${userInput}" determined as: "${response.toLowerCase().replace(/[^a-z]/g, '')}"`);
     return response.toLowerCase().replace(/[^a-z]/g, '');
   }
 
   private async extractGuess(userInput: string): Promise<string> {
+    // Check if we have a cached result for this input
+    if (this.extractGuessCache.has(userInput)) {
+      const cachedGuess = this.extractGuessCache.get(userInput)!;
+      console.log(`Using cached extracted guess for "${userInput}": "${cachedGuess}"`);
+      return cachedGuess;
+    }
+
     const prompt = `
 Extract the exact word being guessed from this input: "${userInput}"
 Respond with ONLY the guessed word, nothing else.
 Respond with "NONE" if you cannot extract a word from the input.`;
 
-    return sendMessageLlm(prompt, this.baseRules);
+    const guess = await sendMessageLlm(prompt, this.baseRules);
+    console.log(`Extracted guess from "${userInput}": "${guess}"`);
+    
+    // Cache the result
+    this.extractGuessCache.set(userInput, guess);
+    
+    return guess;
   }
 
   private async answerQuestion(question: string): Promise<string> {
@@ -140,18 +142,24 @@ Respond with "NONE" if you cannot extract a word from the input.`;
   }
 
   private async getAnswer(question: string): Promise<boolean> {
+    console.log(`Getting answer for question: "${question}"`);
     const secretWord = await gameState.getSecretWord();
+    // Note: Not logging the secret word
     const prompt = `
 AGENT (thinks of a word and the thing it represents): ${secretWord}
 USER (asks a yes/no question about it): ${question}
 AGENT (answers with only "yes" or "no" based on common-sense logic): `;
 
     const response = await sendMessageOllama(prompt);
-    return response.toLowerCase().replace(/[^a-z]/g, '') === 'yes';
+    const isYes = response.toLowerCase().replace(/[^a-z]/g, '') === 'yes';
+    console.log(`Answer to "${question}": ${isYes ? 'yes' : 'no'}`);
+    return isYes;
   }
 
   private async checkGuess(guess: string): Promise<boolean> {
+    console.log(`Checking guess: "${guess}"`);
     const secretWord = await gameState.getSecretWord();
+    // Note: Not logging the secret word
     const prompt = `
 Secret word: "${secretWord}".
 User guess: "${guess}"
@@ -170,7 +178,9 @@ Remember this is a guessing game and the guess should be accurate to be consider
 Respond with ONLY "correct" or "incorrect", nothing else.`;
 
     const response = await sendMessageOllama(prompt);
-    return response.toLowerCase().replace(/[^a-z]/g, '') === 'correct';
+    const isCorrect = response.toLowerCase().replace(/[^a-z]/g, '') === 'correct';
+    console.log(`Guess "${guess}" check result: ${isCorrect ? 'correct' : 'incorrect'}`);
+    return isCorrect;
   }
 
   private async getRandomResponse(userInput: string): Promise<string> {
@@ -242,17 +252,31 @@ Respond with ONLY the comment, nothing else.
   }
 
   public async getInputTypeForMessage(input: string): Promise<[string, MessageTypeEnum]> {
-    const inputWithFixedSpelling = (await this.fixSpelling(input)).trim();
-    const inputType = await this.getInputType(inputWithFixedSpelling);
+    console.log(`Processing new input: "${input}"`);
+    const trimmedInput = input.trim();
+    const inputType = await this.getInputType(trimmedInput);
 
-    const inputTypeResult = inputType === 'question'
+    let inputTypeResult = inputType === 'question'
       ? MessageTypeEnum.QUESTION : inputType === 'guess'
         ? MessageTypeEnum.GUESS : MessageTypeEnum.OTHER;
 
-    return [inputWithFixedSpelling, inputTypeResult];
+    // If initially classified as a guess, verify that we can extract a word
+    if (inputTypeResult === MessageTypeEnum.GUESS) {
+      const guessedWord = await this.extractGuess(trimmedInput);
+      
+      if (guessedWord === "NONE") {
+        console.log(`Input initially classified as guess but no word detected. Reclassifying as a question: "${trimmedInput}"`);
+        // Reclassify as a question if no guessable word found
+        inputTypeResult = MessageTypeEnum.QUESTION;
+      }
+    }
+
+    console.log(`Final input type: ${MessageTypeEnum[inputTypeResult]}`);
+    return [trimmedInput, inputTypeResult];
   }
 
   public async processUserMessage(userAddress: string, messageId: string, timestamp: number, input: string, inputType: MessageTypeEnum): Promise<string> {
+    console.log(`Processing ${MessageTypeEnum[inputType]} from user: ${userAddress}, message ID: ${messageId}`);
     let response: string = '';
 
     if (inputType == MessageTypeEnum.QUESTION) {
@@ -271,17 +295,20 @@ Respond with ONLY the comment, nothing else.
     };
 
     gameState.addToHistory(message);
+    console.log(`Message processed and added to history`);
 
     return response;
   }
 
   public async checkGuessMessage(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {
+    console.log(`Checking guess message from user: ${userAddress}, message ID: ${messageId}`);
     let wonGame = false;
     let response: string = '';
 
     const guessedWord = await this.extractGuess(input);
 
     if (await this.checkGuess(guessedWord)) {
+      console.log(`CORRECT GUESS! User ${userAddress} has won the game!`);
       gameState.setWinner(userAddress);
       wonGame = true;
       response = WON_GAME_MESSAGE;
@@ -299,6 +326,7 @@ Respond with ONLY the comment, nothing else.
     };
 
     gameState.addToHistory(message);
+    console.log(`Guess checked (won: ${wonGame}) and added to history`);
 
     return [wonGame, response];
   }
