@@ -164,6 +164,7 @@ export default function Page() {
 
     setIsGeneratingSummary(true);
     try {
+      // The server-side function now handles caching based on message count
       const summary = await generateSummary();
       setWorldSummary(summary);
     } catch (error) {
