@@ -148,14 +148,31 @@ Respond with "NONE" if you cannot extract a word from the input.`;
     return guess;
   }
 
+  private async fixSpelling(text: string): Promise<string> {
+    const prompt = `
+Fix the spelling and grammar of the text below. 
+Translate it to English if it's in another language. 
+Do not include any other words or explanation.
+---
+${text}`;
+
+    return sendMessageLlm(prompt);
+  }
+
+
   private async answerQuestion(question: string): Promise<[string, AnswerResultEnum]> {
+    // Fix spelling and grammar before processing
+    const correctedQuestion = await this.fixSpelling(question);
+    console.log(`Original question: "${question}"`);
+    console.log(`Corrected question: "${correctedQuestion}"`);
+    
     // Get yes/no answer
-    const isYes = await this.getAnswer(question);
+    const isYes = await this.getAnswer(correctedQuestion);
     const yesNo = isYes ? 'Yes' : 'No';
     const answerResult = isYes ? AnswerResultEnum.YES : AnswerResultEnum.NO;
 
     // Get playful comment
-    const comment = await this.getPlayfulComment(question, yesNo);
+    const comment = await this.getPlayfulComment(correctedQuestion, yesNo);
 
     const fullResponse = `${comment}`;
     return [fullResponse, answerResult];
