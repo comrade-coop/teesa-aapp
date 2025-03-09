@@ -109,10 +109,10 @@ All secret words are nouns. When determining the type:
 - Direct statements or questions that name a specific noun (e.g. "is it cat", "I think it's a flower", "dog") are "guess"
 - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
 - If the input is not compliant with the GAME RULES, respond with "other"
-- If you determine that the input is a question, consider the HISTORY and if the same question was asked before, even if it is rephrased, respond with "other"
+- If you determine that the input is a question, consider the HISTORY and if the same question was asked before, even if it is rephrased, respond with "repeated_question"
 
 # RESPONSE:
-Respond with ONLY "question", "guess", or "other".
+Respond with ONLY "question", "repeated_question", "guess", or "other".
 
 # INPUT:
 ${userInput}
@@ -293,9 +293,9 @@ Respond with ONLY the comment, nothing else.
     const trimmedInput = input.trim();
     const inputType = await this.getInputType(trimmedInput);
 
-    let inputTypeResult = inputType === 'question'
-      ? MessageTypeEnum.QUESTION : inputType === 'guess'
-        ? MessageTypeEnum.GUESS : MessageTypeEnum.OTHER;
+    let inputTypeResult = inputType === 'question' ? MessageTypeEnum.QUESTION 
+                        : inputType === 'guess' ? MessageTypeEnum.GUESS 
+                        : MessageTypeEnum.OTHER;
 
     // If initially classified as a guess, verify that we can extract a word
     if (inputTypeResult === MessageTypeEnum.GUESS) {
