@@ -4,6 +4,7 @@ import { sendMessageLlm, sendMessageOllama } from './llm-client';
 import { sendMessageEliza } from './eliza-client';
 import { WON_GAME_MESSAGE } from './game-const';
 import { MessageTypeEnum } from './message-type-enum';
+import { AnswerResultEnum } from './game-state';
 
 export class WordGame {
   private readonly baseRules = `
@@ -81,8 +82,20 @@ RESPONSE STYLE:
     });
   }
 
+  private async getQuestionHistoryForPrompt() { 
+    const history = await gameState.getHistory();
+    console.log(`Retrieved ${history.length} history entries for prompt`);
+    const questionHistory = history.filter(h => h.messageType === MessageTypeEnum.QUESTION);
+    
+    // Return only the user messages (questions), not the system's responses
+    return questionHistory.map(h => ({
+      role: 'user',
+      content: h.userMessage
+    }));
+  }
+
   private async getInputType(userInput: string): Promise<string> {
-    const history = await this.getHistoryForPrompt();
+    const history = await this.getQuestionHistoryForPrompt();
     const prompt = `
 # TASK: 
 Determine if the INPUT below is a question, guess, or neither: 
@@ -135,16 +148,17 @@ Respond with "NONE" if you cannot extract a word from the input.`;
     return guess;
   }
 
-  private async answerQuestion(question: string): Promise<string> {
+  private async answerQuestion(question: string): Promise<[string, AnswerResultEnum]> {
     // Get yes/no answer
     const isYes = await this.getAnswer(question);
     const yesNo = isYes ? 'Yes' : 'No';
+    const answerResult = isYes ? AnswerResultEnum.YES : AnswerResultEnum.NO;
 
     // Get playful comment
     const comment = await this.getPlayfulComment(question, yesNo);
 
     const fullResponse = `${comment}`;
-    return fullResponse;
+    return [fullResponse, answerResult];
   }
 
   private async getAnswer(question: string): Promise<boolean> {
@@ -284,9 +298,10 @@ Respond with ONLY the comment, nothing else.
   public async processUserMessage(userAddress: string, messageId: string, timestamp: number, input: string, inputType: MessageTypeEnum): Promise<string> {
     console.log(`Processing ${MessageTypeEnum[inputType]} from user: ${userAddress}, message ID: ${messageId}`);
     let response: string = '';
+    let answerResult: AnswerResultEnum = AnswerResultEnum.UNKNOWN;
 
     if (inputType == MessageTypeEnum.QUESTION) {
-      response = await this.answerQuestion(input);
+      [response, answerResult] = await this.answerQuestion(input);
     } else {
       response = await this.getRandomResponse(input);
     }
@@ -297,7 +312,8 @@ Respond with ONLY the comment, nothing else.
       timestamp: timestamp,
       messageType: inputType,
       userMessage: input,
-      llmMessage: response
+      llmMessage: response,
+      answerResult: answerResult
     };
 
     gameState.addToHistory(message);
@@ -310,6 +326,7 @@ Respond with ONLY the comment, nothing else.
     console.log(`Checking guess message from user: ${userAddress}, message ID: ${messageId}`);
     let wonGame = false;
     let response: string = '';
+    let answerResult: AnswerResultEnum = AnswerResultEnum.INCORRECT;
 
     const guessedWord = await this.extractGuess(input);
 
@@ -318,6 +335,7 @@ Respond with ONLY the comment, nothing else.
       gameState.setWinner(userAddress);
       wonGame = true;
       response = WON_GAME_MESSAGE;
+      answerResult = AnswerResultEnum.CORRECT;
     } else {
       response = await this.getIncorrectGuessResponse(input);
     }
@@ -328,7 +346,8 @@ Respond with ONLY the comment, nothing else.
       timestamp: timestamp,
       messageType: MessageTypeEnum.GUESS,
       userMessage: input,
-      llmMessage: response
+      llmMessage: response,
+      answerResult: answerResult
     };
 
     gameState.addToHistory(message);

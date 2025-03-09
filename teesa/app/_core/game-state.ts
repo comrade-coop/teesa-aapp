@@ -6,13 +6,23 @@ import { MessageTypeEnum } from './message-type-enum';
 
 const STATE_FILE_PATH = "./game-state.json";
 
+// Define possible answer results
+export enum AnswerResultEnum {
+  YES,
+  NO,
+  CORRECT,
+  INCORRECT,
+  UNKNOWN
+}
+
 export interface HistoryEntry {
   id: string;
   userId: string;
   timestamp: number;
   messageType: MessageTypeEnum;
   userMessage: string | undefined;
-  llmMessage: string
+  llmMessage: string;
+  answerResult?: AnswerResultEnum; // Optional to maintain backward compatibility
 }
 
 interface GameStateData {
