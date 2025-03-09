@@ -82,6 +82,7 @@ RESPONSE STYLE:
   }
 
   private async getInputType(userInput: string): Promise<string> {
+    const history = await this.getHistoryForPrompt();
     const prompt = `
 # TASK: 
 Determine if the INPUT below is a question, guess, or neither: 
@@ -91,16 +92,21 @@ Determine if the INPUT below is a question, guess, or neither:
 
 # RULES:
 All secret words are nouns. When determining the type:
-- Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move") are "question"
-- Direct statements or questions that name a specific noun (e.g. "is it a cat", "I think it's a flower", "dog") are "guess"
+- Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move", "is it a machine") are "question"
+- Direct statements or questions that name a specific noun (e.g. "is it cat", "I think it's a flower", "dog") are "guess"
 - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
-- If the input is a question but not compliant with the GAME RULES, respond with "other"
+- If the input is not compliant with the GAME RULES, respond with "other"
+- If you determine that the input is a question, consider the HISTORY and if the same question was asked before, even if it is rephrased, respond with "other"
 
 # RESPONSE:
 Respond with ONLY "question", "guess", or "other".
 
 # INPUT:
-${userInput}`;
+${userInput}
+
+# HISTORY:
+${JSON.stringify(history)}
+`;
 
     const response = await sendMessageLlm(prompt, this.baseRules);
     console.log(`Input type for "${userInput}" determined as: "${response.toLowerCase().replace(/[^a-z]/g, '')}"`);
