@@ -87,7 +87,7 @@ export function ContractInfo({
           <ul className="space-y-2 text-sm text-slate-300">
             <li>• Asking questions and chatting with Teesa is free</li>
             <li>• To make a guess, you pay a fee</li>
-            <li>• The fee increases by 1% after each question</li>
+            <li>• The fee increases by 10% after each question</li>
             <li>• Winner gets 80% of the accumulated fees</li>
             <li>• 10% is sent to the prize pool of the next game</li>
             <li>• Teesa DAO receives 10%</li>
