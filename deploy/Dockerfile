@@ -24,6 +24,8 @@ ARG PRIVYIO_APP_ID
 ARG PRIVYIO_APP_SECRET
 # Url for attestaion page provided by aapp-toolkit
 ARG ATTESTATION_URL
+# Stop the LangSmith logging
+ARG USE_LANGCHAIN_TRACING
 
 # Set environment variables that will be available at runtime
 ENV DOCKER_NETWORK=${NETWORK}
@@ -36,6 +38,7 @@ ENV DOCKER_ELIZA_AGENT_ID=${ELIZA_AGENT_ID}
 ENV DOCKER_PRIVYIO_APP_ID=${PRIVYIO_APP_ID}
 ENV DOCKER_PRIVYIO_APP_SECRET=${PRIVYIO_APP_SECRET}
 ENV DOCKER_ATTESTATION_URL=${ATTESTATION_URL}
+ENV DOCKER_USE_LANGCHAIN_TRACING=${USE_LANGCHAIN_TRACING}
 
 
 # Update apt-get and install all the required packages

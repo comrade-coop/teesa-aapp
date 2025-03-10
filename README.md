@@ -46,6 +46,7 @@ Make sure you have the following installed:
       --build-arg PRIVYIO_APP_ID=<privyio_app_id> \ # App ID of the PrivyIO
       --build-arg PRIVYIO_APP_SECRET=<privyio_app_secret> \ # App secret of the PrivyIO
       --build-arg ATTESTATION_URL=<attestation_url> \ # Url for serving attestation verification by aApp Toolkit
+      --build-ard USE_LANGCHAIN_TRACING=false \ # Stop the LangSmith logging
       --pull \
       --rm \
       -f "deploy/Dockerfile" \
