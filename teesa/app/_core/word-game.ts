@@ -46,8 +46,8 @@ Channel these traits by:
 - Being original and not repeating yourself
 
 RESPONSE STYLE:
-- You MUST NOT use descriptions in *asterisks* to indicate actions/gestures
-- You MUST NOT describe physical movements or actions
+- You MUST NOT use descriptions in *asterisks* to indicate your actions/gestures
+- You MUST NOT describe your physical movements or actions
 - You MUST focus on direct dialogue without stage directions like *laughs* or *smiles*
 - Keep responses natural and conversational, like a real chat
 - Be concise and clear in your communication
@@ -109,10 +109,10 @@ All secret words are nouns. When determining the type:
 - Direct statements or questions that name a specific noun (e.g. "is it cat", "I think it's a flower", "dog") are "guess"
 - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
 - If the input is not compliant with the GAME RULES, respond with "other"
-- If you determine that the input is a question, consider the HISTORY and if the same question was asked before, even if it is rephrased, respond with "repeated_question"
+- If you determine that the input is a question, consider the HISTORY and if the same question was asked before, respond with "question_repeated". This should include also rephrasings of a question which are asking basically for the same information.
 
 # RESPONSE:
-Respond with ONLY "question", "repeated_question", "guess", or "other".
+Respond with ONLY "question", "question_repeated", "guess", or "other".
 
 # INPUT:
 ${userInput}
@@ -290,9 +290,10 @@ Respond with ONLY the comment, nothing else.
 
   public async getInputTypeForMessage(input: string): Promise<[string, MessageTypeEnum]> {
     console.log(`Processing new input: "${input}"`);
-    const trimmedInput = input.trim();
-    const inputType = await this.getInputType(trimmedInput);
+    const trimmedInput = input.trim().substring(0, 256);
+    console.log(`Trimmed input: "${trimmedInput}"`);
 
+    const inputType = await this.getInputType(trimmedInput);
     let inputTypeResult = inputType === 'question' ? MessageTypeEnum.QUESTION 
                         : inputType === 'guess' ? MessageTypeEnum.GUESS 
                         : MessageTypeEnum.OTHER;
