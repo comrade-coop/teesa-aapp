@@ -13,8 +13,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *   - The user pays a fee to play the game
  *   - The fee is split into:
  *     - 10% to the team
- *     - 10% to the prize pool of the next game
- *     - 80% to the prize pool
+ *     - 20% to the prize pool of the next game
+ *     - 70% to the prize pool
  *
  * SetWinner:
  *   - The owner sets the winner address
@@ -179,7 +179,7 @@ contract Game is ReentrancyGuard {
         uint256 teamShareAmount = (msg.value * 10) / 100;
         teamShare += teamShareAmount;
 
-        uint256 nextGameShareAmount = (msg.value * 10) / 100;
+        uint256 nextGameShareAmount = (msg.value * 20) / 100;
         nextGameShare += nextGameShareAmount;
 
         uint256 prizePoolShare = msg.value - teamShareAmount - nextGameShareAmount;
