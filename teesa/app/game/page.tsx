@@ -32,6 +32,7 @@ export default function Page() {
   const [showAllMessages, setShowAllMesssages] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
+  const [previousGameEnded, setPreviousGameEnded] = useState<boolean>(false);
   const [winnerAddress, setWinnerAddress] = useState<string | undefined>(undefined);
   const [gameAbandoned, setGameAbandoned] = useState<boolean>(false);
   const [prizePool, setPrizePool] = useState<string>('0');
@@ -93,8 +94,28 @@ export default function Page() {
     return () => clearTimeout(timeoutId);
   }, [lastTimestamp, showAllMessages]);
 
+  // Add new useEffect hook to watch gameEnded state changes
+  useEffect(() => {
+    if (gameEnded) {
+      // Clear messages when the current game ends
+      const timeoutId = setTimeout(() => {
+        setMessages([]);
+      }, 10000); // Clear messages after 10 seconds to let the user see who won
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [gameEnded]);
+
   async function fetchGameState() {
     const { gameEnded, winnerAddress } = await getGameState();
+    
+    // Check if transitioning from ended game to new game
+    if (previousGameEnded && !gameEnded) {
+      console.log('New game started after previous game ended');
+      setMessages([]);
+    }
+    
+    setPreviousGameEnded(gameEnded);
     setGameEnded(gameEnded);
     setWinnerAddress(winnerAddress);
 
@@ -180,6 +201,8 @@ export default function Page() {
     if (!stringIsNullOrEmpty(gameContractAddress) && currentGameContractAddress != gameContractAddress) {
       if (currentGameContractAddress != undefined) {
         console.log('Game restarted');
+        // Clear messages when game restarts
+        setMessages([]);
         window.location.reload();
       }
 
@@ -199,9 +222,12 @@ export default function Page() {
       return;
     }
 
+    // Truncate message to 256 symbols before processing
+    const truncatedMessage = message;
+
     setLoading(true);
 
-    const [messageWithFixedSpelling, inputType] = await checkMessageType(message);
+    const [messageWithFixedSpelling, inputType] = await checkMessageType(truncatedMessage);
 
     if (inputType == MessageTypeEnum.GUESS) {
       const paymentResult = await processPayment(walletAddress, wallets);
