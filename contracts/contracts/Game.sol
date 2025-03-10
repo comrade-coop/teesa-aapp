@@ -90,6 +90,8 @@ contract Game is ReentrancyGuard {
     error NoNextGameShareToSend(); // No next game share to send
     error NextGameShareSendFailed(); // The next game share send failed
     error TeamShareSendFailed(); // The team share send failed
+    error NoNextGameShareToWithdraw(); // No next game share to withdraw
+    error NextGameShareWithdrawFailed(); // The next game share withdraw failed
 
     // Events
     // A new user fee payment is received
@@ -145,6 +147,9 @@ contract Game is ReentrancyGuard {
 
     // The prize pool is funded directly
     event PrizePoolFunded(uint256 amount);
+
+    // The next game share is withdrawn by the team
+    event NextGameShareWithdrawn(uint256 amount);
 
     constructor(address _teamAddress) {
         if (_teamAddress == address(0)) revert InvalidTeamAddress();
@@ -276,6 +281,22 @@ contract Game is ReentrancyGuard {
         }
 
         emit TeamShareWithdrawn(teamAmount);
+    }
+
+    function withdrawNextGameShare() external nonReentrant {
+        if (msg.sender != teamAddress) revert NotTeamAddress();
+        if (nextGameShare == 0) revert NoNextGameShareToWithdraw();
+
+        uint256 amount = nextGameShare;
+        nextGameShare = 0;
+
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        if (!success) {
+            nextGameShare = amount;
+            revert NextGameShareWithdrawFailed();
+        }
+
+        emit NextGameShareWithdrawn(amount);
     }
 
     function sendTeamShare() external nonReentrant {

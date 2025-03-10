@@ -192,6 +192,35 @@ describe("Game", function () {
     });
   });
 
+  describe("Next Game Share Withdrawal", function () {
+    it("should allow team address to withdraw next game share", async function () {
+      await game.connect(player).payFee({ value: initialFee });
+      
+      const initialBalance = await ethers.provider.getBalance(teamAddress.address);
+      const expectedNextGameShare = (initialFee * 20n) / 100n;
+      
+      await expect(game.connect(teamAddress).withdrawNextGameShare())
+        .to.emit(game, "NextGameShareWithdrawn")
+        .withArgs(expectedNextGameShare);
+      
+      const finalBalance = await ethers.provider.getBalance(teamAddress.address);
+      expect(finalBalance).to.be.gt(initialBalance);
+      expect(await game.nextGameShare()).to.equal(0);
+    });
+
+    it("should revert if non-team address tries to withdraw next game share", async function () {
+      await game.connect(player).payFee({ value: initialFee });
+      
+      await expect(game.connect(player).withdrawNextGameShare())
+        .to.be.revertedWithCustomError(game, "NotTeamAddress");
+    });
+
+    it("should revert if no next game share to withdraw", async function () {
+      await expect(game.connect(teamAddress).withdrawNextGameShare())
+        .to.be.revertedWithCustomError(game, "NoNextGameShareToWithdraw");
+    });
+  });
+
   describe("Abandoned Game Claims", function () {
     beforeEach(async function () {
       await game.connect(player).payFee({ value: initialFee });
