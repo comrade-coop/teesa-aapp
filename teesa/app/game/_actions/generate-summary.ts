@@ -72,10 +72,11 @@ export async function generateSummary(): Promise<string> {
     }).join('\n');
 
     const prompt = `
-Based on the following Q&A about a mystery word guessing game, create a concise summary of what we know about the mystery word so far. 
+Based on the following Q&A about a secret word guessing game, create a concise summary of what we know about the secret word so far. 
 Focus on confirmed facts (yes answers) and things that have been ruled out (no answers). Don't include any clues or hints.
-Format the summary as sentences - one sentence per line.
+Include everything we know about the secret word.
 Keep it brief but comprehensive.
+Make it a bullet point list with no more than 5 items.
 Respond only with the summary, no other text.
 
 Q&A History:
