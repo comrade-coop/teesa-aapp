@@ -109,7 +109,7 @@ All secret words are nouns. When determining the type:
 - Direct statements or questions that name a specific noun (e.g. "is it cat", "I think it's a flower", "dog") are "guess"
 - Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
 - If the input is not compliant with the GAME RULES, respond with "other"
-- If you determine that the input is a question, consider the HISTORY and if the same question was asked before, respond with "question_repeated". This should include also rephrasings of a question which are asking basically for the same information.
+- If the input is a question that was previously asked (including rephrased versions seeking the same information), respond with "question_repeated".
 
 # RESPONSE:
 Respond with ONLY "question", "question_repeated", "guess", or "other".
@@ -224,8 +224,6 @@ Respond with ONLY "correct" or "incorrect", nothing else.`;
     const history = await this.getHistoryForPrompt();
     const prompt = `
 # CONTEXT:
-Previous conversation:
-${JSON.stringify(history)}
 
 Player's input:
 ${userInput}
@@ -246,8 +244,6 @@ Respond with ONLY the comment, nothing else.
     const history = await this.getHistoryForPrompt();
     const prompt = `
 # CONTEXT:
-Previous conversation: 
-${JSON.stringify(history)}
 
 A player asked: 
 ${question}
@@ -269,8 +265,6 @@ Respond with ONLY the comment, nothing else.
     const history = await this.getHistoryForPrompt();
     const prompt = `
 # CONTEXT:
-Previous conversation: 
-${JSON.stringify(history)}
 
 Player's input:
 ${userInput}
