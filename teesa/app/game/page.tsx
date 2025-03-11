@@ -21,7 +21,7 @@ import { MessagesList } from './_components/messages-list';
 import { PaymentErrorChatMessage } from './_components/payment-error-chat-message';
 import { SidePanel } from './_components/side-panel';
 import { UserChatMessage } from './_components/user-chat-message';
-import { WorldSummary } from './_components/world-summary';
+import { WordSummary } from './_components/word-summary';
 import { MessageUiStateModel } from './_models/message-ui-state-model';
 
 export default function Page() {
@@ -42,7 +42,7 @@ export default function Page() {
   const [contractAddress, setContractAddress] = useState<string | undefined>(undefined);
   const [chainId, setChainId] = useState<number>(0);
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
-  const [worldSummary, setWorldSummary] = useState<string>('');
+  const [wordSummary, setWordSummary] = useState<string>('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
 
   // Used to refresh the page when the game is restarted
@@ -63,6 +63,7 @@ export default function Page() {
     fetchContractInfo();
     fetchNewMessages();
     fetchEnvironments();
+    updateWordSummary();
 
     const timeoutId = setTimeout(() => {
       setLastTimestamp(getTimestamp());
@@ -79,7 +80,7 @@ export default function Page() {
 
     fetchGameState();
     fetchContractInfo();
-    updateWorldSummary();
+    updateWordSummary();
     checkGameRestarted();
 
     // Get new messages only if we are not showing all messages
@@ -177,17 +178,20 @@ export default function Page() {
         ...previousMessages,
         ...newMessagesAsUiState
       ]);
+      
+      // Update the word summary whenever new messages are received
+      updateWordSummary();
     }
   };
 
-  async function updateWorldSummary() {
+  async function updateWordSummary() {
     if (isGeneratingSummary) return;
 
     setIsGeneratingSummary(true);
     try {
       // The server-side function now handles caching based on message count
       const summary = await generateSummary();
-      setWorldSummary(summary);
+      setWordSummary(summary);
     } catch (error) {
       console.error('Error updating summary:', error);
     } finally {
@@ -263,12 +267,21 @@ export default function Page() {
         display: response
       }
     ]);
-
+    
+    // Update the word summary after sending a message
+    updateWordSummary();
+    
     setScrollMessagesToBottom(true);
   };
 
   function handleTabChange(allMessages: boolean) {
     setShowAllMesssages(allMessages);
+    
+    // When switching to all messages tab, make sure to fetch latest messages and update summary
+    if (allMessages) {
+      fetchNewMessages();
+      updateWordSummary();
+    }
   }
 
   const showMessages = (ready && authenticated) || showAllMessages;
@@ -309,8 +322,8 @@ export default function Page() {
                   showingAllMessages={showAllMessages}
                   scrollToBottom={scrollMessagesToBottom} />
 
-                <WorldSummary
-                  summary={worldSummary}
+                <WordSummary
+                  summary={wordSummary}
                   className="mx-4 my-2"
                 />
               </div>

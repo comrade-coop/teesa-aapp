@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function WorldSummary({
+export function WordSummary({
   summary,
   className
 }: {
