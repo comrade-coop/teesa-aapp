@@ -9,13 +9,7 @@ import { getEnv } from '@/lib/environments';
 // Helper functions to create LLM instances
 const createLlm = () => new ChatAnthropic({
   model: 'claude-3-7-sonnet-20250219',
-  temperature: 0,
-  model_kwargs: {
-    thinking: {
-      type: "enabled",
-      budget_tokens: 1000,
-    }
-  }
+  temperature: 0
 });
 
 const createOllama = (model: string) => new ChatOllama({
