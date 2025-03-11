@@ -1,16 +1,13 @@
-import { MessageTypeEnum } from "@/app/_core/message-type-enum";
 import { gameState } from "../../_core/game-state";
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
-    const includeSystemMessages = searchParams.has('includeSystemMessages') 
-        ? searchParams.get('includeSystemMessages')?.toLowerCase() === 'true'
-        : true;
-
+    const types = searchParams.getAll('type').map(t => parseInt(t));
+    
     const history = await gameState.getHistory();
-    const result = includeSystemMessages 
-        ? history 
-        : history.filter(msg => msg.messageType != MessageTypeEnum.SYSTEM);
+    const result = types.length > 0
+        ? history.filter(msg => types.includes(msg.messageType))
+        : history;
     
     return Response.json(result);
 }
