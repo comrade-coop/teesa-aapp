@@ -10,9 +10,9 @@ import { getEnv } from '@/lib/environments';
 const createLlm = () => new ChatAnthropic({
   model: 'claude-3-7-sonnet-20250219',
   temperature: 0,
-  anthropicExtras: {
+  model_kwargs: {
     thinking: {
-      enabled: true,
+      type: "enabled",
       budget_tokens: 1000,
     }
   }
