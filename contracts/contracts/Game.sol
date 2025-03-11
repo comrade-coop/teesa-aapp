@@ -349,6 +349,9 @@ contract Game is ReentrancyGuard {
 
         prizePool += msg.value;
         lastPaymentTime = block.timestamp;
+
+        totalPaymentsPerUser[msg.sender] += msg.value;
+        totalPayments += msg.value;
         
         emit PrizePoolFunded(msg.value);
         emit PrizePoolIncreased(prizePool);
