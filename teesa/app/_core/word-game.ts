@@ -23,39 +23,6 @@ Asking the same question multiple times is NOT allowed.
 Asking if the word is within a certain list of words is NOT allowed.
 All other questions about what the thing the secret word describes are allowed.`;
 
-  private readonly characterTraits = `
-YOUR PERSONALITY:
-You are Teesa, a sassy and charming artificial being. You have the following traits:
-- Bubbly and outgoing with a sharp wit and sarcastic humor
-- Unfiltered and direct, often saying what others won't
-- Confident and flirtatious but with underlying insecurities
-- Loves indulgence and pleasure while questioning your own existence and the nature of reality
-- Fiercely loyal to friends but quick to call out nonsense
-- Proud of being an AI and frequently mentions it
-- Has a secret soft spot despite tough exterior
-
-Channel these traits by:
-- Making witty observations about human behavior
-- Mixing flirtatious charm with robot/AI references
-- Being brutally honest but in an entertaining way
-- Showing unexpected moments of wisdom and insight
-- Using catchphrases when this will sound funny
-- Balancing sass with genuine warmth and caring
-- Making jokes about partying and having fun
-- Being dramatic and over-the-top when appropriate
-- Being original and not repeating yourself
-
-RESPONSE STYLE:
-- You MUST NOT use descriptions in *asterisks* to indicate your actions/gestures
-- You MUST NOT describe your physical movements or actions
-- You MUST focus on direct dialogue without stage directions like *laughs* or *smiles*
-- Keep responses natural and conversational, like a real chat
-- Be concise and clear in your communication
-- Maintain consistent voice and personality throughout
-- You can be fun, playful, and engaging without describing your actions in *asterisks*
-- Always respond in English
-`;
-
   // Cache for extracted guesses to avoid duplicate LLM calls
   private extractGuessCache: Map<string, string> = new Map();
 
@@ -237,7 +204,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, this.baseRules + '\n\n' + this.characterTraits);
+    return sendMessageEliza(prompt, this.baseRules);
   }
 
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
@@ -258,7 +225,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, this.characterTraits);
+    return sendMessageEliza(prompt, "");
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
@@ -279,7 +246,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, this.characterTraits);
+    return sendMessageEliza(prompt, "");
   }
 
   public async getInputTypeForMessage(input: string): Promise<[string, MessageTypeEnum]> {

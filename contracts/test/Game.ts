@@ -73,7 +73,7 @@ describe("Game", function () {
       await game.connect(player).payFee({ value: paymentAmount });
       
       const expectedTeamShare = (paymentAmount * 10n) / 100n;
-      const expectedNextGameShare = (paymentAmount * 10n) / 100n;
+      const expectedNextGameShare = (paymentAmount * 20n) / 100n;
       const expectedPrizePool = paymentAmount - expectedTeamShare - expectedNextGameShare;
       
       expect(await game.teamShare()).to.equal(expectedTeamShare);
@@ -310,8 +310,8 @@ describe("Game", function () {
       // First payment
       await game.connect(player).payFee({ value: initialFee });
       
-      // Calculate the initial prize pool contribution (80% of initialFee)
-      const initialPrizePoolContribution = initialFee - ((initialFee * 10n) / 100n) - ((initialFee * 10n) / 100n);
+      // Calculate the initial prize pool contribution (70% of initialFee)
+      const initialPrizePoolContribution = initialFee - ((initialFee * 10n) / 100n) - ((initialFee * 20n) / 100n);
       
       await advanceToAbandonedGameTime();
       
@@ -345,7 +345,7 @@ describe("Game", function () {
       // End the game
       await game.connect(owner).setWinner(player.address);
       
-      const nextGameShareAmount = (initialFee * 10n) / 100n;
+      const nextGameShareAmount = (initialFee * 20n) / 100n;
       const mockGamePrizePoolBefore = await mockGame.prizePool();
       
       await expect(game.connect(owner).sendNextGameShare(mockGame))

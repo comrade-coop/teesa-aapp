@@ -34,8 +34,19 @@ jobs:
 
           sed -i "s/__AAPPTAG__/${{ github.event.release.tag_name }}/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s/__AAPPCNAME__/$AAPP_CNAME/g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPARGS__#${{ secrets.AAPP_ARGS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPDEVPUBKEY__#${{ secrets.AAPP_DEV_PUB_KEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+
+          sed -i "s#__AAPPBUILDARGNETWORK__#${{ vars.AAPPBUILDARGNETWORK }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGRPCURL__#${{ secrets.AAPPBUILDARGRPCURL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGBLOCKCHAINSCANAPIKEY__#${{ secrets.AAPPBUILDARGBLOCKCHAINSCANAPIKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGTEAMADDRESS__#${{ vars.AAPPBUILDARGTEAMADDRESS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGANTHROPICAPIKEY__#${{ secrets.AAPPBUILDARGANTHROPICAPIKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGPRIVYIOAPPID__#${{ secrets.AAPPBUILDARGPRIVYIOAPPID }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGPRIVYIOAPPSECRET__#${{ secrets.AAPPBUILDARGPRIVYIOAPPSECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGELIZAAPIURL__#${{ vars.AAPPBUILDARGELIZAAPIURL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGELIZAAGENTID__#${{ secrets.AAPPBUILDARGELIZAAGENTID }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGATTESTATIONURL__#${{ vars.AAPPBUILDARGATTESTATIONURL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGLANGCHAINTRACINGV2__#${{ vars.AAPPBUILDARGLANGCHAINTRACINGV2 }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
 
           cat "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
 
@@ -51,6 +62,6 @@ jobs:
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
           vm_ssh_enabled: "false"
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest-preprod.json"
+          aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           certbot_email: "dev@teesa.ai"
           current_job_url: ${{ steps.get_job_html_url.outputs.result }}
