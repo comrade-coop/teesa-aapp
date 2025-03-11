@@ -29,7 +29,7 @@
       }
     },
     "ingress": {
-      "hostname": "__AAPPCNAME__.teesa.kubocloud.io",
+      "hostname": "__AAPPCNAME__.teesa.ai",
       "port": 3000
     },
     "developer": {
