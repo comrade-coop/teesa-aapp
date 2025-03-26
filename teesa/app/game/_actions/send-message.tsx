@@ -21,7 +21,7 @@ export async function sendMessage(userAddress: string, id: string, timestamp: nu
   (async () => {
     let llmMessage = '';
 
-    if (inputType == MessageTypeEnum.GUESS) {
+    if (inputType == MessageTypeEnum.GUESS && !userAddress.includes('anon-')) {
       const [wonGame, response] = await wordGame.checkGuessMessage(userAddress, id, timestamp, message);
 
       llmMessage = response;
@@ -30,6 +30,7 @@ export async function sendMessage(userAddress: string, id: string, timestamp: nu
         setWinner(userAddress, timestamp);
       }
     } else {
+      // For non-guess messages or anonymous users
       llmMessage = await wordGame.processUserMessage(userAddress, id, timestamp, message, inputType);
     }
 

@@ -43,7 +43,7 @@ export function BottomPanel({
       <button
         className="w-full p-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white uppercase rounded-full shadow-xl hover:opacity-90 transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:from-blue-500 hover:to-blue-600"
         onClick={onLogin}>
-        Connect Wallet
+        Connect Wallet to Make Guesses and Win Rewards
       </button>
     </div>
   );
@@ -115,7 +115,21 @@ export function BottomPanel({
   return <div
     className={cn("", className)}
   >
-    {(!isLoggedIn && !gameEnded && !gameAbandoned) && loginButton}
+    {(!isLoggedIn && !gameEnded && !gameAbandoned) && (
+      <>
+        {chatForm}
+        <div className="relative mb-4 mx-4">
+          <div className="relative">
+            <div className="absolute -inset-[2px] bg-gradient-to-r from-blue-500/20 via-blue-500/15 to-blue-400/20 rounded-full blur-sm"></div>
+            <button
+              className="w-full p-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-xl hover:opacity-90 transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:from-blue-500 hover:to-blue-600 relative"
+              onClick={onLogin}>
+              Connect Wallet to Make Guesses and Win Rewards
+            </button>
+          </div>
+        </div>
+      </>
+    )}
     {(isLoggedIn && !gameEnded && !gameAbandoned) && chatForm}
     {(!gameEnded && gameAbandoned) && gameAbandonedMessage}
     {gameEnded && gameEndedMessage}

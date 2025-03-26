@@ -215,11 +215,8 @@ export default function Page() {
   }
 
   async function hadleChatMessage(message: string) {
-    if (!walletAddress) {
-      return;
-    }
-
-    setShowAllMesssages(false);
+    // Generate random user ID if wallet is not connected
+    const userId = walletAddress || `0xanon-${uuidv4().substring(0, 8)}`;
 
     const { gameEnded } = await getGameState();
     if (gameEnded) {
@@ -233,7 +230,35 @@ export default function Page() {
 
     const [messageWithFixedSpelling, inputType] = await checkMessageType(truncatedMessage);
 
-    if (inputType == MessageTypeEnum.GUESS) {
+    // If user is trying to make a guess but isn't authenticated, show prompt to connect wallet
+    if (inputType == MessageTypeEnum.GUESS && !walletAddress) {
+      setLoading(false);
+      
+      // Add a message prompting the user to connect their wallet to guess
+      setMessages(previousMessages => [
+        ...previousMessages,
+        {
+          id: uuidv4(),
+          userId: userId,
+          timestamp: getTimestamp(),
+          isSystemMessage: true,
+          display: (
+            <div className="p-4 my-2 bg-blue-900/30 border border-blue-500/50 rounded-lg">
+              <p className="text-white mb-3">⚠️ To make a guess and win rewards, you need to connect your wallet first.</p>
+              <button 
+                onClick={() => login()} 
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+              >
+                Connect Wallet
+              </button>
+            </div>
+          )
+        }
+      ]);
+      return;
+    }
+
+    if (inputType == MessageTypeEnum.GUESS && walletAddress) {
       const paymentResult = await processPayment(walletAddress, wallets);
 
       setLoading(false);
@@ -243,7 +268,7 @@ export default function Page() {
           ...previousMessages,
           {
             id: uuidv4(),
-            userId: walletAddress,
+            userId: userId,
             timestamp: getTimestamp(),
             display: <PaymentErrorChatMessage error={paymentResult} />
           }
@@ -256,13 +281,13 @@ export default function Page() {
 
     const id = uuidv4();
     const timestamp = getTimestamp();
-    const response = await sendMessage(walletAddress, id, timestamp, messageWithFixedSpelling, inputType);
+    const response = await sendMessage(userId, id, timestamp, messageWithFixedSpelling, inputType);
 
     setMessages(previousMessages => [
       ...previousMessages,
       {
         id: id,
-        userId: walletAddress,
+        userId: userId,
         timestamp: timestamp,
         display: response
       }
@@ -284,7 +309,7 @@ export default function Page() {
     }
   }
 
-  const showMessages = (ready && authenticated) || showAllMessages;
+  const showMessages = true; // Always show messages, even for unauthenticated users
 
   const getMessagesForList = () => {
     // On some test environments, we were experiencing duplicate messages.
@@ -301,7 +326,7 @@ export default function Page() {
       return uniqueMessages.sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    return uniqueMessages.filter(m => m.userId == walletAddress).sort((a, b) => a.timestamp - b.timestamp);
+    return uniqueMessages.filter(m => m.userId === walletAddress || m.isSystemMessage === true).sort((a, b) => a.timestamp - b.timestamp);
   };
 
   return (
@@ -334,7 +359,7 @@ export default function Page() {
             </div>
           )}
 
-          {ready && <BottomPanel
+          <BottomPanel
             className='mt-auto'
             gameEnded={gameEnded}
             winnerAddress={winnerAddress}
@@ -342,7 +367,7 @@ export default function Page() {
             gameAbandoned={gameAbandoned}
             loading={loading}
             onLogin={login}
-            onChatMessage={hadleChatMessage} />}
+            onChatMessage={hadleChatMessage} />
         </div>
 
         {/* Rules Panel */}
