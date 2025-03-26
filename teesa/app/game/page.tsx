@@ -24,6 +24,20 @@ import { UserChatMessage } from './_components/user-chat-message';
 import { WordSummary } from './_components/word-summary';
 import { MessageUiStateModel } from './_models/message-ui-state-model';
 
+// Add Ethereum provider interface
+interface EthereumProvider {
+  on(event: string, callback: (...args: any[]) => void): void;
+  removeListener(event: string, callback: (...args: any[]) => void): void;
+  request(args: { method: string, params?: any[] }): Promise<any>;
+}
+
+// Extend Window interface
+declare global {
+  interface Window {
+    ethereum?: EthereumProvider;
+  }
+}
+
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
@@ -57,6 +71,47 @@ export default function Page() {
       setScrollMessagesToBottom(false);
     }
   }, [scrollMessagesToBottom]);
+
+  // Add effect to detect when wallet is disconnected manually (outside the app)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      // Listen for account changes in MetaMask
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length === 0 && authenticated) {
+          // MetaMask was disconnected manually
+          console.log('MetaMask disconnected externally');
+          // Force logout in Privy to sync the state
+          logout();
+        }
+      };
+
+      const ethereum = window.ethereum;
+      ethereum.on('accountsChanged', handleAccountsChanged);
+      
+      // Periodically check if the wallet is still connected
+      const checkWalletConnection = async () => {
+        if (authenticated && ethereum) {
+          try {
+            const accounts = await ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length === 0) {
+              console.log('Wallet disconnected but app state not updated');
+              logout();
+            }
+          } catch (err) {
+            console.error('Error checking wallet connection:', err);
+          }
+        }
+      };
+      
+      // Check every 10 seconds
+      const intervalId = setInterval(checkWalletConnection, 10000);
+
+      return () => {
+        ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        clearInterval(intervalId);
+      };
+    }
+  }, [authenticated, logout]);
 
   useEffect((() => {
     fetchGameState();
@@ -106,6 +161,35 @@ export default function Page() {
       return () => clearTimeout(timeoutId);
     }
   }, [gameEnded]);
+
+  useEffect(() => {
+    if (authenticated && walletAddress) {
+      // Remove the wallet connection system message when the user connects
+      setMessages((prevMessages: MessageUiStateModel[]) => 
+        prevMessages.filter(msg => {
+          // Check if this is a system message with a login button
+          const msgAny = msg as any;
+          
+          // First check if it has isSystemMessage flag (not in interface but used in code)
+          if (msgAny.isSystemMessage === true) {
+            // Then check if it contains a connect wallet button
+            if (msg.display && typeof msg.display === 'object') {
+              const displayProps = (msg.display as any).props;
+              const hasConnectWalletButton = 
+                displayProps?.className?.includes('bg-blue-900/30') && 
+                displayProps?.children?.some?.((child: any) => 
+                  child?.props?.onClick?.toString?.().includes('login')
+                );
+              
+              return !hasConnectWalletButton;
+            }
+          }
+          
+          return true;
+        })
+      );
+    }
+  }, [authenticated, walletAddress]);
 
   async function fetchGameState() {
     const { gameEnded, winnerAddress } = await getGameState();
