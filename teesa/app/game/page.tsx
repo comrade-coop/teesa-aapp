@@ -245,9 +245,9 @@ export default function Page() {
           display: (
             <div className="p-4 my-2 bg-blue-900/30 border border-blue-500/50 rounded-lg">
               <p className="text-white mb-3">⚠️ To make a guess and win rewards, you need to connect your wallet first.</p>
-              <button 
-                onClick={() => login()} 
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+              <button
+                onClick={() => login()}
+                className="w-full p-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-xl hover:opacity-90 transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:from-blue-500 hover:to-blue-600 relative"
               >
                 Connect Wallet
               </button>
