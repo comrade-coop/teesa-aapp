@@ -3,7 +3,7 @@
 import { getLocaleClient, getTimestamp, stringIsNullOrEmpty } from '@/lib/utils';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getEnvironments } from '../_actions/get-environments';
 import { MessageTypeEnum } from '../_core/message-type-enum';
@@ -58,6 +58,8 @@ export default function Page() {
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
   const [wordSummary, setWordSummary] = useState<string>('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
+  const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
+  const previousAuthState = useRef<boolean | null>(null);
 
   // Used to refresh the page when the game is restarted
   const [currentGameContractAddress, setCurrentGameContractAddress] = useState<string | undefined>(undefined);
@@ -65,6 +67,24 @@ export default function Page() {
   const router = useRouter();
 
   const walletAddress = (ready && authenticated) ? user?.wallet?.address : undefined;
+
+  // Initialize or retrieve anonymous user ID from local storage
+  useEffect(() => {
+    // Only run this on the client side
+    if (typeof window !== 'undefined') {
+      // Try to get the anonymous ID from localStorage
+      const storedAnonymousId = localStorage.getItem('anonymousUserId');
+      
+      if (storedAnonymousId) {
+        setAnonymousUserId(storedAnonymousId);
+      } else {
+        // Create a new anonymous ID and store it
+        const newAnonymousId = `0xanon-${uuidv4().substring(0, 8)}`;
+        localStorage.setItem('anonymousUserId', newAnonymousId);
+        setAnonymousUserId(newAnonymousId);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (scrollMessagesToBottom) {
@@ -112,6 +132,30 @@ export default function Page() {
       };
     }
   }, [authenticated, logout]);
+
+  // Add effect to track wallet authentication changes
+  useEffect(() => {
+    if (!ready) return; // Skip if not ready yet
+    
+    // If this is the first time the component mounts, just store the current auth state
+    if (previousAuthState.current === null) {
+      previousAuthState.current = authenticated;
+      return;
+    }
+    
+    // If user just disconnected their wallet (was authenticated, now is not)
+    if (previousAuthState.current === true && authenticated === false) {
+      if (typeof window !== 'undefined') {
+        // Create a new anonymous ID when user disconnects
+        const newAnonymousId = `0xanon-${uuidv4().substring(0, 8)}`;
+        localStorage.setItem('anonymousUserId', newAnonymousId);
+        setAnonymousUserId(newAnonymousId);
+      }
+    }
+    
+    // Update previous state
+    previousAuthState.current = authenticated;
+  }, [authenticated, ready]);
 
   useEffect((() => {
     fetchGameState();
@@ -299,8 +343,8 @@ export default function Page() {
   }
 
   async function hadleChatMessage(message: string) {
-    // Generate random user ID if wallet is not connected
-    const userId = walletAddress || `0xanon-${uuidv4().substring(0, 8)}`;
+    // Use stored anonymous ID if wallet is not connected
+    const userId = walletAddress || anonymousUserId || `0xanon-${uuidv4().substring(0, 8)}`;
 
     const { gameEnded } = await getGameState();
     if (gameEnded) {
