@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Teesa aapp",
+  title: "Teesa",
   description: "AI powered word guessing game",
 };
 

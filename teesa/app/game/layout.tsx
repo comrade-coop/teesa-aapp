@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { VideoBackground } from "./_components/video-background";
 
 export const metadata: Metadata = {
-  title: "Game | Teesa app",
+  title: "Teesa",
   description: "AI powered word guessing game",
 };
 
