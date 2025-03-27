@@ -16,6 +16,7 @@ export function MessagesList({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const prevMessagesLengthRef = useRef(messages.length);
 
   useEffect(() => {
     if (!scrollToBottom) {
@@ -24,6 +25,15 @@ export function MessagesList({
 
     scrollToBottomSmooth();
   }, [scrollToBottom]);
+
+  // Auto-scroll when new messages are added
+  useEffect(() => {
+    // If messages length has increased, scroll to bottom
+    if (messages.length > prevMessagesLengthRef.current) {
+      scrollToBottomSmooth();
+    }
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages]);
 
   // Check scroll position when messages change or on scroll
   useEffect(() => {
@@ -46,7 +56,7 @@ export function MessagesList({
   const scrollToBottomSmooth = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 250);
+    }, 100);
   };
 
   return (
