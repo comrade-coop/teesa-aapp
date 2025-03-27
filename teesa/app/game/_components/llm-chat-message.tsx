@@ -40,7 +40,7 @@ export function LlmChatMessage({
     <div className="flex items-start mb-8 flex-row">
       <div className="w-10 h-10 rounded-full bg-slate-900/10 flex items-center justify-center mr-4 border border-blue-500/20 overflow-hidden">
         <img
-          src="/teesa.png"
+          src="/favicon.ico"
           alt="Teesa"
           className="w-full h-full object-cover"
         />
