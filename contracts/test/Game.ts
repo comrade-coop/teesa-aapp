@@ -4,7 +4,7 @@ import { Game } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("Game", function () {
-  const ABANDONED_GAME_TIME = 30 * 24 * 60 * 60 + 1; // 30 days + 1 second
+  const ABANDONED_GAME_TIME = 7 * 24 * 60 * 60 + 1; // 7 days + 1 second
 
   let game: Game;
   let owner: SignerWithAddress;

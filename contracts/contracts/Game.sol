@@ -24,7 +24,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *   - The owner sends the prize to the winner
  *
  * ClaimAbandonedGameShare:
- *   - If no message is sent within 30 days, the game is abandoned -> the game ends
+ *   - If no message is sent within 7 days, the game is abandoned -> the game ends
  *   - The users can claim the abandoned game shares:
  *     - If the user is the last player, they receive the bigger of:
  *         - 10% of the prize pool
@@ -358,7 +358,7 @@ contract Game is ReentrancyGuard {
     }
 
     function abandonedGameTimeElapsed() public view returns (bool) {
-        return block.timestamp >= lastPaymentTime + 30 days;
+        return block.timestamp >= lastPaymentTime + 7 days;
     }
 
     function _sendUserShare(

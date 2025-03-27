@@ -91,7 +91,7 @@ export function ContractInfo({
             <li>• Winner gets 70% of the accumulated fees</li>
             <li>• 20% is sent to the prize pool of the next game</li>
             <li>• Teesa DAO receives 10%</li>
-            <li className="pt-2 text-slate-400">If no activity for 30 days:</li>
+            <li className="pt-2 text-slate-400">If no activity for 7 days:</li>
             <li>• Last player gets at least 10%</li>
             <li>• Remaining prize split among players</li>
           </ul>
