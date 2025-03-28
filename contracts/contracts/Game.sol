@@ -285,6 +285,7 @@ contract Game is ReentrancyGuard {
 
     function withdrawNextGameShare() external nonReentrant {
         if (msg.sender != teamAddress) revert NotTeamAddress();
+        if (!gameEnded) revert GameNotEnded();
         if (nextGameShare == 0) revert NoNextGameShareToWithdraw();
 
         uint256 amount = nextGameShare;
