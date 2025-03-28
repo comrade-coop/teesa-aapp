@@ -103,27 +103,6 @@ export function SidePanel({
         ${!isDesktop && !isOpen ? 'translate-x-full' : 'translate-x-0'}`, className)}
       >
         <div className="flex-1 space-y-6">
-          {isLoggedIn && (
-            <div className="flex justify-center">
-              <div 
-                className="flex items-center gap-2 group relative cursor-pointer" 
-                onClick={handleWalletClick}
-              >
-                <div className="absolute inset-0 bg-cyan-700/5 blur-xl rounded-full"></div>
-                <Wallet className="w-5 h-5 text-cyan-700 group-hover:text-cyan-600 transition-colors relative" />
-                <span className="text-sm font-medium relative flex items-center gap-2">
-                  <span className="bg-gradient-to-r from-cyan-700 to-cyan-600 bg-clip-text text-transparent border-b border-cyan-700/30 group-hover:border-cyan-600/30 leading-none transition-colors">
-                    Wallet connected
-                  </span>
-                  <span className="flex gap-1 items-center">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-700 group-hover:bg-cyan-600 transition-colors animate-ping absolute opacity-50"></span>
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-700 group-hover:bg-cyan-600 transition-colors relative"></span>
-                  </span>
-                </span>
-              </div>
-            </div>
-          )}
-          
           <div className="flex justify-center">
             <a
               href={process.env.NEXT_PUBLIC_ATTESTATION_URL}
@@ -145,6 +124,27 @@ export function SidePanel({
               </span>
             </a>
           </div>
+          
+          {isLoggedIn && (
+            <div className="flex justify-center">
+              <div 
+                className="flex items-center gap-2 group relative cursor-pointer" 
+                onClick={handleWalletClick}
+              >
+                <div className="absolute inset-0 bg-cyan-700/5 blur-xl rounded-full"></div>
+                <Wallet className="w-5 h-5 text-cyan-700 group-hover:text-cyan-600 transition-colors relative" />
+                <span className="text-sm font-medium relative flex items-center gap-2">
+                  <span className="bg-gradient-to-r from-cyan-700 to-cyan-600 bg-clip-text text-transparent border-b border-cyan-700/30 group-hover:border-cyan-600/30 leading-none transition-colors">
+                    Wallet connected
+                  </span>
+                  <span className="flex gap-1 items-center">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-700 group-hover:bg-cyan-600 transition-colors animate-ping absolute opacity-50"></span>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-700 group-hover:bg-cyan-600 transition-colors relative"></span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
           
           <ContractInfo 
             prizePool={prizePool}
