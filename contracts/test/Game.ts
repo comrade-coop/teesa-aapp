@@ -215,6 +215,11 @@ describe("Game", function () {
         .to.be.revertedWithCustomError(game, "NotTeamAddress");
     });
 
+    it("should revert if game has not ended", async function () {
+      await expect(game.connect(teamAddress).withdrawNextGameShare())
+        .to.be.revertedWithCustomError(game, "GameNotEnded");
+    });
+
     it("should revert if no next game share to withdraw", async function () {
       await expect(game.connect(teamAddress).withdrawNextGameShare())
         .to.be.revertedWithCustomError(game, "NoNextGameShareToWithdraw");
