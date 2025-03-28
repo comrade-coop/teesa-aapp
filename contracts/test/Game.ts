@@ -193,8 +193,12 @@ describe("Game", function () {
   });
 
   describe("Next Game Share Withdrawal", function () {
-    it("should allow team address to withdraw next game share", async function () {
+    it("should allow team address to withdraw next game share after game is abandoned", async function () {
       await game.connect(player).payFee({ value: initialFee });
+      
+      // Abandon the game instead of setting a winner
+      await advanceToAbandonedGameTime();
+      await game.connect(player).claimAbandonedGameShare();
       
       const initialBalance = await ethers.provider.getBalance(teamAddress.address);
       const expectedNextGameShare = (initialFee * 20n) / 100n;
@@ -208,8 +212,12 @@ describe("Game", function () {
       expect(await game.nextGameShare()).to.equal(0);
     });
 
-    it("should revert if non-team address tries to withdraw next game share", async function () {
+    it("should revert if non-team address tries to withdraw next game share after abandonment", async function () {
       await game.connect(player).payFee({ value: initialFee });
+      
+      // Abandon the game instead of setting a winner
+      await advanceToAbandonedGameTime();
+      await game.connect(player).claimAbandonedGameShare();
       
       await expect(game.connect(player).withdrawNextGameShare())
         .to.be.revertedWithCustomError(game, "NotTeamAddress");
@@ -220,7 +228,16 @@ describe("Game", function () {
         .to.be.revertedWithCustomError(game, "GameNotEnded");
     });
 
-    it("should revert if no next game share to withdraw", async function () {
+    it("should revert if no next game share to withdraw after abandonment", async function () {
+      // We need a payment to be able to claim abandonment, using a player
+      await game.connect(player).payFee({ value: initialFee });
+      
+      // Abandon game and empty nextGameShare by having team withdraw it
+      await advanceToAbandonedGameTime();
+      await game.connect(player).claimAbandonedGameShare();
+      await game.connect(teamAddress).withdrawNextGameShare();
+      
+      // Now try again - should fail with no shares
       await expect(game.connect(teamAddress).withdrawNextGameShare())
         .to.be.revertedWithCustomError(game, "NoNextGameShareToWithdraw");
     });
