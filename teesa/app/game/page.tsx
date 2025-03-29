@@ -34,7 +34,7 @@ interface EthereumProvider {
 // Extend Window interface
 declare global {
   interface Window {
-    ethereum?: EthereumProvider;
+    ethereum?: any;
   }
 }
 
@@ -454,7 +454,7 @@ export default function Page() {
       return uniqueMessages.sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    return uniqueMessages.filter(m => m.userId === walletAddress || m.isSystemMessage === true).sort((a, b) => a.timestamp - b.timestamp);
+    return uniqueMessages.filter(m => m.userId === walletAddress).sort((a, b) => a.timestamp - b.timestamp);
   };
 
   return (
