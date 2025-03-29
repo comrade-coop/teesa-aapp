@@ -22,7 +22,7 @@ export interface HistoryEntry {
   messageType: MessageTypeEnum;
   userMessage: string | undefined;
   llmMessage: string;
-  answerResult?: AnswerResultEnum; // Optional to maintain backward compatibility
+  answerResult: AnswerResultEnum;
 }
 
 interface GameStateData {
