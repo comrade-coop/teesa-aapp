@@ -59,6 +59,7 @@ jobs:
           tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           resource_group: "teesa"
           vm_name: "teesa-${{ env.AAPP_CNAME }}"
+          vm_disk_size: "30"
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
           vm_ssh_enabled: "false"
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
