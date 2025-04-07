@@ -1,6 +1,7 @@
 import { ConnectedWallet } from "@privy-io/react-auth";
-import { getEnvironments } from "../_actions/get-environments";
+import { getNetworkEnvironments } from "../../_contracts/get-network-environments";
 import { parseEther } from "ethers";
+import { getWalletDetails } from "./get-wallet-details";
 
 export enum TransferFundsToTeesaWalletResult {
     Success,
@@ -20,7 +21,7 @@ export async function transferFundsToTeesaWallet(
         return TransferFundsToTeesaWalletResult.FailedWalletNotFound;
     }
 
-    const { chainId, teesaWalletAddress } = await getEnvironments();
+    const { chainId } = await getNetworkEnvironments();
 
     await userWallet.switchChain(chainId);
 
@@ -33,10 +34,12 @@ export async function transferFundsToTeesaWallet(
         return TransferFundsToTeesaWalletResult.FailedInsufficientFunds;
     }
 
+    const { address } = await getWalletDetails();
+
     try {
         const signer = await provider.getSigner();
         const transaction = await signer.sendTransaction({
-            to: teesaWalletAddress,
+            to: address,
             value: amountInWei
         });
         

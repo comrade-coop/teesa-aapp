@@ -61,7 +61,7 @@ All other questions about what the thing the secret word describes are allowed.`
     }));
   }
 
-  private async getInputType(userInput: string): Promise<string> {
+  private async getInputType(userInput: string): Promise<MessageTypeEnum> {
     const history = await this.getQuestionHistoryForPrompt();
     const prompt = `
 # TASK: 
@@ -89,8 +89,12 @@ ${JSON.stringify(history)}
 `;
 
     const response = await sendMessageLlm(prompt, this.baseRules);
-    console.log(`Input type for "${userInput}" determined as: "${response.toLowerCase().replace(/[^a-z]/g, '')}"`);
-    return response.toLowerCase().replace(/[^a-z]/g, '');
+    const inputType = response.toLowerCase().replace(/[^a-z]/g, '');
+    console.log(`Input type for "${userInput}" determined as: "${inputType}"`);
+
+    return inputType === 'question' ? MessageTypeEnum.QUESTION
+      : inputType === 'guess' ? MessageTypeEnum.GUESS
+        : MessageTypeEnum.OTHER;
   }
 
   private async extractGuess(userInput: string): Promise<string> {
@@ -147,7 +151,7 @@ ${text}`;
 
   private async getAnswer(question: string): Promise<boolean> {
     console.log(`Getting answer for question: "${question}"`);
-    const secretWord = await gameState.getSecretWord();
+    const secretWord = gameState.getSecretWord();
     // Note: Not logging the secret word
     const prompt = `
 AGENT (thinks of a word and the thing it represents): ${secretWord}
@@ -162,7 +166,7 @@ AGENT (answers with only "yes" or "no" based on common-sense logic): `;
 
   private async checkGuess(guess: string): Promise<boolean> {
     console.log(`Checking guess: "${guess}"`);
-    const secretWord = await gameState.getSecretWord();
+    const secretWord = gameState.getSecretWord();
     // Note: Not logging the secret word
     const prompt = `
 Secret word: "${secretWord}".
@@ -229,7 +233,6 @@ Respond with ONLY the comment, nothing else.
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
-    const history = await this.getHistoryForPrompt();
     const prompt = `
 # CONTEXT:
 
@@ -249,45 +252,48 @@ Respond with ONLY the comment, nothing else.
     return sendMessageEliza(prompt, "");
   }
 
-  public async getInputTypeForMessage(input: string): Promise<[string, MessageTypeEnum]> {
-    console.log(`Processing new input: "${input}"`);
-    const trimmedInput = input.trim().substring(0, 256);
-    console.log(`Trimmed input: "${trimmedInput}"`);
+  private trimInput(input: string): string {
+    return input.trim().substring(0, 256);
+  }
 
-    const inputType = await this.getInputType(trimmedInput);
-    let inputTypeResult = inputType === 'question' ? MessageTypeEnum.QUESTION 
-                        : inputType === 'guess' ? MessageTypeEnum.GUESS 
-                        : MessageTypeEnum.OTHER;
+  public async getInputTypeForMessage(input: string): Promise<MessageTypeEnum> {
+    console.log(`Processing new input: "${input}"`);
+    const trimmedInput = this.trimInput(input);
+
+    let inputType = await this.getInputType(trimmedInput);
 
     // If initially classified as a guess, verify that we can extract a word
-    if (inputTypeResult === MessageTypeEnum.GUESS) {
+    if (inputType === MessageTypeEnum.GUESS) {
       const guessedWord = await this.extractGuess(trimmedInput);
       
       if (guessedWord === "NONE") {
         console.log(`Input initially classified as guess but no word detected. Reclassifying as a question: "${trimmedInput}"`);
         // Reclassify as a question if no guessable word found
-        inputTypeResult = MessageTypeEnum.QUESTION;
+        inputType = MessageTypeEnum.QUESTION;
       }
     }
 
-    console.log(`Final input type: ${MessageTypeEnum[inputTypeResult]}`);
-    return [trimmedInput, inputTypeResult];
+    console.log(`Final input type: ${MessageTypeEnum[inputType]}`);
+    return inputType;
   }
 
-  public async processUserMessage(userAddress: string, messageId: string, timestamp: number, input: string, inputType: MessageTypeEnum): Promise<string> {
-    console.log(`Processing ${MessageTypeEnum[inputType]} from user: ${userAddress}, message ID: ${messageId}`);
+  public async processUserMessage(userId: string, messageId: string, timestamp: number, input: string, inputType: MessageTypeEnum): Promise<string> {
+    console.log(`Processing ${MessageTypeEnum[inputType]} from user: ${userId}, message ID: ${messageId}`);
+
+    const trimmedInput = this.trimInput(input);
+
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.UNKNOWN;
 
     if (inputType == MessageTypeEnum.QUESTION) {
-      [response, answerResult] = await this.answerQuestion(input);
+      [response, answerResult] = await this.answerQuestion(trimmedInput);
     } else {
-      response = await this.getRandomResponse(input);
+      response = await this.getRandomResponse(trimmedInput);
     }
 
     const message: HistoryEntry = {
       id: messageId,
-      userId: userAddress,
+      userId: userId,
       timestamp: timestamp,
       messageType: inputType,
       userMessage: input,
@@ -301,27 +307,29 @@ Respond with ONLY the comment, nothing else.
     return response;
   }
 
-  public async checkGuessMessage(userAddress: string, messageId: string, timestamp: number, input: string): Promise<[boolean, string]> {
-    console.log(`Checking guess message from user: ${userAddress}, message ID: ${messageId}`);
-    let wonGame = false;
+  public async checkGuessMessage(userId: string, messageId: string, timestamp: number, input: string): Promise<[string, AnswerResultEnum]> {
+    console.log(`Checking guess message from user: ${userId}, message ID: ${messageId}`);
+
+    const trimmedInput = this.trimInput(input);
+
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.INCORRECT;
 
-    const guessedWord = await this.extractGuess(input);
+    const guessedWord = await this.extractGuess(trimmedInput);
+    const isCorrect = await this.checkGuess(guessedWord);
 
-    if (await this.checkGuess(guessedWord)) {
-      console.log(`CORRECT GUESS! User ${userAddress} has won the game!`);
-      gameState.setWinner(userAddress);
-      wonGame = true;
+    if (isCorrect) {
+      console.log(`CORRECT GUESS! User ${userId} has won the game!`);
       response = WON_GAME_MESSAGE;
       answerResult = AnswerResultEnum.CORRECT;
     } else {
-      response = await this.getIncorrectGuessResponse(input);
+      response = await this.getIncorrectGuessResponse(trimmedInput);
+      answerResult = AnswerResultEnum.INCORRECT;
     }
 
     const message: HistoryEntry = {
       id: messageId,
-      userId: userAddress,
+      userId: userId,
       timestamp: timestamp,
       messageType: MessageTypeEnum.GUESS,
       userMessage: input,
@@ -330,9 +338,9 @@ Respond with ONLY the comment, nothing else.
     };
 
     gameState.addToHistory(message);
-    console.log(`Guess checked (won: ${wonGame}) and added to history`);
+    console.log(`Guess checked (won: ${answerResult == AnswerResultEnum.CORRECT}) and added to history`);
 
-    return [wonGame, response];
+    return [response, answerResult];
   }
 }
 

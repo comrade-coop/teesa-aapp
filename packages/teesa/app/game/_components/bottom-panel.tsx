@@ -5,19 +5,13 @@ export function BottomPanel({
   className,
   gameEnded,
   winnerAddress,
-  isLoggedIn,
-  gameAbandoned,
   loading,
-  onLogin,
   onChatMessage
 }: {
   className?: string,
   gameEnded: boolean,
   winnerAddress: string | undefined,
-  isLoggedIn: boolean,
-  gameAbandoned: boolean,
   loading: boolean,
-  onLogin: () => void,
   onChatMessage: (message: string) => void
 }) {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -73,7 +67,7 @@ export function BottomPanel({
   const gameEndedMessage = (
     <div className="mb-4 px-4">
       <div
-        className="w-full uppercase text-center p-4 bg-slate-800/50 border border-blue-500/30 rounded-full shadow-xl text-slate-200 animate-pulse shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+        className="w-full uppercase text-center p-4 bg-slate-800/50 border border-blue-500/30 rounded-full text-slate-200 animate-pulse shadow-[0_0_15px_rgba(59,130,246,0.2)]">
         Game ended!
         {winnerAddress && (
           <span className="ms-1">
@@ -88,44 +82,10 @@ export function BottomPanel({
     </div>
   );
 
-  const gameAbandonedMessage = (
-    <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4 m-4 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-      <p className="text-yellow-300 text-center">
-        The game has been abandoned due to inactivity. You can now claim your share of the prize pool.
-        <a href="/claim/user" className="text-yellow-400 hover:text-yellow-300 hover:shadow-[0_0_8px_rgba(234,179,8,0.5)] underline ml-2 transition-all duration-300">
-          Claim your share
-        </a>
-      </p>
-      <p className="text-center mt-2 text-blue-400 animate-[pulse_2s_ease-in-out_infinite] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">
-        🔄 Game will restart soon...
-      </p>
-    </div>
-  );
-
   return (
     <div className={cn("", className)}>
-      {/* Show chat form for non-logged in users when game is active */}
-      {!isLoggedIn && !gameEnded && !gameAbandoned && (
-        <>
-          {chatForm}
-          {/* <div className="relative mb-4 mx-4">
-            <div className="relative">
-              <div className="absolute -inset-[2px] bg-gradient-to-r from-blue-500/20 via-blue-500/15 to-blue-400/20 rounded-full blur-sm"></div>
-              <button
-                className="w-full p-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-xl hover:opacity-90 transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:from-blue-500 hover:to-blue-600 relative"
-                onClick={onLogin}>
-                Connect Wallet to Make Guesses and Win Rewards
-              </button>
-            </div>
-          </div> */}
-        </>
-      )}
-
-      {/* Show chat form for logged in users when game is active */}
-      {isLoggedIn && !gameEnded && !gameAbandoned && chatForm}
-
-      {/* Show abandoned message when game is abandoned */}
-      {!gameEnded && gameAbandoned && gameAbandonedMessage}
+      {/* Show chat form when game is active */}
+      {!gameEnded && chatForm}
 
       {/* Show end game message when game is ended */}
       {gameEnded && gameEndedMessage}

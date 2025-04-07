@@ -3,10 +3,11 @@
 import { gameState } from '../../_core/game-state';
 
 export async function getGameState() {
-  const [gameEnded, winnerAddress] = await Promise.all([
+  const [id, gameEnded, winnerAddress] = await Promise.all([
+    gameState.getId(),
     gameState.getGameEnded(),
     gameState.getWinnerAddress()
   ]);
 
-  return { gameEnded, winnerAddress };
+  return { id, gameEnded, winnerAddress };
 }

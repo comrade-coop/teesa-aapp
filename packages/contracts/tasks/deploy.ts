@@ -40,10 +40,6 @@ async function deploy() {
     // Verify contract on Etherscan/BaseScan
     console.log('\nVerifying contract...');
 
-    const teamAddress = process.env.TEAM_ADDRESS;
-    if (!teamAddress) {
-      throw new Error("TEAM_ADDRESS environment variable is not set");
-    }
     const nftName = process.env.NFT_NAME;
     if (!nftName) {
       throw new Error("NFT_NAME environment variable is not set");
@@ -51,6 +47,10 @@ async function deploy() {
     const nftSymbol = process.env.NFT_SYMBOL;
     if (!nftSymbol) {
       throw new Error("NFT_SYMBOL environment variable is not set");
+    }
+    const royaltyFeeReceiverAddress = process.env.ROYALTY_FEE_RECEIVER_ADDRESS;
+    if (!royaltyFeeReceiverAddress) {
+      throw new Error("ROYALTY_FEE_RECEIVER_ADDRESS environment variable is not set");
     }
     const royaltyFeeNumeratorStr = process.env.ROYALTY_FEE_NUMERATOR;
     if (!royaltyFeeNumeratorStr) {
@@ -64,7 +64,7 @@ async function deploy() {
       const argsFilePath = createConstructorArgsFile(
         nftName,
         nftSymbol,
-        teamAddress,
+        royaltyFeeReceiverAddress,
         royaltyFeeNumerator
       );
 
@@ -93,10 +93,10 @@ async function deploy() {
     }
 
     // Update CONTRACT_ADDRESS in .env
-    if (envContent.includes('CONTRACT_ADDRESS=')) {
-      envContent = envContent.replace(/CONTRACT_ADDRESS=.*/, `CONTRACT_ADDRESS=${contractAddress}`);
+    if (envContent.includes('NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=')) {
+      envContent = envContent.replace(/NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=.*/, `NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=${contractAddress}`);
     } else {
-      envContent += `\nCONTRACT_ADDRESS=${contractAddress}`;
+      envContent += `\NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=${contractAddress}`;
     }
 
     fs.writeFileSync(envPath, envContent.trim());

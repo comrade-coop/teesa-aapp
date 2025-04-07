@@ -6,11 +6,11 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm -r build",
-    "teesa:dev": "dotenv -e .env -- pnpm --filter @teesa-monorepo/teesa dev",
-    "teesa:start": "dotenv -e .env -- pnpm --filter @teesa-monorepo/teesa start",
-    "contracts:compile": "dotenv -e .env -- pnpm --filter @teesa-monorepo/contracts compile",
-    "contracts:deploy": "dotenv -e .env -- pnpm --filter @teesa-monorepo/contracts deploy-contract",
+    "build": "NODE_OPTIONS='--require dotenv/config' pnpm -r build",
+    "teesa:dev": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa dev",
+    "teesa:start": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa start",
+    "contracts:compile": "pnpm --filter @teesa-monorepo/contracts compile",
+    "contracts:deploy": "pnpm --filter @teesa-monorepo/contracts deploy-contract",
     "clean": "pnpm -r clean && bash ./scripts/clean.sh"
   },
   "engines": {

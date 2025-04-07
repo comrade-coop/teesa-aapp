@@ -3,6 +3,7 @@ import fs from 'fs';
 import 'server-only';
 import { wordsList } from './words-list';
 import { MessageTypeEnum } from './message-type-enum';
+import { v4 as uuidv4 } from 'uuid';
 
 const STATE_FILE_PATH = "./game-state.json";
 
@@ -26,6 +27,7 @@ export interface HistoryEntry {
 }
 
 interface GameStateData {
+  id: string;
   secretWord: string;
   history: HistoryEntry[];
   gameEnded: boolean;
@@ -35,6 +37,7 @@ interface GameStateData {
 class GameState {
   private mutex: Mutex;
 
+  private id: string;
   private secretWord: string;
   private history: HistoryEntry[];
   private gameEnded: boolean;
@@ -42,9 +45,10 @@ class GameState {
 
   constructor() {
     this.mutex = new Mutex();
-    
+
     // Load state from file or initialize new state
     const state = this.loadState();
+    this.id = state.id;
     this.secretWord = state.secretWord;
     this.history = state.history;
     this.gameEnded = state.gameEnded;
@@ -60,7 +64,7 @@ class GameState {
     } catch (error) {
       console.error('Error loading game state:', error);
     }
-    
+
     // Create default state
     const defaultState = this.createDefaultState();
 
@@ -70,13 +74,14 @@ class GameState {
     } catch (error) {
       console.error('Error creating game state file:', error);
     }
-    
+
     return defaultState;
   }
 
   private createDefaultState(): GameStateData {
     return {
-      secretWord: process.env.NEXT_PUBLIC_ENV_MODE === 'dev' ? 'car' : this.selectRandomWord(),
+      id: uuidv4(),
+      secretWord: process.env.ENV_MODE === 'dev' ? 'car' : this.selectRandomWord(),
       history: [],
       gameEnded: false,
       winnerAddress: undefined
@@ -86,6 +91,7 @@ class GameState {
   async saveState(): Promise<void> {
     try {
       const state: GameStateData = {
+        id: this.id,
         secretWord: this.secretWord,
         history: this.history,
         gameEnded: this.gameEnded,
@@ -102,7 +108,11 @@ class GameState {
     return wordsList()[randomIndex];
   }
 
-  async getSecretWord(): Promise<string> {
+  getId(): string {
+    return this.id;
+  }
+
+  getSecretWord(): string {
     return this.secretWord;
   }
 
@@ -138,14 +148,14 @@ class GameState {
     if (fs.existsSync(STATE_FILE_PATH)) {
       await fs.promises.unlink(STATE_FILE_PATH);
     }
-    
+
     const defaultState = this.createDefaultState();
-    
+    this.id = defaultState.id;
     this.secretWord = defaultState.secretWord;
     this.history = defaultState.history;
     this.gameEnded = defaultState.gameEnded;
     this.winnerAddress = defaultState.winnerAddress;
-    
+
     await this.saveState();
   }
 }
@@ -162,7 +172,7 @@ export const gameState = (() => {
   if (!globalState._gameState) {
     globalState._gameState = new GameState();
   }
-  
+
   return globalState._gameState;
 })();
 
@@ -170,7 +180,7 @@ export async function resetState() {
   if (typeof window !== 'undefined') {
     throw new Error('GameState should only be used on the server');
   }
-  
+
   try {
     await gameState.reset();
   } catch (error) {
