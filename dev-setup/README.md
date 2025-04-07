@@ -82,7 +82,7 @@ Make sure you have the following installed:
    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
    ```
 
-4. Install direnv (*optional if want to use `.envrc` to automatically set the correct node version when navigating to the repository directory*)
+2. Install direnv (*optional if want to use `.envrc` to automatically set the correct node version when navigating to the repository directory*)
    - For MacOS
    ```bash
    brew install direnv
@@ -92,27 +92,27 @@ Make sure you have the following installed:
    sudo apt-get install direnv
    ```
 
-5. Clone the repository
+3. Clone the repository
    ```bash
    git clone https://github.com/comrade-coop/teesa-aapp.git
    ```
 
-6. Navigate to the repository root directory
+4. Navigate to the repository root directory
    ```bash
    cd teesa-aapp
    ```
 
-7. Install Node based on the `.nvmrc` file
+5. Install Node based on the `.nvmrc` file
    ```bash
    nvm install
    ```
 
-8. Install Pnpm
+6. Install Pnpm
    ```bash
    npm install -g pnpm
    ```
 
-9. Allow direnv (*if you installed direnv in 4.*)
+7. Allow direnv (*if you installed direnv in 2.*)
    ```bash
    direnv allow
    ```
