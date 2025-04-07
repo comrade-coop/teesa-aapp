@@ -2,7 +2,7 @@ import { task } from "hardhat/config";
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { Network } from "./types";
+import { getNetwork } from "../networks";
 
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
@@ -13,12 +13,7 @@ task("deploy-contract", "Deploy the game contract")
 
 async function deploy() {
   try {
-    const network: Network = process.env.CONTRACT_NETWORK as Network;
-    if (!network) {
-      throw new Error('CONTRACT_NETWORK is not set');
-    } else if (network !== 'base' && network !== 'baseSepolia') {
-      throw new Error('CONTRACT_NETWORK must be either `base` or `baseSepolia`');
-    }
+    const network = getNetwork().name;
 
     // Deploy contract using Ignition
     console.log(`\nDeploying to ${network}...`);
