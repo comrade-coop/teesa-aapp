@@ -2,9 +2,6 @@ import { task } from "hardhat/config";
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { Network } from "./types";
-
-require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
 task("compile-contract", "Compile the NFT contract")
   .setAction(async () => {

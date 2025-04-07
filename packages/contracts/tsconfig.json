@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "commonjs",
-    "rootDir": "./abi",
+    "rootDir": "./",
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["abi/**/*", "**/*.json"],
+  "include": ["networks.ts", "abi/**/*.json"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

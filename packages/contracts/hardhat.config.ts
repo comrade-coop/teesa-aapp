@@ -3,7 +3,6 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";
 import "./tasks/compile";
 import "./tasks/deploy";
-import "./tasks/compile-and-deploy";
 
 require('dotenv').config({ path: '../../.env' });
 
