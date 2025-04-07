@@ -7,7 +7,7 @@
     "test": "npx hardhat compile && npx hardhat test",
     "clean": "npx hardhat clean && rm -rf ./ignition/deployments",
     "compile": "pnpm clean && npx hardhat compile-contract",
-    "deploy-contract": "npx hardhat deploy-contract"
+    "deploy-contract": "pnpm compile && npx hardhat deploy-contract"
   },
   "author": "",
   "license": "MIT",
