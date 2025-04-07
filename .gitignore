@@ -1,4 +1,9 @@
 .DS_Store
+
 .pnpm-store
+node_modules/
+
+.env
+
 deploy.sh
 volumes/

@@ -1,0 +1,24 @@
+{
+  "name": "@teesa-monorepo/contracts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "npx hardhat compile && npx hardhat test",
+    "clean": "npx hardhat clean && rm -rf ./ignition/deployments",
+    "compile": "pnpm clean && npx hardhat compile-contract",
+    "deploy-contract": "npx hardhat deploy-contract"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.12",
+    "hardhat": "^2.22.17"
+  },
+  "dependencies": {
+    "@nomicfoundation/ignition-core": "^0.15.10",
+    "@openzeppelin/contracts": "^5.2.0"
+  }
+}
