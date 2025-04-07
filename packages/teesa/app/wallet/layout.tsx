@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Claim | Teesa app"
+  title: "Wallet | Teesa app"
 };
 
 export default function RootLayout({

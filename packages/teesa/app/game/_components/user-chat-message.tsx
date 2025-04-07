@@ -5,16 +5,16 @@ export function UserChatMessage({
   timestamp,
   locale,
   message,
-  userAddress
+  userId
 }: {
   timestamp: number,
   locale: string,
   message: string,
-  userAddress: string
+  userId: string
 }) {
   const formatedDate = timestampToFormatedDate(locale, timestamp);
-  const avatarUrl = `https://api.dicebear.com/6.x/pixel-art/svg?seed=${userAddress}`;
-  const truncatedAddress = `${userAddress.slice(2, 7)}...${userAddress.slice(-5)}`;
+  const avatarUrl = `https://api.dicebear.com/6.x/pixel-art/svg?seed=${userId}`;
+  const truncatedAddress = `${userId.slice(2, 7)}...${userId.slice(-5)}`;
 
   return (
     <div className="flex items-start mb-8 flex-row">
@@ -38,7 +38,7 @@ export function UserChatMessage({
       <div className="w-10 h-10 rounded-full bg-slate-900/10 flex items-center justify-center ml-4 border border-blue-500/20 overflow-hidden">
         <img 
           src={avatarUrl}
-          alt={`Avatar for ${userAddress}`}
+          alt={`Avatar for ${userId}`}
           className="w-full h-full"
         />
       </div>

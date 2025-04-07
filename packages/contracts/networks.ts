@@ -2,7 +2,7 @@ import path from "path";
 
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-type Network = {
+export type Network = {
     name: string;
     rpcUrl: string;
     chainId: number;

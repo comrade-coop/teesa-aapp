@@ -8,6 +8,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@teesa-monorepo/contracts": "workspace:*",
     "@ai-sdk/anthropic": "^1.0.5",
     "@ai-sdk/openai": "^1.0.10",
     "@ethersproject/bignumber": "^5.7.0",
