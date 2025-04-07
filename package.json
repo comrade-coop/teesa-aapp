@@ -1,0 +1,26 @@
+{
+  "name": "teesa-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "teesa:dev": "dotenv -e .env -- pnpm --filter @teesa-monorepo/teesa dev",
+    "teesa:start": "dotenv -e .env -- pnpm --filter @teesa-monorepo/teesa start",
+    "contracts:compile": "dotenv -e .env -- pnpm --filter @teesa-monorepo/contracts compile",
+    "contracts:deploy": "dotenv -e .env -- pnpm --filter @teesa-monorepo/contracts deploy-contract",
+    "clean": "pnpm -r clean && bash ./scripts/clean.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@10.7.0",
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "dotenv": "^16.4.7",
+    "dotenv-cli": "^8.0.0",
+    "typescript": "~5.7.2"
+  }
+}

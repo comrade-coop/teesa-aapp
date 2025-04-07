@@ -1,0 +1,1 @@
+export type Network = 'mainnet' | 'sepolia' | 'base' | 'baseSepolia';

@@ -1,6 +1,9 @@
 node_modules
 .env
 
+# dist folder
+dist
+
 # Hardhat files
 /cache
 /artifacts
@@ -18,3 +21,6 @@ ignition/deployments
 
 # arguments.js file
 arguments.js
+
+# abi folder
+abi
