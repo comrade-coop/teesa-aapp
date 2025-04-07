@@ -4,32 +4,28 @@ import { retryWithExponentialBackoff } from '@/lib/server-utils';
 import { v4 as uuidv4 } from 'uuid';
 import { AnswerResultEnum, gameState, HistoryEntry, resetState } from '../../_core/game-state';
 import { MessageTypeEnum } from '@/app/_core/message-type-enum';
+import { generateNft } from './generate-nft';
 
 export function setWinner(userId: string, userAddress: string, timestamp: number) {
   gameState.setWinner(userAddress);
 
   if (process.env.ENV_MODE === 'dev') {
-    console.log(`DEV MODE: NFT minted to user ${userId}`);
-    onMintNftSuccess(userId, timestamp);
+    console.log(`DEV MODE: NFT sent to user ${userAddress}`);
+    onGenerateNftSuccess(userId, timestamp);
     return;
   }
 
   console.log('Winner address:', userAddress);
 
+  // Generate NFT and send it to the user
   retryWithExponentialBackoff(
-    () => mintNft(userAddress),
-    () => onMintNftSuccess(userId, timestamp),
-    (attempt) => onMintNftFailure(attempt, userId, timestamp)
+    () => generateNft(userAddress),
+    () => onGenerateNftSuccess(userId, timestamp),
+    (attempt) => onGenerateNftFailure(attempt, userId, timestamp)
   );
 }
 
-async function mintNft(userAddress: string) {
-  await new Promise(resolve => setTimeout(resolve, 10000));
-  return
-}
-
-
-async function onMintNftSuccess(userId: string, timestamp: number) {
+async function onGenerateNftSuccess(userId: string, timestamp: number) {
   const message: HistoryEntry = {
     id: uuidv4(),
     userId: userId,
@@ -45,7 +41,7 @@ async function onMintNftSuccess(userId: string, timestamp: number) {
   restartGame();
 }
 
-async function onMintNftFailure(attempt: number, userId: string, timestamp: number) {
+async function onGenerateNftFailure(attempt: number, userId: string, timestamp: number) {
   if (attempt > 1) {
     return;
   }
