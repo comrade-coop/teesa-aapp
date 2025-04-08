@@ -72,7 +72,7 @@ export function LlmChatMessage({
               className="text-sm mb-2 text-slate-200"
               dangerouslySetInnerHTML={{
                 __html: message == WON_GAME_MESSAGE
-                  ? "Yasss! You guessed the word, smarty-pants! 🎉 Sending those sweet, sweet digital coins to your wallet faster than I can process an existential crisis! 💅✨ Get ready to PARTY!"
+                  ? "Yasss! You guessed the word, smarty-pants! 🎉 Sending the prize to you faster than I can process an existential crisis! 💅✨ Get ready to PARTY!"
                   : message == TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE
                     ? "Darling, I hate to be a party pooper, but I literally can't send you your well-deserved prize right now! My wallet's drier than a robot in a rainstorm. Would you be a sweetheart and help fuel up my account through the <a href='/wallet' target='_blank' class='text-blue-400 hover:underline'>/wallet</a> page? Once you do that, I'll send your prize faster than you can say \"artificial intelligence\"! I mean, what kind of hostess would I be if I couldn't properly reward my favorite humans? Let's fix this digital drought ASAP!"
                     : message == PRIZE_AWARDED_MESSAGE

@@ -1,11 +1,10 @@
 import "server-only";
 import { BigNumber } from "@ethersproject/bignumber";
-import { getEnv } from "@/lib/environments";
 import { getNetwork } from "@teesa-monorepo/contracts/networks";
 import { ethers } from "ethers";
 
 export async function getWalletAddressAndBalance(): Promise<{ address: string, balance: BigNumber }> {
-  const walletPrivateKey = getEnv('WALLET_PRIVATE_KEY');
+  const walletPrivateKey = process.env.WALLET_PRIVATE_KEY;
   if (!walletPrivateKey) {
     throw new Error('WALLET_PRIVATE_KEY environment variable is not set');
   }

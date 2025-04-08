@@ -5,6 +5,8 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getNetworkEnvironments } from '../_contracts/get-network-environments';
+import { MessageTypeEnum } from '../_core/message-type-enum';
+import { checkMessageType } from './_actions/check-message-type';
 import { generateSummary } from './_actions/generate-summary';
 import { getGameState } from './_actions/get-game-state';
 import { getMessages } from './_actions/get-messages';
@@ -17,14 +19,6 @@ import { SidePanel } from './_components/side-panel';
 import { UserChatMessage } from './_components/user-chat-message';
 import { WordSummary } from './_components/word-summary';
 import { MessageUiStateModel } from './_models/message-ui-state-model';
-import { checkMessageType } from './_actions/check-message-type';
-import { MessageTypeEnum } from '../_core/message-type-enum';
-// Extend Window interface
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
 
 export default function Page() {
   const { ready, authenticated, user, login, logout } = usePrivy();

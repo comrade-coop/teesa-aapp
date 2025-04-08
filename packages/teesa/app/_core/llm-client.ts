@@ -4,7 +4,6 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatOllama } from '@langchain/ollama';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { getEnv } from '@/lib/environments';
 
 // Helper functions to create LLM instances
 const createLlm = () => new ChatAnthropic({
@@ -44,7 +43,7 @@ export async function sendMessageLlm(message: string, systemMessage?: string | u
 }
 
 export async function sendMessageOllama(message: string, systemMessage?: string | undefined): Promise<string> {
-  const model = getEnv('OLLAMA_MODEL');
+  const model = process.env.OLLAMA_MODEL;
   if (!model) {
     throw new Error('Missing required environment variables: OLLAMA_MODEL');
   }
