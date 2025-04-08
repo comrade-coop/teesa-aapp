@@ -36,7 +36,7 @@ async function uploadImageToIpfs(inputStream: Readable): Promise<string> {
 async function uploadMetadataToIpfs(imageIpfsUrl: string, userAddress: string): Promise<string> {
   const nftMetadata = {
     "name": `Teesa NFT - ${gameState.getSecretWord()}`,
-    "description": `Teesa NFT prize for word guessing game *${gameState.getId()}*. The secret word was *${gameState.getSecretWord()}*. The winner is *${userAddress}*.`,
+    "description": `Teesa NFT prize for word guessing game **${gameState.getId()}**. The secret word was **${gameState.getSecretWord()}**. The winner is **${userAddress}**.`,
     "image": imageIpfsUrl,
     "attributes": [
       {
