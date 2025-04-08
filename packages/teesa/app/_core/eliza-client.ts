@@ -1,5 +1,5 @@
 import 'server-only'
-
+import { gameState } from './game-state';
 export async function sendMessageEliza(message: string, systemMessage?: string | undefined): Promise<string> {
   // Construct the full message by combining system message and user message if needed
   const fullMessage = systemMessage
@@ -17,7 +17,7 @@ export async function sendMessageEliza(message: string, systemMessage?: string |
   // Create URLSearchParams for form data
   const formData = new URLSearchParams();
   formData.append('text', fullMessage);
-  formData.append('roomId', process.env.GAME_CONTRACT_ADDRESS || 'Teesa Word Guessing Game');
+  formData.append('roomId', gameState.getId() || 'Teesa Word Guessing Game');
 
   // Make the API request
   const response = await fetch(`${apiUrl}/${agentId}/message`, {
