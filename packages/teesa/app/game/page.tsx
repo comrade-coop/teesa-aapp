@@ -4,10 +4,10 @@ import { getLocaleClient, getTimestamp } from '@/lib/utils';
 import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { getNetworkEnvironments } from '../_contracts/get-network-environments';
 import { MessageTypeEnum } from '../_core/message-type-enum';
 import { checkMessageType } from './_actions/check-message-type';
 import { generateSummary } from './_actions/generate-summary';
+import { getBlockchainNameAndExplorerUrl } from './_actions/get-blockchain-name-and-explorer-url';
 import { getGameState } from './_actions/get-game-state';
 import { getMessages } from './_actions/get-messages';
 import { sendMessage } from './_actions/send-message';
@@ -28,7 +28,8 @@ export default function Page() {
   const [loading, setLoading] = useState<boolean>(false);
   const [gameEnded, setGameEnded] = useState<boolean>(false);
   const [winnerAddress, setWinnerAddress] = useState<string | undefined>(undefined);
-  const [chainId, setChainId] = useState<number>(0);
+  const [blockchainName, setBlockchainName] = useState<string>('');
+  const [blockchainExplorerUrl, setBlockchainExplorerUrl] = useState<string>('');
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
   const [wordSummary, setWordSummary] = useState<string>('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
@@ -69,7 +70,7 @@ export default function Page() {
 
   useEffect((() => {
     fetchGameState();
-    fetchNetworkEnvironments();
+    fetchBlockchainNameAndExplorerUrl();
     fetchNewMessages();
     updateWordSummary();
 
@@ -124,9 +125,10 @@ export default function Page() {
     }
   }
 
-  async function fetchNetworkEnvironments() {
-    const { chainId } = await getNetworkEnvironments();
-    setChainId(chainId);
+  async function fetchBlockchainNameAndExplorerUrl() {
+    const { name, explorerUrl } = await getBlockchainNameAndExplorerUrl();
+    setBlockchainName(name);
+    setBlockchainExplorerUrl(explorerUrl);
   }
 
   async function fetchNewMessages() {
@@ -303,7 +305,8 @@ export default function Page() {
         <SidePanel
           isLoggedIn={authenticated}
           onLogout={logout}
-          chainId={chainId}
+          blockchainName={blockchainName}
+          blockchainExplorerUrl={blockchainExplorerUrl}
           className="order-1 md:order-3" />
       </div>
     </div>

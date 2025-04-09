@@ -7,10 +7,9 @@
   ],
   "scripts": {
     "build": "NODE_OPTIONS='--require dotenv/config' pnpm -r build",
-    "teesa:dev": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa dev",
-    "teesa:start": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa start",
-    "contracts:compile": "pnpm --filter @teesa-monorepo/contracts compile",
-    "contracts:deploy": "pnpm --filter @teesa-monorepo/contracts deploy-contract",
+    "nft:deploy": "pnpm --filter @teesa-monorepo/nft deploy-contract",
+    "dev": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa dev",
+    "teesa": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa start",
     "clean": "pnpm -r clean && bash ./scripts/clean.sh"
   },
   "engines": {

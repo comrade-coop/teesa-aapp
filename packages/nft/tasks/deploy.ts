@@ -2,7 +2,7 @@ import { task } from "hardhat/config";
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { getNetwork } from "../networks";
+import { getNetwork } from "../src/networks";
 
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
