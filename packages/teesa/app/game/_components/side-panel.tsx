@@ -24,12 +24,14 @@ function useMediaQuery(query: string) {
 export function SidePanel({
   isLoggedIn = false,
   onLogout,
-  chainId,
+  blockchainExplorerUrl,
+  blockchainName,
   className
 }: {
   isLoggedIn: boolean;
   onLogout: () => void;
-  chainId: number;
+  blockchainExplorerUrl: string;
+  blockchainName: string;
   className?: string;
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -55,19 +57,6 @@ export function SidePanel({
     if (href) {
       openExternalLink(e, href);
     }
-  };
-
-  const explorerInfo = () => {
-    if (chainId === 8453) {
-      return { url: 'https://basescan.org', name: 'Base' };
-    }
-    if (chainId === 11155111) {
-      return { url: 'https://sepolia.etherscan.io', name: 'Sepolia Testnet' };
-    }
-    if (chainId === 84532) {
-      return { url: 'https://sepolia.basescan.org', name: 'Base Sepolia Testnet' };
-    }
-    return { url: 'https://etherscan.io', name: 'EVM' };
   };
 
   return (
@@ -167,12 +156,12 @@ export function SidePanel({
 
         <div className="mt-2">
           <a
-            href={`${explorerInfo().url}/address/${nftContractAddress}`}
+            href={`${blockchainExplorerUrl}/address/${nftContractAddress}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
           >
-            NFT Contract on {explorerInfo().name}
+            NFT Contract on {blockchainName}
             <ExternalLink size={14} />
           </a>
         </div>

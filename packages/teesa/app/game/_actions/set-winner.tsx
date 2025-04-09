@@ -1,10 +1,10 @@
 import 'server-only';
 import { PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE } from '@/app/_core/game-const';
+import { MessageTypeEnum } from '@/app/_core/message-type-enum';
 import { retryWithExponentialBackoff } from '@/lib/server-utils';
+import { generateNft } from '@teesa-monorepo/nft/src/generate-nft';
 import { v4 as uuidv4 } from 'uuid';
 import { AnswerResultEnum, gameState, HistoryEntry, resetState } from '../../_core/game-state';
-import { MessageTypeEnum } from '@/app/_core/message-type-enum';
-import { generateNft } from './generate-nft';
 
 export function setWinner(userId: string, userAddress: string, timestamp: number) {
   gameState.setWinner(userAddress);
@@ -19,7 +19,7 @@ export function setWinner(userId: string, userAddress: string, timestamp: number
 
   // Generate NFT and send it to the user
   retryWithExponentialBackoff(
-    () => generateNft(userAddress),
+    () => generateNft(userAddress, gameState.getId(), gameState.getSecretWord()),
     () => onGenerateNftSuccess(userId, timestamp),
     (attempt) => onGenerateNftFailure(attempt, userId, timestamp)
   );

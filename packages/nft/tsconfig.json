@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["networks.ts", "abi/**/*.json"],
+  "include": ["src/**/*.ts", "abi/**/*.json", "assets/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

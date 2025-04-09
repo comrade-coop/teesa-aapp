@@ -1,6 +1,7 @@
 import { buildModule } from "@nomicfoundation/ignition-core";
+import path from 'path';
 
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
 const TeesaNftModule = buildModule("TeesaNftModule", (m: any) => {
   const nftName = process.env.NFT_NAME;
