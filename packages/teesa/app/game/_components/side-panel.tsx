@@ -1,10 +1,10 @@
 'use client';
 
 import { Button } from "@/components/button";
-import { Menu, LogOut, X, ShieldCheck, Wallet, ExternalLink } from "lucide-react";
-import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
 import { openExternalLink } from "@/lib/external-link-utils";
+import { cn } from "@/lib/utils";
+import { ExternalLink, Menu, ShieldCheck, Wallet, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
@@ -26,18 +26,19 @@ export function SidePanel({
   onLogout,
   blockchainExplorerUrl,
   blockchainName,
+  openseaUrl,
   className
 }: {
   isLoggedIn: boolean;
   onLogout: () => void;
   blockchainExplorerUrl: string;
   blockchainName: string;
+  openseaUrl: string;
   className?: string;
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isOpen, setIsOpen] = useState(false);
-
-  const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
 
   useEffect(() => {
     setIsOpen(isDesktop);
@@ -49,6 +50,19 @@ export function SidePanel({
     if (href) {
       openExternalLink(e, href);
     }
+  };
+
+  const handleWalletClick = () => {
+    setShowDisconnectDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setShowDisconnectDialog(false);
+  };
+
+  const handleConfirmDisconnect = () => {
+    setShowDisconnectDialog(false);
+    onLogout();
   };
 
   // Handle social media links
@@ -77,7 +91,7 @@ export function SidePanel({
 
       {/* Panel */}
       <div className={cn(`fixed top-0 right-0 bottom-0 w-full md:w-80 bg-slate-800/95 md:bg-slate-800/50 backdrop-blur-sm border-l border-blue-500/30 p-6 z-40 transition-transform duration-300 transform flex flex-col overflow-y-auto ${!isDesktop && !isOpen ? 'translate-x-full' : 'translate-x-0'}`, className)}>
-        <div className="flex-1 space-y-6">
+        <div className="flex-1">
           <div className="flex justify-center">
             <a
               href={process.env.NEXT_PUBLIC_ATTESTATION_URL}
@@ -100,7 +114,28 @@ export function SidePanel({
             </a>
           </div>
 
-          <h2 className="text-xl font-bold mb-4 text-white">Rules</h2>
+          {isLoggedIn && (
+            <div className="flex justify-center mt-2">
+              <div
+                className="flex items-center gap-2 group relative cursor-pointer"
+                onClick={handleWalletClick}
+              >
+                <div className="absolute inset-0 bg-cyan-700/5 blur-xl rounded-full"></div>
+                <Wallet className="w-5 h-5 text-cyan-700 group-hover:text-cyan-600 transition-colors relative" />
+                <span className="text-sm font-medium relative flex items-center gap-2">
+                  <span className="bg-gradient-to-r from-cyan-700 to-cyan-600 bg-clip-text text-transparent border-b border-cyan-700/30 group-hover:border-cyan-600/30 leading-none transition-colors">
+                    Wallet connected
+                  </span>
+                  <span className="flex gap-1 items-center">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-700 group-hover:bg-cyan-600 transition-colors animate-ping absolute opacity-50"></span>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-700 group-hover:bg-cyan-600 transition-colors relative"></span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          <h2 className="text-xl font-bold mb-4 text-white mt-8">Rules</h2>
           <div className="space-y-4">
             <div>
               <ul className="list-disc list-inside space-y-2">
@@ -116,7 +151,7 @@ export function SidePanel({
           </div>
         </div>
 
-        <div className="border-t border-b border-blue-500/30 py-4 my-4">
+        <div className="border-t border-b border-blue-500/30 py-4 mt-4">
           <div className="flex justify-center space-x-6">
             <a
               href="https://x.com/teesa_ai"
@@ -143,20 +178,9 @@ export function SidePanel({
           </div>
         </div>
 
-        {isLoggedIn && (
-          <Button
-            variant="ghost"
-            className="w-full text-red-400 hover:text-red-300"
-            onClick={onLogout}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
-        )}
-
-        <div className="mt-2">
+        <div className="mt-4 flex justify-center">
           <a
-            href={`${blockchainExplorerUrl}/address/${nftContractAddress}`}
+            href={blockchainExplorerUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
@@ -165,7 +189,44 @@ export function SidePanel({
             <ExternalLink size={14} />
           </a>
         </div>
+
+        <div className="mt-2 flex justify-center">
+          <a
+            href={openseaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
+          >
+            NFT collection on OpenSea
+            <ExternalLink size={14} />
+          </a>
+        </div>
       </div>
+
+      {/* Wallet disconnect dialog */}
+      {showDisconnectDialog && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-slate-800 border border-cyan-700/30 p-6 rounded-lg max-w-xs w-full">
+            <h3 className="text-lg font-medium text-white mb-3">Disconnect Wallet</h3>
+            <p className="text-slate-300 text-sm mb-5">Are you sure you want to disconnect your wallet?</p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={handleDialogClose}
+                className="text-slate-300 hover:text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmDisconnect}
+                className="bg-red-500 hover:bg-red-600 text-white"
+              >
+                Disconnect
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Backdrop for mobile */}
       {!isDesktop && isOpen && (

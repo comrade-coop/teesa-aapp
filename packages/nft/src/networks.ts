@@ -8,6 +8,7 @@ export type Network = {
     rpcUrl: string;
     chainId: number;
     explorerUrl: string;
+    openseaUrl: string;
 }
 
 export const networks: Network[] = [
@@ -16,28 +17,32 @@ export const networks: Network[] = [
         displayName: 'Ethereum',
         rpcUrl: process.env.RPC_URL_MAINNET!,
         chainId: 1,
-        explorerUrl: 'https://etherscan.io'
+        explorerUrl: 'https://etherscan.io',
+        openseaUrl: 'https://opensea.io/assets/ethereum'
     },
     {
         name: 'sepolia',
         displayName: 'Sepolia Testnet',
         rpcUrl: process.env.RPC_URL_SEPOLIA!,
         chainId: 11155111,
-        explorerUrl: 'https://sepolia.etherscan.io'
+        explorerUrl: 'https://sepolia.etherscan.io',
+        openseaUrl: 'https://testnets.opensea.io/assets/sepolia'
     },
     {
         name: 'base',
         displayName: 'Base',
         rpcUrl: process.env.RPC_URL_BASE!,
         chainId: 8453,
-        explorerUrl: 'https://basescan.org'
+        explorerUrl: 'https://basescan.org',
+        openseaUrl: 'https://opensea.io/assets/base'
     },
     {
         name: 'baseSepolia',
         displayName: 'Base Sepolia Testnet',
         rpcUrl: process.env.RPC_URL_BASE_SEPOLIA!,
         chainId: 84532,
-        explorerUrl: 'https://sepolia.basescan.org'
+        explorerUrl: 'https://sepolia.basescan.org',
+        openseaUrl: 'https://testnets.opensea.io/assets/base_sepolia'
     }
 ]
 

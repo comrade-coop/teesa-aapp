@@ -71,9 +71,9 @@ async function mintNft(userAddress: string, metadataIpfsUrl: string) {
   if (!walletPrivateKey) {
     throw new Error('WALLET_PRIVATE_KEY environment variable is not set');
   }
-  const nftContractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
+  const nftContractAddress = process.env.NFT_CONTRACT_ADDRESS;
   if (!nftContractAddress) {
-    throw new Error('NEXT_PUBLIC_NFT_CONTRACT_ADDRESS environment variable is not set');
+    throw new Error('NFT_CONTRACT_ADDRESS environment variable is not set');
   }
 
   const network = getNetwork();
@@ -83,25 +83,54 @@ async function mintNft(userAddress: string, metadataIpfsUrl: string) {
   const contract = new ethers.Contract(nftContractAddress, TeesaNftAbi.abi, wallet);
 
   try {
-    const transaction = await contract.mint(userAddress, metadataIpfsUrl);
-    await provider.waitForTransaction(transaction.hash, 1);
+    const transaction: ethers.TransactionResponse = await contract.mint(userAddress, metadataIpfsUrl);
+    const receipt = await transaction.wait(1); 
+
+    // Find the Transfer event in the transaction logs
+    const transferEvent = receipt?.logs?.find(log => {
+      try {
+        const parsedLog = contract.interface.parseLog(log as any); // Use 'as any' for flexibility
+        // Check for Transfer event signature and recipient
+        return parsedLog?.name === 'Transfer' && 
+               parsedLog?.args.to === userAddress && 
+               parsedLog?.args.from === ethers.ZeroAddress; 
+      } catch (e) {
+        // Ignore logs that don't match the ABI
+        return false;
+      }
+    });
+
+    if (!transferEvent) {
+      throw new Error('Transfer event not found in transaction logs.');
+    }
+
+    // Parse the log again to get structured arguments
+    const parsedLog = contract.interface.parseLog(transferEvent as any);
+    const tokenId = parsedLog?.args.tokenId;
+
+    if (tokenId === undefined) {
+       throw new Error('Could not extract tokenId from Transfer event.');
+    }
+
+    return tokenId as ethers.BigNumberish; // Return the BigNumberish tokenId
   } catch (error) {
-    console.error(error);
+    console.error("Error minting NFT:", error);
     throw error;
   }
 }
 
-export async function generateNft(userAddress: string, gameId: string, secretWord: string) {
+export async function generateNft(userAddress: string, gameId: string, secretWord: string): Promise<string> {
   console.log("Generating NFT for user", userAddress);
 
   try {
     const imageStream = await imageToReadableStream(TEESA_NFT_BASE_IMAGE_PATH);
     const imageIpfsUrl = await uploadImageToIpfs(imageStream, gameId);
     const metadataIpfsUrl = await uploadMetadataToIpfs(imageIpfsUrl, userAddress, gameId, secretWord);
+    const tokenId = await mintNft(userAddress, metadataIpfsUrl);
 
-    await mintNft(userAddress, metadataIpfsUrl);
+    console.log(`NFT generated successfully for user ${userAddress}. Token ID: ${tokenId.toString()}`);
 
-    console.log("NFT generated successfully");
+    return tokenId.toString();
   } catch (error) {
     console.error("Error generating NFT:", error);
     throw error;

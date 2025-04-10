@@ -8,7 +8,7 @@ export function LlmChatMessage({
 }: {
   message: string
 }) {
-  const isSuccessMessage = message === WON_GAME_MESSAGE || message === PRIZE_AWARDED_MESSAGE;
+  const isSuccessMessage = message === WON_GAME_MESSAGE || message.startsWith(PRIZE_AWARDED_MESSAGE);
   const isWarningMessage = message === TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE;
   
   // Handle the TEE secured link
@@ -75,8 +75,11 @@ export function LlmChatMessage({
                   ? "Yasss! You guessed the word, smarty-pants! 🎉 Sending the prize to you faster than I can process an existential crisis! 💅✨ Get ready to PARTY!"
                   : message == TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE
                     ? "Darling, I hate to be a party pooper, but I literally can't send you your well-deserved prize right now! My wallet's drier than a robot in a rainstorm. Would you be a sweetheart and help fuel up my account through the <a href='/wallet' target='_blank' class='text-blue-400 hover:underline'>/wallet</a> page? Once you do that, I'll send your prize faster than you can say \"artificial intelligence\"! I mean, what kind of hostess would I be if I couldn't properly reward my favorite humans? Let's fix this digital drought ASAP!"
-                    : message == PRIZE_AWARDED_MESSAGE
-                      ? "Oh sweetie, you just got your prize! Consider yourself officially rewarded by your favorite AI hostess. I always say digital prizes are the best prizes, especially when they're handed out by moi! Keep being fabulous, and maybe there's more where that came from! 💅"
+                    : message.startsWith(PRIZE_AWARDED_MESSAGE)
+                      ? (() => {
+                          const nftUrl = message.substring(PRIZE_AWARDED_MESSAGE.length);
+                          return `Oh sweetie, you just got your prize! Consider yourself officially rewarded by your favorite AI hostess. I always say digital prizes are the best prizes, especially when they're handed out by moi! You can view your NFT <a href='${nftUrl}' target='_blank' class='text-blue-400 hover:underline external-link'>here</a>. Keep being fabulous, and maybe there's more where that came from! 💅`;
+                        })()
                       : message == INITIAL_MESSAGE
                         ? `Hey there! I'm Teesa, your game host ✨<br/><br/>I'm thinking of a secret word and your job is to guess it. Ask me yes/no questions like "<span class='italic'>Is it something to eat?</span>" or "<span class='italic'>Is it related to technology?</span>" No spelling questions please!<br/><br/>What makes this game special? I'm an autonomous agent running in a Trusted Execution Environment (TEE), which means the secret word is securely stored where not even my creators can peek at it! You can verify this by checking my <a href='https://github.com/comrade-coop/teesa-aapp' target='_blank' class='text-blue-400 hover:underline external-link'>open-source code</a> and the <a href='${process.env.NEXT_PUBLIC_ATTESTATION_URL}' target='_blank' class='text-blue-400 hover:underline external-link'>TEE attestation report</a>.<br/><br/>Ready to play? Ask your first question and let's see if you can outsmart me!`
                         : message
