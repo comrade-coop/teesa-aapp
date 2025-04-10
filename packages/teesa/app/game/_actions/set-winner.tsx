@@ -5,13 +5,14 @@ import { retryWithExponentialBackoff } from '@/lib/server-utils';
 import { generateNft } from '@teesa-monorepo/nft/src/generate-nft';
 import { v4 as uuidv4 } from 'uuid';
 import { AnswerResultEnum, gameState, HistoryEntry, resetState } from '../../_core/game-state';
-
+import { getNetwork } from '@teesa-monorepo/nft/src/networks';
+import { getNftContractAddress } from '@teesa-monorepo/nft/src/get-nft-contract-address';
 export function setWinner(userId: string, userAddress: string, timestamp: number) {
   gameState.setWinner(userAddress);
 
   if (process.env.ENV_MODE === 'dev') {
     console.log(`DEV MODE: NFT sent to user ${userAddress}`);
-    onGenerateNftSuccess(userId, timestamp);
+    onGenerateNftSuccess(userId, timestamp, '0');
     return;
   }
 
@@ -20,19 +21,23 @@ export function setWinner(userId: string, userAddress: string, timestamp: number
   // Generate NFT and send it to the user
   retryWithExponentialBackoff(
     () => generateNft(userAddress, gameState.getId(), gameState.getSecretWord()),
-    () => onGenerateNftSuccess(userId, timestamp),
+    (tokenId) => onGenerateNftSuccess(userId, timestamp, tokenId),
     (attempt) => onGenerateNftFailure(attempt, userId, timestamp)
   );
 }
 
-async function onGenerateNftSuccess(userId: string, timestamp: number) {
+async function onGenerateNftSuccess(userId: string, timestamp: number, tokenId: string) {
+  const network = getNetwork();
+  const contractAddress = getNftContractAddress();
+  const nftUrl = `${network.openseaUrl}/${contractAddress}/${tokenId}`;
+
   const message: HistoryEntry = {
     id: uuidv4(),
     userId: userId,
     timestamp: timestamp + 1000,
     messageType: MessageTypeEnum.SYSTEM,
     userMessage: undefined,
-    llmMessage: PRIZE_AWARDED_MESSAGE,
+    llmMessage: `${PRIZE_AWARDED_MESSAGE}${nftUrl}`,
     answerResult: AnswerResultEnum.UNKNOWN
   };
 

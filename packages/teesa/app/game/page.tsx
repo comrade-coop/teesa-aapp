@@ -7,9 +7,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { MessageTypeEnum } from '../_core/message-type-enum';
 import { checkMessageType } from './_actions/check-message-type';
 import { generateSummary } from './_actions/generate-summary';
-import { getBlockchainNameAndExplorerUrl } from './_actions/get-blockchain-name-and-explorer-url';
 import { getGameState } from './_actions/get-game-state';
 import { getMessages } from './_actions/get-messages';
+import { getNftDetails } from './_actions/get-nft-details';
 import { sendMessage } from './_actions/send-message';
 import { BottomPanel } from './_components/bottom-panel';
 import { LlmChatMessage } from './_components/llm-chat-message';
@@ -30,6 +30,7 @@ export default function Page() {
   const [winnerAddress, setWinnerAddress] = useState<string | undefined>(undefined);
   const [blockchainName, setBlockchainName] = useState<string>('');
   const [blockchainExplorerUrl, setBlockchainExplorerUrl] = useState<string>('');
+  const [openseaUrl, setOpenseaUrl] = useState<string>('');
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
   const [wordSummary, setWordSummary] = useState<string>('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
@@ -70,7 +71,7 @@ export default function Page() {
 
   useEffect((() => {
     fetchGameState();
-    fetchBlockchainNameAndExplorerUrl();
+    fetchNftDetails();
     fetchNewMessages();
     updateWordSummary();
 
@@ -125,10 +126,11 @@ export default function Page() {
     }
   }
 
-  async function fetchBlockchainNameAndExplorerUrl() {
-    const { name, explorerUrl } = await getBlockchainNameAndExplorerUrl();
+  async function fetchNftDetails() {
+    const { name, explorerUrl, openseaUrl } = await getNftDetails();
     setBlockchainName(name);
     setBlockchainExplorerUrl(explorerUrl);
+    setOpenseaUrl(openseaUrl);
   }
 
   async function fetchNewMessages() {
@@ -307,6 +309,7 @@ export default function Page() {
           onLogout={logout}
           blockchainName={blockchainName}
           blockchainExplorerUrl={blockchainExplorerUrl}
+          openseaUrl={openseaUrl}
           className="order-1 md:order-3" />
       </div>
     </div>

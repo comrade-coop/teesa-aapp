@@ -93,10 +93,10 @@ async function deploy() {
     }
 
     // Update CONTRACT_ADDRESS in .env
-    if (envContent.includes('NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=')) {
-      envContent = envContent.replace(/NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=.*/, `NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=${contractAddress}`);
+    if (envContent.includes('NFT_CONTRACT_ADDRESS=')) {
+      envContent = envContent.replace(/NFT_CONTRACT_ADDRESS=.*/, `NFT_CONTRACT_ADDRESS=${contractAddress}`);
     } else {
-      envContent += `\NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=${contractAddress}`;
+      envContent += `\NFT_CONTRACT_ADDRESS=${contractAddress}`;
     }
 
     fs.writeFileSync(envPath, envContent.trim());
