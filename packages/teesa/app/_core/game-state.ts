@@ -32,6 +32,7 @@ interface GameStateData {
   history: HistoryEntry[];
   gameEnded: boolean;
   winnerAddress: string | undefined;
+  nftId: string | undefined;
 }
 
 class GameState {
@@ -42,6 +43,7 @@ class GameState {
   private history: HistoryEntry[];
   private gameEnded: boolean;
   private winnerAddress: string | undefined;
+  private nftId: string | undefined;
 
   constructor() {
     this.mutex = new Mutex();
@@ -53,6 +55,7 @@ class GameState {
     this.history = state.history;
     this.gameEnded = state.gameEnded;
     this.winnerAddress = state.winnerAddress;
+    this.nftId = state.nftId;
   }
 
   private loadState(): GameStateData {
@@ -84,7 +87,8 @@ class GameState {
       secretWord: process.env.ENV_MODE === 'dev' ? 'car' : this.selectRandomWord(),
       history: [],
       gameEnded: false,
-      winnerAddress: undefined
+      winnerAddress: undefined,
+      nftId: undefined
     };
   }
 
@@ -95,7 +99,8 @@ class GameState {
         secretWord: this.secretWord,
         history: this.history,
         gameEnded: this.gameEnded,
-        winnerAddress: this.winnerAddress
+        winnerAddress: this.winnerAddress,
+        nftId: this.nftId
       };
       await fs.promises.writeFile(STATE_FILE_PATH, JSON.stringify(state, null, 2));
     } catch (error) {
@@ -143,6 +148,17 @@ class GameState {
     });
   }
 
+  async getNftId(): Promise<string | undefined> {
+    return this.nftId;
+  }
+
+  async setNftId(nftId: string): Promise<void> {
+    await this.mutex.runExclusive(async () => {
+      this.nftId = nftId;
+      await this.saveState();
+    });
+  }
+
   async reset() {
     // Delete the state file first
     if (fs.existsSync(STATE_FILE_PATH)) {
@@ -155,7 +171,8 @@ class GameState {
     this.history = defaultState.history;
     this.gameEnded = defaultState.gameEnded;
     this.winnerAddress = defaultState.winnerAddress;
-
+    this.nftId = defaultState.nftId;
+    
     await this.saveState();
   }
 }
