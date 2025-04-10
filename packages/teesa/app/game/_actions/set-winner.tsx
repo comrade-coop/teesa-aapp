@@ -21,15 +21,17 @@ export function setWinner(userId: string, userAddress: string, timestamp: number
   // Generate NFT and send it to the user
   retryWithExponentialBackoff(
     () => generateNft(userAddress, gameState.getId(), gameState.getSecretWord()),
-    (tokenId) => onGenerateNftSuccess(userId, timestamp, tokenId),
+    (nftId) => onGenerateNftSuccess(userId, timestamp, nftId),
     (attempt) => onGenerateNftFailure(attempt, userId, timestamp)
   );
 }
 
-async function onGenerateNftSuccess(userId: string, timestamp: number, tokenId: string) {
+async function onGenerateNftSuccess(userId: string, timestamp: number, nftId: string) {
+  await gameState.setNftId(nftId);
+
   const network = getNetwork();
   const contractAddress = getNftContractAddress();
-  const nftUrl = `${network.openseaUrl}/${contractAddress}/${tokenId}`;
+  const nftUrl = `${network.openseaUrl}/${contractAddress}/${nftId}`;
 
   const message: HistoryEntry = {
     id: uuidv4(),
