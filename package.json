@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build": "NODE_OPTIONS='--require dotenv/config' pnpm -r build",
-    "nft:deploy": "pnpm --filter @teesa-monorepo/nft deploy-contracts",
+    "nft": "pnpm --filter @teesa-monorepo/nft initialize",
     "dev": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa dev",
     "teesa": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa start",
     "clean": "pnpm -r clean && bash ./scripts/clean.sh"

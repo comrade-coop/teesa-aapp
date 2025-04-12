@@ -5,8 +5,10 @@
   "scripts": {
     "build": "tsc",
     "clean": "npx hardhat clean && rm -rf ./ignition/deployments",
-    "compile": "pnpm clean && npx hardhat compile-contracts",
-    "deploy-contracts": "pnpm compile && npx hardhat deploy-contracts --network $(ts-node ./scripts/get-network-name.ts)"
+    "compile-contracts": "pnpm clean && npx hardhat compile-contracts",
+    "deploy-contracts": "npx hardhat deploy-contracts --network $(ts-node ./scripts/get-network-name.ts)",
+    "publish-initial-nft": "ts-node ./scripts/publish-initial-nft.ts",
+    "initialize": "pnpm compile-contracts && pnpm deploy-contracts && pnpm publish-initial-nft"
   },
   "author": "",
   "license": "MIT",
