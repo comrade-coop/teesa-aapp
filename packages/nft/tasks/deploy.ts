@@ -2,85 +2,58 @@ import { task } from "hardhat/config";
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { getNetwork } from "../src/networks";
+import NftModule from "../ignition/modules/nft";
 
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
-task("deploy-contract", "Deploy the game contract")
+task("deploy-contracts", "Deploy the NFT contracts")
   .setAction(async () => {
-    await deploy();
+    const hre = await import("hardhat");
+    await deploy(hre);
   });
 
-async function deploy() {
+async function deploy(hardhat: any) {
   try {
-    const network = getNetwork().name;
-
-    // Deploy contract using Ignition
-    console.log(`\nDeploying to ${network}...`);
-    let output: string;
+    // Deploy contracts using Ignition
+    console.log(`\nDeploying to ${hardhat.network.name}...`);
+    let deploymentResult: any;
     try {
-      output = execSync(
-        `echo y | npx hardhat ignition deploy ./ignition/modules/teesa-nft.ts --network ${network}`,
-        { encoding: 'utf-8' }
-      );
-      console.log(output);
+      deploymentResult = await hardhat.ignition.deploy(NftModule);
       console.log('Deployment command executed successfully! ✅');
     } catch (error) {
       console.error('Deployment failed! ❌');
       throw error;
     }
 
-    // Extract contract address from output
-    const addressMatch = output.match(/TeesaNftModule#TeesaNft - (0x[a-fA-F0-9]{40})/);
-    if (!addressMatch) {
-      throw new Error('Could not find contract address in deployment output');
-    }
-    const contractAddress = addressMatch[1];
+    const paymentSplitterContractAddress = deploymentResult.paymentSplitter.target;
+    const teesaNftContractAddress = deploymentResult.teesaNft.target;
 
     // Verify contract on Etherscan/BaseScan
-    console.log('\nVerifying contract...');
+    console.log('\nVerifying contracts...');
 
-    const nftName = process.env.NFT_NAME;
-    if (!nftName) {
-      throw new Error("NFT_NAME environment variable is not set");
+    const teamAddress = process.env.TEAM_ADDRESS;
+    if (!teamAddress) {
+      throw new Error("TEAM_ADDRESS environment variable is not set");
     }
-    const nftSymbol = process.env.NFT_SYMBOL;
-    if (!nftSymbol) {
-      throw new Error("NFT_SYMBOL environment variable is not set");
-    }
-    const royaltyFeeReceiverAddress = process.env.ROYALTY_FEE_RECEIVER_ADDRESS;
-    if (!royaltyFeeReceiverAddress) {
-      throw new Error("ROYALTY_FEE_RECEIVER_ADDRESS environment variable is not set");
-    }
-    const royaltyFeeNumeratorStr = process.env.ROYALTY_FEE_NUMERATOR;
-    if (!royaltyFeeNumeratorStr) {
-      throw new Error("ROYALTY_FEE_NUMERATOR environment variable is not set");
-    }
-    // Hardhat verify expects large numbers as strings
-    const royaltyFeeNumerator = royaltyFeeNumeratorStr;
 
     try {
-      // Create arguments.js file
-      const argsFilePath = createConstructorArgsFile(
-        nftName,
-        nftSymbol,
-        royaltyFeeReceiverAddress,
-        royaltyFeeNumerator
-      );
+      // Verify contracts, passing arguments directly
+      await hardhat.run("verify:verify", {
+        address: paymentSplitterContractAddress,
+        network: hardhat.network.name,
+        contract: "contracts/payment-splitter.sol:PaymentSplitter"
+      });
 
-      try {
-        // Execute verification with constructor args file
-        const verifyCommand = `npx hardhat verify --constructor-args ${argsFilePath} --network ${network} ${contractAddress}`;
-        execSync(verifyCommand, { encoding: 'utf-8', stdio: 'inherit' });
-        console.log('Contract verification successful! ✅');
-      } catch (error) {
-        console.error('Contract verification failed! ❌');
-        console.error(error);
-      } finally {
-        fs.unlinkSync(argsFilePath);
-      }
+      await hardhat.run("verify:verify", {
+        address: teesaNftContractAddress,
+        constructorArguments: [teamAddress, paymentSplitterContractAddress],
+        network: hardhat.network.name,
+        contract: "contracts/teesa-nft.sol:TeesaNft"
+      });
+
+      console.log('Contracts verification successful! ✅');
     } catch (error) {
-      console.error('Contract verification process failed! ❌');
+      console.error('Contracts verification failed! ❌');
       console.error(error);
     }
 
@@ -94,33 +67,16 @@ async function deploy() {
 
     // Update CONTRACT_ADDRESS in .env
     if (envContent.includes('NFT_CONTRACT_ADDRESS=')) {
-      envContent = envContent.replace(/NFT_CONTRACT_ADDRESS=.*/, `NFT_CONTRACT_ADDRESS=${contractAddress}`);
+      envContent = envContent.replace(/NFT_CONTRACT_ADDRESS=.*/, `NFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`);
     } else {
-      envContent += `\NFT_CONTRACT_ADDRESS=${contractAddress}`;
+      envContent += `\NFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`;
     }
 
     fs.writeFileSync(envPath, envContent.trim());
 
-    console.log(`Deployment successful! Contract address:\n${contractAddress}`);
+    console.log(`Deployment successful! Teesa NFT contract address:\n${teesaNftContractAddress}`);
   } catch (error) {
     console.error('Deployment failed:', error);
     process.exit(1);
   }
-}
-
-function createConstructorArgsFile(
-  nftName: string,
-  nftSymbol: string,
-  teamAddress: string,
-  royaltyFeeNumerator: string // Use string for large number compatibility
-): string {
-  const argsContent = `module.exports = [
-  "${nftName}",
-  "${nftSymbol}",
-  "${teamAddress}",
-  "${royaltyFeeNumerator}"
-];`;
-  const argsFilePath = path.join(__dirname, '../arguments.js');
-  fs.writeFileSync(argsFilePath, argsContent);
-  return argsFilePath;
 }

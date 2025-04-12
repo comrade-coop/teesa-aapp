@@ -5,8 +5,8 @@
   "scripts": {
     "build": "tsc",
     "clean": "npx hardhat clean && rm -rf ./ignition/deployments",
-    "compile": "pnpm clean && npx hardhat compile-contract",
-    "deploy-contract": "pnpm compile && npx hardhat deploy-contract"
+    "compile": "pnpm clean && npx hardhat compile-contracts",
+    "deploy-contracts": "pnpm compile && npx hardhat deploy-contracts --network $(ts-node ./scripts/get-network-name.ts)"
   },
   "author": "",
   "license": "MIT",
@@ -14,11 +14,14 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.12",
-    "hardhat": "^2.22.17"
+    "hardhat": "^2.22.17",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
+    "@limitbreak/creator-token-standards": "^4.0.1",
+    "@limitbreak/permit-c": "^1.0.0",
     "@nomicfoundation/ignition-core": "^0.15.10",
-    "@openzeppelin/contracts": "^5.2.0",
+    "@openzeppelin/contracts": "4.8.3",
     "@pinata/sdk": "^2.1.0",
     "ethers": "^6.13.5"
   }

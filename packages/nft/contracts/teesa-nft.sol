@@ -1,54 +1,66 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.4;
 
-import {ERC721URIStorage, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import {ERC2981} from "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "@limitbreak/creator-token-standards/src/access/OwnableInitializable.sol";
+import "@limitbreak/creator-token-standards/src/erc721c/ERC721C.sol";
+import "@limitbreak/creator-token-standards/src/programmable-royalties/MinterCreatorSharedRoyalties.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TeesaNft is ERC721URIStorage, ERC2981, Ownable {
+contract TeesaNft is ERC721C, MinterCreatorSharedRoyalties, Ownable {
     uint256 private _nextTokenId;
-
-    /**
-     * @dev Emitted when the default royalty is updated.
-     */
-    event DefaultRoyaltyUpdated(address indexed receiver, uint96 feeNumerator);
+    mapping(uint256 => string) private _tokenURIs;
 
     constructor(
-        string memory name,
-        string memory symbol,
-        address royaltyReceiver,
-        uint96 royaltyFeeNumerator
-    ) 
-        ERC721(name, symbol)
-        Ownable(msg.sender)
-    {
-        _setDefaultRoyalty(royaltyReceiver, royaltyFeeNumerator);
-    }
+        address teamAddress_,
+        address paymentSplitterReference_
+    )
+        ERC721OpenZeppelin("Teesa", "TEESA")
+        MinterCreatorSharedRoyalties(
+            1000, // Royalty fee numerator: 1000 = 10%
+            500, // First owner of the NFT shares: 500 = 5%
+            500, // Team shares: 500 = 5%
+            teamAddress_,
+            paymentSplitterReference_
+        )
+        Ownable()
+    {}
 
-    function mint(address to, string memory uri) public onlyOwner returns (uint256) {
+    function mint(
+        address to,
+        string memory uri
+    ) public onlyOwner returns (uint256) {
         uint256 tokenId = _nextTokenId++;
+
+        _onMinted(to, tokenId);
         _mint(to, tokenId);
-        _setTokenURI(tokenId, uri);
-        
+        _tokenURIs[tokenId] = uri;
+
         return tokenId;
     }
 
-    /**
-     * @dev See {IERC2981-setDefaultRoyalty}.
-     */
-    function setDefaultRoyalty(address receiver, uint96 feeNumerator) public onlyOwner {
-        _setDefaultRoyalty(receiver, feeNumerator);
-        
-        emit DefaultRoyaltyUpdated(receiver, feeNumerator);
+    /// @inheritdoc IERC721Metadata
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        _requireMinted(tokenId);
+        return _tokenURIs[tokenId];
     }
 
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
-        override(ERC721URIStorage, ERC2981)
+        virtual
+        override(ERC721C, MinterCreatorSharedRoyaltiesBase)
         returns (bool)
     {
-        return super.supportsInterface(interfaceId);
+        return
+            ERC721C.supportsInterface(interfaceId) ||
+            MinterCreatorSharedRoyaltiesBase.supportsInterface(interfaceId);
     }
-}
 
+    // @dev override the _requireCallerIsContractOwner function to allow the owner to mint
+    function _requireCallerIsContractOwner() internal view virtual override {}
+}
