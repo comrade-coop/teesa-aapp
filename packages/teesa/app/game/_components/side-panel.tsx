@@ -151,7 +151,33 @@ export function SidePanel({
           </div>
         </div>
 
-        <div className="border-t border-b border-blue-500/30 py-4 mt-4">
+        <div className="border-t border-blue-500/30 py-4 mt-4">
+          <div className="flex justify-center">
+            <a
+              href={blockchainExplorerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
+            >
+              NFT Contract on {blockchainName}
+              <ExternalLink size={14} />
+            </a>
+          </div>
+
+          <div className="mt-2 flex justify-center">
+            <a
+              href={openseaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
+            >
+              NFT collection on OpenSea
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+
+        <div className="border-t border-b border-blue-500/30 py-4">
           <div className="flex justify-center space-x-6">
             <a
               href="https://x.com/teesa_ai"
@@ -176,30 +202,6 @@ export function SidePanel({
               </svg>
             </a>
           </div>
-        </div>
-
-        <div className="mt-4 flex justify-center">
-          <a
-            href={blockchainExplorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
-          >
-            NFT Contract on {blockchainName}
-            <ExternalLink size={14} />
-          </a>
-        </div>
-
-        <div className="mt-2 flex justify-center">
-          <a
-            href={openseaUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
-          >
-            NFT collection on OpenSea
-            <ExternalLink size={14} />
-          </a>
         </div>
       </div>
 
@@ -237,4 +239,4 @@ export function SidePanel({
       )}
     </>
   );
-} 
+}
