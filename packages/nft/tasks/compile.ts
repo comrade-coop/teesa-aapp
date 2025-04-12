@@ -1,19 +1,19 @@
-import { task } from "hardhat/config";
-import { execSync } from 'child_process';
 import fs from 'fs';
+import { task } from "hardhat/config";
 import path from 'path';
 
-task("compile-contract", "Compile the NFT contract")
+task("compile-contracts", "Compile the NFT contracts")
   .setAction(async () => {
-    await compile();
+    const hre = await import("hardhat");
+    await compile(hre);
   });
 
-async function compile() {
+async function compile(hardhat: any) {
   try {
     // Compile contracts first
     console.log('Compiling contracts...');
     try {
-      execSync('npx hardhat compile', { encoding: 'utf-8', stdio: 'inherit' });
+      await hardhat.run("compile");
       console.log('Compilation successful! ✅');
     } catch (error) {
       console.error('Compilation failed! ❌');
@@ -23,7 +23,7 @@ async function compile() {
     // Run tests
     console.log('\nRunning tests...');
     try {
-      execSync('npx hardhat test', { encoding: 'utf-8', stdio: 'inherit' });
+      await hardhat.run("test");
       console.log('Tests passed successfully! ✅');
     } catch (error) {
       console.error('Tests failed! ❌');
@@ -36,7 +36,7 @@ async function compile() {
       fs.mkdirSync(contractsDir, { recursive: true });
     }
 
-    // Copy artifact
+    // Copy TeesaNft artifact
     const artifactPath = path.join(__dirname, '../artifacts/contracts/teesa-nft.sol/TeesaNft.json');
     const destPath = path.join(contractsDir, 'teesa-nft.json');
     fs.copyFileSync(artifactPath, destPath);
