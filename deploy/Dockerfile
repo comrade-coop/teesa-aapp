@@ -132,12 +132,13 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy the Next.js build files, the NFT contract's ABI and the .env file
+# Copy the Next.js build files, the NFT contract's ABI, the .env file and the NFT assets
 COPY --from=build /app-build/packages/teesa/.next/standalone ./app
 COPY --from=build /app-build/packages/teesa/public ./app/packages/teesa/public
 COPY --from=build /app-build/packages/teesa/.next/static ./app/packages/teesa/.next/static
 COPY --from=build /app-build/packages/nft/abi/teesa-nft.json .
 COPY --from=build /app-build/.env .
+COPY --from=build /app-build/packages/nft/assets ./app/packages/nft/assets
 
 # Copy the setup script and the start script
 COPY deploy/setup-wallet-and-nft-contract.js .
