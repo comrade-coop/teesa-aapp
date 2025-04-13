@@ -6,10 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "NODE_OPTIONS='--require dotenv/config' pnpm -r build",
+    "build": "pnpm -r build",
     "nft": "pnpm --filter @teesa-monorepo/nft initialize",
-    "dev": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa dev",
-    "teesa": "NODE_OPTIONS='--require dotenv/config' pnpm --filter @teesa-monorepo/teesa start",
+    "dev": "pnpm --filter @teesa-monorepo/teesa dev",
+    "teesa": "pnpm --filter @teesa-monorepo/teesa start",
     "clean": "pnpm -r clean && bash ./scripts/clean.sh"
   },
   "engines": {
@@ -18,8 +18,6 @@
   "packageManager": "pnpm@10.7.0",
   "devDependencies": {
     "@types/node": "^22.13.14",
-    "dotenv": "^16.4.7",
-    "dotenv-cli": "^8.0.0",
     "typescript": "~5.7.2"
   }
 }
