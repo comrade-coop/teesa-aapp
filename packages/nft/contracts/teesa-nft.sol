@@ -3,25 +3,21 @@ pragma solidity ^0.8.4;
 
 import "@limitbreak/creator-token-standards/src/access/OwnableInitializable.sol";
 import "@limitbreak/creator-token-standards/src/erc721c/ERC721C.sol";
-import "@limitbreak/creator-token-standards/src/programmable-royalties/MinterCreatorSharedRoyalties.sol";
+import "@limitbreak/creator-token-standards/src/programmable-royalties/BasicRoyalties.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TeesaNft is ERC721C, MinterCreatorSharedRoyalties, Ownable {
+contract TeesaNft is ERC721C, BasicRoyalties, Ownable {
     uint256 private _nextTokenId;
     mapping(uint256 => string) private _tokenURIs;
 
     constructor(
-        address teamAddress_,
-        address paymentSplitterReference_
+        address teamAddress_
     )
         ERC721OpenZeppelin("Teesa", "TEESA")
-        MinterCreatorSharedRoyalties(
-            1000, // Royalty fee numerator: 1000 = 10%
-            500, // First owner of the NFT shares: 500 = 5%
-            500, // Team shares: 500 = 5%
+        BasicRoyalties(
             teamAddress_,
-            paymentSplitterReference_
+            1000 // Royalty fee numerator: 1000 = 10%
         )
         Ownable()
     {}
@@ -32,7 +28,6 @@ contract TeesaNft is ERC721C, MinterCreatorSharedRoyalties, Ownable {
     ) public onlyOwner returns (uint256) {
         uint256 tokenId = _nextTokenId++;
 
-        _onMinted(to, tokenId);
         _mint(to, tokenId);
         _tokenURIs[tokenId] = uri;
 
@@ -53,12 +48,12 @@ contract TeesaNft is ERC721C, MinterCreatorSharedRoyalties, Ownable {
         public
         view
         virtual
-        override(ERC721C, MinterCreatorSharedRoyaltiesBase)
+        override(ERC721C, ERC2981)
         returns (bool)
     {
         return
             ERC721C.supportsInterface(interfaceId) ||
-            MinterCreatorSharedRoyaltiesBase.supportsInterface(interfaceId);
+            ERC2981.supportsInterface(interfaceId);
     }
 
     // @dev override the _requireCallerIsContractOwner function to allow the owner to mint
