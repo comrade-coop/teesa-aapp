@@ -62,7 +62,7 @@ async function deploy(hardhat: any) {
     if (envContent.includes('NFT_CONTRACT_ADDRESS=')) {
       envContent = envContent.replace(/NFT_CONTRACT_ADDRESS=.*/, `NFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`);
     } else {
-      envContent += `\NFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`;
+      envContent += `\nNFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`;
     }
 
     fs.writeFileSync(envPath, envContent.trim());

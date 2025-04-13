@@ -10,10 +10,16 @@ fi
 cleanup() {
     echo "Stopping $OLLAMA_MODEL model..."
     ollama stop $OLLAMA_MODEL
+
+    # Remove the .env file
+    rm .env
 }
 
 # Set trap to ensure cleanup runs on script exit
 trap cleanup EXIT
+
+# Copy the .env file from the repository root to the current directory
+cp ../../.env .
 
 check_model_running() {
     ollama ps | grep -q "$OLLAMA_MODEL"

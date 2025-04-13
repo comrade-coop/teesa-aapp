@@ -25,6 +25,7 @@
     "@nomicfoundation/ignition-core": "^0.15.10",
     "@openzeppelin/contracts": "4.8.3",
     "@pinata/sdk": "^2.1.0",
+    "dotenv": "^16.5.0",
     "ethers": "^6.13.5"
   }
 }
