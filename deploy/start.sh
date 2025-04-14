@@ -1,17 +1,20 @@
 #!/bin/bash
+set -e
+
+# In the Docker container we copy this file to root directory and set is as CMD
 
 # Start Ollama
 ollama serve > /dev/null 2>&1 &
 sleep 5
 
 # Load OLLAMA_MODEL from .env file
-if [ ! -f "teesa/.env" ]; then
-    echo "Error: .env file not found in the /teesa directory"
+if [ ! -f "./.env" ]; then
+    echo "Error: .env file not found in the root directory"
     exit 1
 fi
 
 # Get OLLAMA_MODEL from .env
-OLLAMA_MODEL=$(grep '^OLLAMA_MODEL=' teesa/.env | cut -d '=' -f2)
+OLLAMA_MODEL=$(grep '^OLLAMA_MODEL=' ./.env | cut -d '=' -f2)
 
 if [ -z "$OLLAMA_MODEL" ]; then
     echo "Error: OLLAMA_MODEL not found in .env file"
@@ -33,11 +36,21 @@ echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> /ro
 export NVM_DIR="/root/.nvm"
 . "/root/.nvm/nvm.sh"
 
-# Generate new wallet - install ethers first
-npm install ethers && node generate-wallet.js
+# Setup the wallet and the NFT contract
+npm install ethers dotenv
+node setup-wallet-and-nft-contract.js
+
+# Get the wallet private key from the wallet.key file
+WALLET_PRIVATE_KEY_FILE_PATH="$DOCKER_CLOUD_VOLUME_PATH/wallet.key"
+if [ ! -f "$WALLET_PRIVATE_KEY_FILE_PATH" ]; then
+    echo "Error: Wallet private key file not found at $WALLET_PRIVATE_KEY_FILE_PATH"
+    exit 1
+fi
+
+WALLET_PRIVATE_KEY=$(cat "$WALLET_PRIVATE_KEY_FILE_PATH")
 
 # Start the Next.js server
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
-cd /app/teesa
-exec node server.js 
+cd /app-start/app/packages/teesa
+WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY exec node server.js 

@@ -1,45 +1,96 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@limitbreak/creator-token-standards/src/access/OwnableInitializable.sol";
+import "@limitbreak/creator-token-standards/src/access/OwnableBasic.sol";
 import "@limitbreak/creator-token-standards/src/erc721c/ERC721C.sol";
-import "@limitbreak/creator-token-standards/src/programmable-royalties/MinterCreatorSharedRoyalties.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "@limitbreak/creator-token-standards/src/programmable-royalties/BasicRoyalties.sol";
 
-contract TeesaNft is ERC721C, MinterCreatorSharedRoyalties, Ownable {
+contract TeesaNft is OwnableBasic, ERC721C, BasicRoyalties {
     uint256 private _nextTokenId;
     mapping(uint256 => string) private _tokenURIs;
+    mapping(uint256 => address) private _minters;
+    mapping(address => uint256[]) private _mintedTokensByAddress;
+    mapping(address => bool) private _hasMinted;
 
     constructor(
-        address teamAddress_,
-        address paymentSplitterReference_
+        address teamAddress_
     )
         ERC721OpenZeppelin("Teesa", "TEESA")
-        MinterCreatorSharedRoyalties(
-            1000, // Royalty fee numerator: 1000 = 10%
-            500, // First owner of the NFT shares: 500 = 5%
-            500, // Team shares: 500 = 5%
+        BasicRoyalties(
             teamAddress_,
-            paymentSplitterReference_
+            1000 // Royalty fee numerator: 1000 = 10%
         )
-        Ownable()
     {}
 
+    /**
+     * @notice Mints a new token and assigns it to the specified address.
+     * @dev Only the contract owner can mint tokens.
+     * @param to The address to assign the new token to.
+     * @param uri The URI of the token's metadata.
+     * @return The ID of the newly minted token.
+     */
     function mint(
         address to,
         string memory uri
-    ) public onlyOwner returns (uint256) {
+    ) external returns (uint256) {
+        _requireCallerIsContractOwner();
+
         uint256 tokenId = _nextTokenId++;
 
-        _onMinted(to, tokenId);
         _mint(to, tokenId);
         _tokenURIs[tokenId] = uri;
+
+        // Store information about the mint
+        _minters[tokenId] = to;
+        _mintedTokensByAddress[to].push(tokenId);
+        if (!_hasMinted[to]) {
+            _hasMinted[to] = true;
+        }
 
         return tokenId;
     }
 
-    /// @inheritdoc IERC721Metadata
+    /**
+     * @notice Returns the address that minted the token with the given ID.
+     * @dev Throws if the token ID does not exist.
+     * @param tokenId The ID of the token to query the minter of.
+     * @return The address of the minter.
+     */
+    function minterOf(
+        uint256 tokenId
+    ) public view virtual returns (address) {
+        _requireMinted(tokenId);
+        return _minters[tokenId];
+    }
+
+    /**
+     * @notice Returns an array of token IDs minted by the specified address.
+     * @param minterAddress The address to query the minted tokens for.
+     * @return An array of uint256 representing the token IDs minted by the address.
+     */
+    function mintedTokens(
+        address minterAddress
+    ) public view returns (uint256[] memory) {
+        return _mintedTokensByAddress[minterAddress];
+    }
+
+    /**
+     * @notice Checks if the specified address has minted any tokens in this contract.
+     * @param potentialMinter The address to check.
+     * @return True if the address has minted at least one token, false otherwise.
+     */
+    function isMinter(
+        address potentialMinter
+    ) public view returns (bool) {
+        return _hasMinted[potentialMinter];
+    }
+
+    /**
+     * @notice Returns the URI of the token with the given ID.
+     * @dev Throws if the token ID does not exist.
+     * @param tokenId The ID of the token to query the URI for.
+     * @return The URI of the token.
+     */
     function tokenURI(
         uint256 tokenId
     ) public view virtual override returns (string memory) {
@@ -49,18 +100,9 @@ contract TeesaNft is ERC721C, MinterCreatorSharedRoyalties, Ownable {
 
     function supportsInterface(
         bytes4 interfaceId
-    )
-        public
-        view
-        virtual
-        override(ERC721C, MinterCreatorSharedRoyaltiesBase)
-        returns (bool)
-    {
+    ) public view virtual override(ERC721C, ERC2981) returns (bool) {
         return
             ERC721C.supportsInterface(interfaceId) ||
-            MinterCreatorSharedRoyaltiesBase.supportsInterface(interfaceId);
+            ERC2981.supportsInterface(interfaceId);
     }
-
-    // @dev override the _requireCallerIsContractOwner function to allow the owner to mint
-    function _requireCallerIsContractOwner() internal view virtual override {}
 }

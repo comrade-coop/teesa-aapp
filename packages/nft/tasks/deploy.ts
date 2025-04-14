@@ -25,11 +25,10 @@ async function deploy(hardhat: any) {
       throw error;
     }
 
-    const paymentSplitterContractAddress = deploymentResult.paymentSplitter.target;
     const teesaNftContractAddress = deploymentResult.teesaNft.target;
 
     // Verify contract on Etherscan/BaseScan
-    console.log('\nVerifying contracts...');
+    console.log('\nVerifying contract...');
 
     const teamAddress = process.env.TEAM_ADDRESS;
     if (!teamAddress) {
@@ -39,21 +38,15 @@ async function deploy(hardhat: any) {
     try {
       // Verify contracts, passing arguments directly
       await hardhat.run("verify:verify", {
-        address: paymentSplitterContractAddress,
-        network: hardhat.network.name,
-        contract: "contracts/payment-splitter.sol:PaymentSplitter"
-      });
-
-      await hardhat.run("verify:verify", {
         address: teesaNftContractAddress,
-        constructorArguments: [teamAddress, paymentSplitterContractAddress],
+        constructorArguments: [teamAddress],
         network: hardhat.network.name,
         contract: "contracts/teesa-nft.sol:TeesaNft"
       });
 
-      console.log('Contracts verification successful! ✅');
+      console.log('Contract verification successful! ✅');
     } catch (error) {
-      console.error('Contracts verification failed! ❌');
+      console.error('Contract verification failed! ❌');
       console.error(error);
     }
 
@@ -69,7 +62,7 @@ async function deploy(hardhat: any) {
     if (envContent.includes('NFT_CONTRACT_ADDRESS=')) {
       envContent = envContent.replace(/NFT_CONTRACT_ADDRESS=.*/, `NFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`);
     } else {
-      envContent += `\NFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`;
+      envContent += `\nNFT_CONTRACT_ADDRESS=${teesaNftContractAddress}`;
     }
 
     fs.writeFileSync(envPath, envContent.trim());
