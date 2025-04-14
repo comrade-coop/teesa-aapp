@@ -135,10 +135,40 @@ export function SidePanel({
             </div>
           )}
 
-          <h2 className="text-xl font-bold mb-4 text-white mt-8">Rules</h2>
+          {/* Winner Reward Section */}
+          <div className="mt-6 mb-8 p-4 bg-gradient-to-r from-blue-600/10 to-cyan-500/10 border border-blue-500/30 rounded-lg text-center space-y-3">
+            <h3 className="text-md font-semibold text-cyan-300 mb-1">Game Rewards</h3>
+            <p className="text-sm text-slate-200">
+              The winner receives a unique NFT, issued autonomously by Teesa!
+            </p>
+            <div className="flex justify-center">
+              <a
+                href={openseaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-300 hover:text-blue-200 font-medium flex items-center gap-1"
+              >
+                NFT collection on OpenSea
+                <ExternalLink size={14} />
+              </a>
+            </div>
+            <div className="flex justify-center">
+              <a
+                href={blockchainExplorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-400/80 hover:text-blue-300/80 flex items-center gap-1"
+              >
+                Contract on {blockchainName}
+                <ExternalLink size={12} />
+              </a>
+            </div>
+          </div>
+
+          <h2 className="text-md font-bold mb-4 text-white">Rules</h2>
           <div className="space-y-4">
             <div>
-              <ul className="list-disc list-inside space-y-2">
+              <ul className="text-sm list-disc list-inside space-y-2">
                 <li>Ask <span className="font-bold">yes/no</span> questions about the word</li>
                 <li>Questions should be about characteristics or properties</li>
                 <li>Make a direct guess at any time</li>
@@ -151,7 +181,7 @@ export function SidePanel({
           </div>
         </div>
 
-        <div className="border-t border-b border-blue-500/30 py-4 mt-4">
+        <div className="border-t border-b border-blue-500/30 py-4 mt-6">
           <div className="flex justify-center space-x-6">
             <a
               href="https://x.com/teesa_ai"
@@ -176,30 +206,6 @@ export function SidePanel({
               </svg>
             </a>
           </div>
-        </div>
-
-        <div className="mt-4 flex justify-center">
-          <a
-            href={blockchainExplorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
-          >
-            NFT Contract on {blockchainName}
-            <ExternalLink size={14} />
-          </a>
-        </div>
-
-        <div className="mt-2 flex justify-center">
-          <a
-            href={openseaUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
-          >
-            NFT collection on OpenSea
-            <ExternalLink size={14} />
-          </a>
         </div>
       </div>
 
@@ -237,4 +243,4 @@ export function SidePanel({
       )}
     </>
   );
-} 
+}
