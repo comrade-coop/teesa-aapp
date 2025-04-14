@@ -1,8 +1,26 @@
 import path from 'path';
 import { Readable } from 'stream';
-import { imageToReadableStream, mintNft, pinata } from "./nft-utils";
+import { imageToReadableStream, mintNft, pinata, urlToReadableStream } from "./nft-utils";
+import { fal } from "@fal-ai/client";
 
-const TEESA_NFT_BASE_IMAGE_PATH = path.resolve(process.cwd(), '../nft/assets/initial-nft.png');
+require('dotenv').config({ path: path.resolve(process.cwd(), '../../../.env') });
+
+async function generateNftImage(secretWord: string): Promise<Readable> {
+  fal.config({
+    credentials: process.env.FAL_API_KEY,
+  });
+
+  const stream = await fal.stream("workflows/todorkolev/teesa-nft", {
+    input: {
+      word: secretWord
+    }
+  });
+  
+  const result = await stream.done();
+  const imageUrl = result.output.image.url;
+  const imageStream = await urlToReadableStream(imageUrl);
+  return imageStream;
+}
 
 async function uploadImageToIpfs(inputStream: Readable, gameId: string): Promise<string> {
   const options: any = {
@@ -56,7 +74,7 @@ export async function generateNft(userAddress: string, gameId: string, secretWor
   console.log("Generating NFT for user", userAddress);
 
   try {
-    const imageStream = await imageToReadableStream(TEESA_NFT_BASE_IMAGE_PATH);
+    const imageStream = await generateNftImage(secretWord);
     const imageIpfsUrl = await uploadImageToIpfs(imageStream, gameId);
     const metadataIpfsUrl = await uploadMetadataToIpfs(imageIpfsUrl, userAddress, gameId, secretWord);
     const tokenId = await mintNft(userAddress, metadataIpfsUrl);

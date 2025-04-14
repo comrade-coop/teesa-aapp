@@ -61,6 +61,7 @@ cp .env.example .env
 - Pinata Configuration - you can get the values from the Pinata dashboard (http://pinata.cloud):
   - `PINATA_API_KEY` - your API key for accessing the Pinata API
   - `PINATA_API_SECRET` - your API secret for accessing the Pinata API
+- `FAL_API_KEY` - your API key for the Fal.AI API
 - `NFT_CONTRACT_ADDRESS` - the address of the NFT contract. **We set it automatically when deploying the contract**
 
 ### Install dependencies and build the project
