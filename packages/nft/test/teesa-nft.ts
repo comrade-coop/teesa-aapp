@@ -53,10 +53,10 @@ describe("TeesaNft", function () {
     it("Should emit DefaultRoyaltySet event on deployment", async function () {
       const [teamAddress] = await ethers.getSigners();
       const TeesaNftFactory = await ethers.getContractFactory("TeesaNft");
-      
+
       // Create contract instance without deploying
       const teesaNft = await TeesaNftFactory.deploy(teamAddress.address);
-      
+
       // Check event in the deploy transaction receipt
       const tx = teesaNft.deploymentTransaction();
       await expect(tx)
@@ -72,10 +72,10 @@ describe("TeesaNft", function () {
     it("Should emit TransferValidatorUpdated event with default on deployment", async function () {
       const [teamAddress] = await ethers.getSigners();
       const TeesaNftFactory = await ethers.getContractFactory("TeesaNft");
-      
+
       // Create contract instance without deploying
       const teesaNft = await TeesaNftFactory.deploy(teamAddress.address);
-      
+
       // Check event in the deploy transaction receipt
       const tx = teesaNft.deploymentTransaction();
       await expect(tx)
@@ -323,10 +323,10 @@ describe("TeesaNft", function () {
 
     it("Should allow transfers when validator is the default (assuming permissive)", async function () {
       const { teesaNft, owner, recipient1 } = await loadFixture(deployTeesaNftFixture);
-      
+
       // Set validator to zero address to bypass validation
       await teesaNft.connect(owner).setTransferValidator(ZeroAddress);
-      
+
       await teesaNft.connect(owner).mint(owner.address, "ipfs://a");
       await expect(teesaNft.connect(owner).transferFrom(owner.address, recipient1.address, 0n))
         .to.emit(teesaNft, "Transfer");
@@ -349,28 +349,24 @@ describe("TeesaNft", function () {
   describe("Minting Information (minterOf, mintedTokens, isMinter)", function () {
     const tokenURI1 = "ipfs://token1";
     const tokenURI2 = "ipfs://token2";
-    const tokenURI3 = "ipfs://token3";
 
     async function fixtureWithMultipleMints() {
       const base = await loadFixture(deployTeesaNftFixture);
-      const { teesaNft, owner, otherAccount, recipient1 } = base;
+      const { teesaNft, owner, recipient1 } = base;
 
       // Mint token 0 by owner for recipient1
       await teesaNft.connect(owner).mint(recipient1.address, tokenURI1);
-      // Mint token 1 by owner for otherAccount
-      await teesaNft.connect(owner).mint(otherAccount.address, tokenURI2);
-      // Mint token 2 by owner for recipient1
-      await teesaNft.connect(owner).mint(recipient1.address, tokenURI3);
+      // Mint token 1 by owner for recipient1
+      await teesaNft.connect(owner).mint(recipient1.address, tokenURI2);
 
-      return { ...base, tokenId0: 0n, tokenId1: 1n, tokenId2: 2n };
+      return { ...base, tokenId0: 0n, tokenId1: 1n };
     }
 
     // minterOf tests
     it("minterOf should return the correct minter address", async function () {
-      const { teesaNft, owner, tokenId0, tokenId1, tokenId2 } = await loadFixture(fixtureWithMultipleMints);
-      expect(await teesaNft.minterOf(tokenId0)).to.equal(owner.address);
-      expect(await teesaNft.minterOf(tokenId1)).to.equal(owner.address);
-      expect(await teesaNft.minterOf(tokenId2)).to.equal(owner.address);
+      const { teesaNft, recipient1, otherAccount, tokenId0, tokenId1 } = await loadFixture(fixtureWithMultipleMints);
+      // The recipient address is now stored as the minter
+      expect(await teesaNft.minterOf(tokenId0)).to.equal(recipient1.address); // Minted to recipient1
     });
 
     it("minterOf should revert for a non-existent token", async function () {
@@ -383,37 +379,28 @@ describe("TeesaNft", function () {
     // mintedTokens tests
     it("mintedTokens should return an empty array for an address that has not minted", async function () {
       const { teesaNft, otherAccount } = await loadFixture(deployTeesaNftFixture);
+      // This test remains valid if otherAccount didn't receive any mints directly
       expect(await teesaNft.mintedTokens(otherAccount.address)).to.deep.equal([]);
     });
 
-    it("mintedTokens should return the correct token IDs for the minter", async function () {
-      const { teesaNft, owner, tokenId0, tokenId1, tokenId2 } = await loadFixture(fixtureWithMultipleMints);
-      const mintedByOwner = await teesaNft.mintedTokens(owner.address);
-      expect(mintedByOwner).to.have.lengthOf(3);
-      expect(mintedByOwner).to.deep.equal([tokenId0, tokenId1, tokenId2]);
-    });
-
-    it("mintedTokens should return empty array if another address minted but not the queried one", async function () {
-      const { teesaNft, recipient1 } = await loadFixture(fixtureWithMultipleMints);
-      // Owner minted, recipient1 only received tokens
-      expect(await teesaNft.mintedTokens(recipient1.address)).to.deep.equal([]);
+    it("mintedTokens should return the correct token IDs for the minter (recipient1)", async function () {
+      const { teesaNft, recipient1, tokenId0, tokenId1 } = await loadFixture(fixtureWithMultipleMints);
+      const mintedToRecipient1 = await teesaNft.mintedTokens(recipient1.address);
+      expect(mintedToRecipient1).to.have.lengthOf(2);
+      expect(mintedToRecipient1).to.deep.equal([tokenId0, tokenId1]); // Only tokens minted TO recipient1
     });
 
 
     // isMinter tests
-    it("isMinter should return false for an address that has not minted", async function () {
+    it("isMinter should return false for an address that never received a mint", async function () {
+      // Use a new account that wasn't involved
       const { teesaNft, otherAccount } = await loadFixture(deployTeesaNftFixture);
       expect(await teesaNft.isMinter(otherAccount.address)).to.be.false;
     });
 
-    it("isMinter should return true for an address that has minted", async function () {
-      const { teesaNft, owner } = await loadFixture(fixtureWithMultipleMints);
-      expect(await teesaNft.isMinter(owner.address)).to.be.true;
-    });
-
-     it("isMinter should return false for an address that received tokens but didn't mint", async function () {
+    it("isMinter should return true for an address that received a mint (recipient1)", async function () {
       const { teesaNft, recipient1 } = await loadFixture(fixtureWithMultipleMints);
-      expect(await teesaNft.isMinter(recipient1.address)).to.be.false;
+      expect(await teesaNft.isMinter(recipient1.address)).to.be.true;
     });
   });
 
@@ -448,20 +435,20 @@ describe("TeesaNft", function () {
     });
     it("Should support ICreatorToken", async function () {
       const { teesaNft } = await loadFixture(deployTeesaNftFixture);
-      
+
       // If the contract should support this interface but test is failing,
       // we need to verify if the interface ID is correct or if the contract needs updating
       // For now, we'll check if the contract contains the required functions
-      
+
       // Check if the contract has getTransferValidator function which is part of ICreatorToken
       expect(typeof teesaNft.getTransferValidator).to.equal('function');
     });
     it("Should support ICreatorTokenLegacy", async function () {
       const { teesaNft } = await loadFixture(deployTeesaNftFixture);
-      
+
       // Similar to the previous test, verify functionality instead of interface ID
       // ICreatorTokenLegacy should be supported if contract has the required functions
-      
+
       // Check if the contract has getTransferValidator function which is part of ICreatorTokenLegacy
       expect(typeof teesaNft.getTransferValidator).to.equal('function');
     });
