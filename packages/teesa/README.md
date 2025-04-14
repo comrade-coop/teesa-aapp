@@ -1,54 +1,34 @@
-# Next.js Application
+# Teesa
 
-This project is the Next.js application for the Teesa game. We use `pnpm` for package management.
+This project is the Next.js application for the Teesa aApp.
+
 
 ## Prerequisites
 
-Ensure you have completed the following:
-- **Setup your development environment** - Check the [README.md](../dev-setup/README.md) in the `../dev-setup` directory.
-- **Deploy the contracts** - Check the [README.md](../contracts/README.md) in the `../contracts` directory.
+- Ensure you have completed the **Development setup** - check the [README.md](../../README.md) in the root directory.
+- Ensure you have deployed the NFT contract - check the [README.md](../nft/README.md) in the `packages/nft` directory.
 
-## Installation
 
-1. Set permissions for the scripts
-   ```bash
-   chmod +x teesa/scripts/start-ollama.sh
-   ```
+## Project Structure
 
-2. Install the dependencies:
-   ```bash
-   pnpm install
-   ```
+- **app** - contains the pages, API endpoints and the game core logic
+  - **_core** - contains the core logic for the game
+  - **api** - contains the API endpoints
+  - **game** - contains the game pages
+  - **wallet** - contains the page for interacting with the Teesa wallet
+- **components** - contains the reusable components
+- **lib** - contains the utility functions
+- **public** - contains the static assets
+- **scripts** - contains the scripts for starting the ollama model and the development server
 
-3. Set up the environment variables:
-   ```bash
-   cp .env.example .env
-   ```
 
-4. Update the `.env` file with:
-   - `NEXT_PUBLIC_ENV_MODE`: Set to either "dev" for development or "prod" for production (defaults to "prod")
-   - `OLLAMA_MODEL`: Set to the Ollama model to use (defaults to "llama3.2")
-   - `ANTHROPIC_API_KEY`: Your API key for accessing the Anthropic LLMs
-   - Eliza Configuration:
-     - `ELIZA_API_URL`: The URL for the Eliza API
-     - `ELIZA_AGENT_ID`: The Eliza agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
-   - Langsmith Configuration (**used only in development**) - you can get the values from the Langsmith dashboard (https://smith.langchain.com/):
-     - `LANGCHAIN_TRACING_V2`
-     - `LANGCHAIN_ENDPOINT`
-     - `LANGCHAIN_API_KEY`
-     - `LANGCHAIN_PROJECT`
-   - PrivyIO Configuration - you can get the values from the PrivyIO dashboard (https://dashboard.privy.io/):
-     - `NEXT_PUBLIC_PRIVYIO_APP_ID`: Your PrivyIO app ID
-     - `PRIVYIO_APP_SECRET`: Your PrivyIO app secret
-   - Private key and address for the wallet we will use to deploy the contract. **In production we generate a new wallet each time we start the container.**
-      - `WALLET_PRIVATE_KEY`: Private key for deploying the contract
-      - `WALLET_ADDRESS`: The address of the wallet that we will use to deploy the contract (we use the address to transfer initial funds to the wallet and use them to deply the contract)
-   - The following environment variables are automatically set by the contract compilation script. Refer to the [README.md](../contracts/README.md) in the `../contracts` directory directory for more details:
-      - `BLOCKCHAIN_NETWORK` - Blockchain network for the contract - `localhost`, `sepolia`, `baseSepolia`, `base`
-      - `CHAIN_ID` - Chain ID for the network
-      - `RPC_URL` - RPC URL for the network
-   - `GAME_CONTRACT_ADDRESS` - Address of the game contract.
-   - `NEXT_PUBLIC_ATTESTATION_URL` - Url for serving attestation verification by aApp Toolkit
+## Setup
+
+Set permissions for the scripts
+```bash
+chmod +x teesa/scripts/start-ollama.sh
+```
+
 ## Start the Application
 
 To start the ollama model and the development server, use the following command:
@@ -56,3 +36,5 @@ To start the ollama model and the development server, use the following command:
 pnpm dev
 ```
 This will start the ollama model and the app locally, and you can access the app at http://localhost:3000.
+
+*NOTE: As this is a pnpm monorepo, we are using only one `.env` file for all the packages. This file is located in the root directory. To have acess to the environment variables when building and starting the NextJS app, we make a temporary copy of the `.env` file in the `packages/teesa` directory when some of the following commands are started and remove it after the commands are finished: `pnpm build`, `pnpm start`, `pnpm dev`.*
