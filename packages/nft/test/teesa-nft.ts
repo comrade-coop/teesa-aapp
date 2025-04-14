@@ -345,6 +345,79 @@ describe("TeesaNft", function () {
   });
 
 
+  // --- Section 9: Minting Information ---
+  describe("Minting Information (minterOf, mintedTokens, isMinter)", function () {
+    const tokenURI1 = "ipfs://token1";
+    const tokenURI2 = "ipfs://token2";
+    const tokenURI3 = "ipfs://token3";
+
+    async function fixtureWithMultipleMints() {
+      const base = await loadFixture(deployTeesaNftFixture);
+      const { teesaNft, owner, otherAccount, recipient1 } = base;
+
+      // Mint token 0 by owner for recipient1
+      await teesaNft.connect(owner).mint(recipient1.address, tokenURI1);
+      // Mint token 1 by owner for otherAccount
+      await teesaNft.connect(owner).mint(otherAccount.address, tokenURI2);
+      // Mint token 2 by owner for recipient1
+      await teesaNft.connect(owner).mint(recipient1.address, tokenURI3);
+
+      return { ...base, tokenId0: 0n, tokenId1: 1n, tokenId2: 2n };
+    }
+
+    // minterOf tests
+    it("minterOf should return the correct minter address", async function () {
+      const { teesaNft, owner, tokenId0, tokenId1, tokenId2 } = await loadFixture(fixtureWithMultipleMints);
+      expect(await teesaNft.minterOf(tokenId0)).to.equal(owner.address);
+      expect(await teesaNft.minterOf(tokenId1)).to.equal(owner.address);
+      expect(await teesaNft.minterOf(tokenId2)).to.equal(owner.address);
+    });
+
+    it("minterOf should revert for a non-existent token", async function () {
+      const { teesaNft } = await loadFixture(deployTeesaNftFixture);
+      const nonExistentTokenId = 999n;
+      await expect(teesaNft.minterOf(nonExistentTokenId))
+        .to.be.revertedWith("ERC721: invalid token ID"); // Assuming _requireMinted uses this
+    });
+
+    // mintedTokens tests
+    it("mintedTokens should return an empty array for an address that has not minted", async function () {
+      const { teesaNft, otherAccount } = await loadFixture(deployTeesaNftFixture);
+      expect(await teesaNft.mintedTokens(otherAccount.address)).to.deep.equal([]);
+    });
+
+    it("mintedTokens should return the correct token IDs for the minter", async function () {
+      const { teesaNft, owner, tokenId0, tokenId1, tokenId2 } = await loadFixture(fixtureWithMultipleMints);
+      const mintedByOwner = await teesaNft.mintedTokens(owner.address);
+      expect(mintedByOwner).to.have.lengthOf(3);
+      expect(mintedByOwner).to.deep.equal([tokenId0, tokenId1, tokenId2]);
+    });
+
+    it("mintedTokens should return empty array if another address minted but not the queried one", async function () {
+      const { teesaNft, recipient1 } = await loadFixture(fixtureWithMultipleMints);
+      // Owner minted, recipient1 only received tokens
+      expect(await teesaNft.mintedTokens(recipient1.address)).to.deep.equal([]);
+    });
+
+
+    // isMinter tests
+    it("isMinter should return false for an address that has not minted", async function () {
+      const { teesaNft, otherAccount } = await loadFixture(deployTeesaNftFixture);
+      expect(await teesaNft.isMinter(otherAccount.address)).to.be.false;
+    });
+
+    it("isMinter should return true for an address that has minted", async function () {
+      const { teesaNft, owner } = await loadFixture(fixtureWithMultipleMints);
+      expect(await teesaNft.isMinter(owner.address)).to.be.true;
+    });
+
+     it("isMinter should return false for an address that received tokens but didn't mint", async function () {
+      const { teesaNft, recipient1 } = await loadFixture(fixtureWithMultipleMints);
+      expect(await teesaNft.isMinter(recipient1.address)).to.be.false;
+    });
+  });
+
+
   // --- Section 8: Interface Support ---
   describe("Interface Support (ERC165)", function () {
     const INTERFACES = {
