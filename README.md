@@ -1,6 +1,14 @@
 # Teesa aApp
 
-This is the monorepo for the Teesa aApp - autonomous agent built with the [aApp Toolkitt](https://github.com/comrade-coop/aapp-toolkit).
+This is the monorepo for the Teesa aApp, an autonomous agent built with the [aApp Toolkit](https://github.com/comrade-coop/aapp-toolkit).
+
+Teesa plays a word guessing game with users and rewards the winners with unique NFTs that it autonomously generates and issues. The core of Teesa operates within a Trusted Execution Environment (TEE), a security feature enabled by the aApp Toolkit. This TEE setup provides several key benefits:
+
+*   **Confidentiality**: It guarantees that the secret word chosen for the game remains confidential and cannot be leaked, even to the infrastructure administrators.
+*   **Autonomous Wallet**: Teesa manages its own blockchain wallet, created autonomously within the TEE. No one, including the development team, has access to the private keys, ensuring secure control over the NFT rewards.
+*   **Enhanced Security**: To further prevent potential leaks, Teesa utilizes a local LLM instance running directly inside the TEE when it infers a prompt that includes the secret word.
+*   **User-Friendly Attestation**: The aApp Toolkit out of the box provides a user-friendly interface to verify the TEE's cryptographic attestation, and the end user can ensure that the agent is genuinely running secure code inside a TEE.
+*   **Seamless Upgradability**: The toolkit facilitates secure upgrades. When a new version of Teesa is deployed, TEE attestation between the old and new instances ensures the secure transfer of sensitive state, like the agent's private keys.
 
 
 ## 📦 Project Structure
