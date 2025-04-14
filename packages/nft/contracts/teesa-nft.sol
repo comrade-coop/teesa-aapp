@@ -41,10 +41,10 @@ contract TeesaNft is OwnableBasic, ERC721C, BasicRoyalties {
         _tokenURIs[tokenId] = uri;
 
         // Store information about the mint
-        _minters[tokenId] = msg.sender;
-        _mintedTokensByAddress[msg.sender].push(tokenId);
-        if (!_hasMinted[msg.sender]) {
-            _hasMinted[msg.sender] = true;
+        _minters[tokenId] = to;
+        _mintedTokensByAddress[to].push(tokenId);
+        if (!_hasMinted[to]) {
+            _hasMinted[to] = true;
         }
 
         return tokenId;
