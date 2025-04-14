@@ -11,8 +11,8 @@ Please follow the instruction is this section to setup your development environm
 
 ## Prerequisites
 
-- Docker installed on your system
-- Git installed on your system
+- [Docker](https://www.docker.com) installed on your system
+- [Git](https://git-scm.com/) and [Git LFS](https://git-lfs.com/)
 
 ## Setup Instructions
 

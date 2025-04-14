@@ -1,83 +1,46 @@
-# Contracts
+# NFT
 
-This project includes the contract and associated tools for deploying and testing. Each game instance has its own contract, and we are leveraging **Hardhat** for development, testing, and deployment.
+This package includes the NFT contract with associated tools for deploying and testing, as well as methods for interacting with it. We are leveraging [Hardhat](https://hardhat.org) for development, testing, and deployment of the contract. You need to have the NFT contract deployed in order to use the Teesa aApp. **As this contract is an NFT collection, we deploy it once and reuse between games.**
+
 
 ## Project Structure
 
-- **contracts:** Contract files are located in the `/contracts` directory
-- **tests:** Test cases for the contracts are in the `/tests` directory
-- **tasks:** Deployment tasks are in the `/tasks` directory
-- **hardhat.config.ts:** Deployment configurations are available for the following networks:
-  - Hardhat Localhost Network
-  - Sepolia
-  - Base Sepolia
-  - Base Ethereum Mainnet
+- **assets** - contains the assets for the NFTs
+- **contracts** - contains the NFT contract file
+- **src** - contains the methods for interacting with the contract
+- **tasks** - contains the compilation and deployment tasks
+- **tests** - contains the test cases for the contract
+- **hardhat.config.ts** - contains the deployment configurations for the following networks:
+  - Mainnet
+  - Sepolia (testnet)
+  - Base
+  - Base Sepolia (testnet)
 
 
 ## Prerequisites
 
-Ensure you have completed the following:
-- **Setup your development environment** - Check the [README.md](../dev-setup/README.md) in the `../dev-setup` directory.
+Ensure you have completed the **Development setup** - check the [README.md](../../README.md) in the root directory.
 
-## Dependencies
 
-1. Install Hardhat and project dependencies:
-   ```bash
-   npm install
-   ```
+## Deployment and initialization
 
-## Configuration
-
-1. Set up environment variables:
-   ```bash
-   # Copy the example environment file
-   cp .env.example .env
-   ```
-
-2. Update the `.env` file with:
-   - Private key for the wallet we will use to deploy the contract. **In production we set the values when we start the container:**
-      - `WALLET_PRIVATE_KEY_LOCALHOST`: Private key for deploying to Hardhat localhost network
-      - `WALLET_PRIVATE_KEY`: Private key for deploying the contract
-   - RPC URLs for the networks:
-      - `RPC_URL_LOCALHOST`: RPC URL for Hardhat localhost network
-      - `RPC_URL_SEPOLIA`: RPC URL for Sepolia testnet (we are using Alchemy, but you can use any other RPC provider)
-      - `RPC_URL_BASE_SEPOLIA`: RPC URL for Base Sepolia testnet (we are using Alchemy, but you can use any other RPC provider)
-      - `RPC_URL_BASE`: RPC URL for Base mainnet (we are using Alchemy, but you can use any other RPC provider)
-   - Etherscan and Basescan API keys:
-      - `ETHERSCAN_API_KEY`: Etherscan API key
-      - `BASESCAN_API_KEY`: Basescan API key
-   - `TEAM_ADDRESS`: The address of the team multi-sig wallet
-
-## Deployment
-
-*To deploy the contract from the development environment, make sure to have set the wallet's private key and address in the `.env` file.*
-
-Run the deployment script:
+To deploy the NFT contract and mint the initial NFT, run the following command from the **root directory**:
 ```bash
-npx hardhat compile-and-deploy-contract <network>
-```
-Replace `<network>` with desired target (`localhost`, `sepolia`, `baseSepolia`, `base`)
-
-**Copy the contract address from the deployment output and set it in the `../teesa/.env` file as `GAME_CONTRACT_ADDRESS`**
-
-### Localhost deployment
-
-Start the Hardhat localhost node:
-```bash
-npx hardhat node
+pnpm nft
 ```
 
-Deploy the contract:
-```bash
-npx hardhat compile-and-deploy-contract localhost
-```
+This command will:
+- Compile the contract
+- Copy the contract's ABI to the `packages/nft/abi` directory
+- Deploy the contract to the selected network (set with the `CONTRACT_NETWORK` environment variable in the `.env` file)
+- Verify the contract on Etherscan/Basescan (depending on the selected network)
+- Update the `NFT_CONTRACT_ADDRESS` in the `/.env` file
 
-### Deployment Steps
 
-The deployment script will:
-1. Compile the contract
-2. Test the contract
-3. Deploy the contract
-4. Verify the contract on Etherscan and Basescan (depending on the selected network)
-5. Update the `RPC_URL`, `CHAIN_ID` and `GAME_CONTRACT_ADDRESS` in `../teesa/.env`
-6. Copy the contract ABI to `../teesa/app/_contracts` (added in .gitignore)
+## Package pnpm scripts
+
+When making changes to the contract, you can use the following pnpm scripts to compile and deploy the contract: (**navigate to the `packages/nft` directory first**)
+
+- `pnpm compile-contracts` - compile the contract and copy the ABI to the `packages/nft/abi` directory
+- `pnpm deploy-contracts` - deploy and verify the contract
+- `pnpm publish-initial-nft` - mint the initial NFT
