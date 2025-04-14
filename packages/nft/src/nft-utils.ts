@@ -5,6 +5,7 @@ import { Readable } from 'stream';
 import TeesaNftAbi from "../abi/teesa-nft.json";
 import { getNetwork } from './networks';
 import path from "path";
+import fetch from 'node-fetch';
 
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 
@@ -16,6 +17,14 @@ export const pinata = () => {
 
 export async function imageToReadableStream(filePath: string): Promise<Readable> {
   return fs.createReadStream(filePath);
+}
+
+export async function urlToReadableStream(url: string): Promise<Readable> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch URL: ${url}, status: ${response.status}`);
+  }
+  return response.body as Readable;
 }
 
 export async function mintNft(userAddress: string, metadataIpfsUrl: string) {
