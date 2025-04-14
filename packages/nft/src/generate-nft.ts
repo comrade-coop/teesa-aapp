@@ -7,7 +7,7 @@ require('dotenv').config({ path: path.resolve(process.cwd(), '../../../.env') })
 
 async function generateNftImage(secretWord: string): Promise<Readable> {
   fal.config({
-    credentials: process.env.FAL_API_KEY,
+    credentials: process.env.FALAI_API_KEY,
   });
 
   const stream = await fal.stream("workflows/todorkolev/teesa-nft", {

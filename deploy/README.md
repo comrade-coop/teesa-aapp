@@ -45,7 +45,7 @@ docker build \
    --build-arg TEAM_ADDRESS=<team-address> \ # The address of the team multi-sig wallet
    --build-arg PINATA_API_KEY=<pinata-api-key> \ # API key for the Pinata API
    --build-arg PINATA_API_SECRET=<pinata-api-secret> \ # API secret for the Pinata API
-   --build-arg FAL_API_KEY=<fal-api-key> \ # API key for the Fal.AI API
+   --build-arg FALAI_API_KEY=<fal-api-key> \ # API key for the Fal.AI API
    --build-arg NFT_CONTRACT_ADDRESS=<nft-contract-address> \ # The address of the NFT contract
    --pull \
    --rm \
