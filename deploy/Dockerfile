@@ -1,23 +1,19 @@
 # syntax=docker.io/docker/dockerfile:1
 
+
 FROM ubuntu:latest AS base
 
 
 # Add build arguments
-# `localhost`, `sepolia`, `baseSepolia` or `base`
-ARG NETWORK
-# RPC URL of the network to use for the contract deployment
-ARG RPC_URL
-# API key of the blockchain scan service - Etherscan or Basescan to use for the contract deployment
-# We automatically use the correct API key based on the network
-ARG BLOCKCHAINSCAN_API_KEY
-# Address of the team multi-sig wallet to use for the contract deployment
-ARG TEAM_ADDRESS
+# Path to the aapp-toolkit cloud volume
+ARG CLOUD_VOLUME_PATH
+#
+# Teesa build arguments
+#
 # API key of the anthropic to use in the app
 ARG ANTHROPIC_API_KEY
-# The URL for the Eliza API
+# The URL for the Eliza API and the agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
 ARG ELIZA_API_URL
-# The Eliza agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
 ARG ELIZA_AGENT_ID
 # App ID and app secret of the PrivyIO to use in the app
 ARG PRIVYIO_APP_ID
@@ -26,12 +22,29 @@ ARG PRIVYIO_APP_SECRET
 ARG ATTESTATION_URL
 # Stop the LangSmith logging
 ARG LANGCHAIN_TRACING_V2
+#
+# NFT build arguments
+#
+# The private key of the wallet that we used to deploy the NFT contract
+ARG INITIAL_WALLET_PRIVATE_KEY
+# `mainnet`, `sepolia`, `base` or `baseSepolia`
+ARG CONTRACT_NETWORK
+# RPC URL of the network to use for the contract deployment
+ARG RPC_URL
+# API key of the blockchain scan service - Etherscan or Basescan to use for the contract deployment
+# We automatically use the correct API key based on the network
+ARG BLOCKCHAINSCAN_API_KEY
+# Address of the team multi-sig wallet to use for the royalties
+ARG TEAM_ADDRESS
+# The API key and secret for the Pinata API
+ARG PINATA_API_KEY
+ARG PINATA_API_SECRET
+# The address of the NFT contract
+ARG NFT_CONTRACT_ADDRESS
+
 
 # Set environment variables that will be available at runtime
-ENV DOCKER_NETWORK=${NETWORK}
-ENV DOCKER_RPC_URL=${RPC_URL}
-ENV DOCKER_BLOCKCHAINSCAN_API_KEY=${BLOCKCHAINSCAN_API_KEY}
-ENV DOCKER_TEAM_ADDRESS=${TEAM_ADDRESS}
+ENV DOCKER_CLOUD_VOLUME_PATH=${CLOUD_VOLUME_PATH}
 ENV DOCKER_ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 ENV DOCKER_ELIZA_API_URL=${ELIZA_API_URL}
 ENV DOCKER_ELIZA_AGENT_ID=${ELIZA_AGENT_ID}
@@ -39,6 +52,14 @@ ENV DOCKER_PRIVYIO_APP_ID=${PRIVYIO_APP_ID}
 ENV DOCKER_PRIVYIO_APP_SECRET=${PRIVYIO_APP_SECRET}
 ENV DOCKER_ATTESTATION_URL=${ATTESTATION_URL}
 ENV DOCKER_LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2}
+ENV DOCKER_INITIAL_WALLET_PRIVATE_KEY=${INITIAL_WALLET_PRIVATE_KEY}
+ENV DOCKER_CONTRACT_NETWORK=${CONTRACT_NETWORK}
+ENV DOCKER_RPC_URL=${RPC_URL}
+ENV DOCKER_BLOCKCHAINSCAN_API_KEY=${BLOCKCHAINSCAN_API_KEY}
+ENV DOCKER_TEAM_ADDRESS=${TEAM_ADDRESS}
+ENV DOCKER_PINATA_API_KEY=${PINATA_API_KEY}
+ENV DOCKER_PINATA_API_SECRET=${PINATA_API_SECRET}
+ENV DOCKER_NFT_CONTRACT_ADDRESS=${NFT_CONTRACT_ADDRESS}
 
 
 # Update apt-get and install all the required packages
@@ -60,118 +81,74 @@ RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install $(cat /root/.nvmrc) && nvm use
 RUN bash -c '. "/root/.nvm/nvm.sh" && npm install -g pnpm@9.15.2'
 
 
-# Contracts dependencies stage
-# Install dependencies only when needed
-FROM base AS contracts-deps
-WORKDIR /contracts
-
-# Install dependencies based on the preferred package manager
-COPY contracts/package.json contracts/yarn.lock* contracts/package-lock.json* contracts/pnpm-lock.yaml* contracts/.npmrc* ./
-RUN bash -c '\
-  . "/root/.nvm/nvm.sh" && \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi'
-
-
-# Teesa dependencies stage
-# Install dependencies only when needed
-FROM base AS teesa-deps
-WORKDIR /teesa
-
-# Install dependencies based on the preferred package manager
-COPY teesa/package.json teesa/yarn.lock* teesa/package-lock.json* teesa/pnpm-lock.yaml* teesa/.npmrc* ./
-RUN bash -c '\
-  . "/root/.nvm/nvm.sh" && \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi'
-
-
 # Build stage
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
+# Set the environment variables, install dependencies and build the Next.js app
+FROM base AS build
+WORKDIR /app-build
 
-# Copy contracts and dependencies
-COPY --from=contracts-deps /contracts/node_modules ./contracts/node_modules
-COPY contracts/ ./contracts
-COPY deploy/update-contracts-env.sh ./contracts/
+# Copy the source code and the update-env.sh script
+COPY packages/ ./packages/
+COPY .env.example .
+COPY .npmrc .
+COPY package.json .
+COPY pnpm-lock.yaml .
+COPY pnpm-workspace.yaml .
+COPY deploy/update-env.sh .
 
-# Copy teesa and dependencies
-COPY --from=teesa-deps /teesa/node_modules ./teesa/node_modules
-COPY teesa/ ./teesa
-COPY deploy/update-teesa-env.sh ./teesa/
+# Copy and update the .env file
+RUN cp .env.example .env && \
+    chmod +x update-env.sh && \
+    ./update-env.sh
 
-# Copy and update /contracts/.env file
-RUN cd ./contracts && \
-    cp .env.example .env && \
-    chmod +x update-contracts-env.sh && \
-    ./update-contracts-env.sh && \
-    cd ..
+# Install dependencies
+RUN bash -c '\
+  . "/root/.nvm/nvm.sh" && \
+  corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm install'
 
-# Copy and update /teesa/.env file
-RUN cd ./teesa && \
-    cp .env.example .env && \
-    chmod +x update-teesa-env.sh && \
-    ./update-teesa-env.sh && \
-    cd ..
+# Compile the NFT contract to generate the ABI
+RUN bash -c '\
+  . "/root/.nvm/nvm.sh" && \
+  corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm --filter @teesa-monorepo/nft compile'
 
-# Compile the contract
-RUN cd ./contracts && \
-    bash -c '. "/root/.nvm/nvm.sh" && npx hardhat compile-contract ${DOCKER_NETWORK}' && \
-    cd ..
-
+# Build the project
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN cd ./teesa && \
-    bash -c '\
-    . "/root/.nvm/nvm.sh" && \
-    if [ -f yarn.lock ]; then yarn run build; \
-    elif [ -f package-lock.json ]; then npm run build; \
-    elif [ -f pnpm-lock.yaml ]; then corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm run build; \
-    else echo "Lockfile not found." && exit 1; \
-    fi' && \
-    cd ..
+RUN bash -c '\
+  . "/root/.nvm/nvm.sh" && \
+  corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm run build'
 
 
 # Start stage
 # Production image, copy all the files and start
-FROM base AS runner
-WORKDIR /app
+FROM base AS start
+WORKDIR /app-start
 
 # Download and install Ollama
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
+# Set Node and Next.js environments
 ENV NODE_ENV=production
-# Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy the contracts files
-COPY --from=builder /app/contracts ./contracts
+# Copy the Next.js build files, the NFT contract's ABI, the .env file and the NFT assets
+COPY --from=build /app-build/packages/teesa/.next/standalone ./app
+COPY --from=build /app-build/packages/teesa/public ./app/packages/teesa/public
+COPY --from=build /app-build/packages/teesa/.next/static ./app/packages/teesa/.next/static
+COPY --from=build /app-build/packages/nft/abi/teesa-nft.json .
+COPY --from=build /app-build/.env .
+COPY --from=build /app-build/packages/nft/assets ./app/packages/nft/assets
 
-# Copy the next.js build files
-COPY --from=builder /app/teesa/public ./teesa/public
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder /app/teesa/.next/standalone ./teesa 
-COPY --from=builder /app/teesa/.next/static ./teesa/.next/static
+# Copy the setup script and the start script
+COPY deploy/setup-wallet-and-nft-contract.js .
+COPY deploy/start.sh .
 
-# Copy and setup the start scripts
-COPY deploy/generate-wallet.js ./
-COPY deploy/start.sh ./
-RUN chmod +x start.sh
-
+# Set the port
 EXPOSE 3000
-
 ENV PORT=3000
 
+# Start the Next.js app
+RUN chmod +x ./start.sh
 ENV HOSTNAME="0.0.0.0"
 CMD ["./start.sh"]

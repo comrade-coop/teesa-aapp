@@ -1,8 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Contracts ABI files
-app/_contracts/abi
-
 # dependencies
 /node_modules
 /.pnp
@@ -47,4 +44,3 @@ next-env.d.ts
 
 # storage
 game-state.json
-environment-variables.json
