@@ -22,8 +22,8 @@ async function uploadImageToIpfs(inputStream: Readable): Promise<string> {
 
 async function uploadMetadataToIpfs(imageIpfsUrl: string): Promise<string> {
   const nftMetadata = {
-    "name": "Teesa - Initial NFT",
-    "description": `The initial NFT for the Teesa collection.`,
+    "name": "Genesis",
+    "description": `Teesa's Genesis NFT stands as a historical artifact in the evolution of autonomous digital entities, representing not just a collectible but a milestone in the journey toward truly independent AI agents operating within secure, verifiable environments. This inaugural piece holds special significance and captures the essence of Teesa's emergence as a self-sovereign AI entity.`,
     "image": imageIpfsUrl,
     "attributes": []
   }
