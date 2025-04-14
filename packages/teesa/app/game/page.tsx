@@ -277,7 +277,7 @@ export default function Page() {
 
             {showConnectWalletMessage &&
               <div className="p-4 mx-4 my-2 bg-blue-900/30 border border-blue-500/50 rounded-lg">
-                <p className="text-white mb-3">🌟 Connect your wallet to make a guess and win an NFT! If you guess correctly, the NFT will be allocated directly to your connected wallet address.</p>
+                <p className="text-white mb-3">🌟 Connect your wallet to make a guess and win an NFT! If you guess correctly, you will receive the NFT directly to your connected wallet address.</p>
                 <button
                   onClick={() => login()}
                   className="w-full p-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-xl hover:opacity-90 transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:from-blue-500 hover:to-blue-600 relative"
