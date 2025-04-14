@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AnswerResultEnum, gameState, HistoryEntry, resetState } from '../../_core/game-state';
 import { getNetwork } from '@teesa-monorepo/nft/src/networks';
 import { getNftContractAddress } from '@teesa-monorepo/nft/src/get-nft-contract-address';
+
 export function setWinner(userId: string, userAddress: string, timestamp: number) {
   gameState.setWinner(userAddress);
 
