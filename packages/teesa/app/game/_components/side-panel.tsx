@@ -136,8 +136,8 @@ export function SidePanel({
           )}
 
           {/* Winner Reward Section */}
-          <div className="mt-6 mb-8 p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-400/30 rounded-lg text-center space-y-3">
-            <h3 className="text-md font-semibold text-purple-300 mb-1">Game Rewards</h3>
+          <div className="mt-6 mb-8 p-4 bg-gradient-to-r from-blue-600/10 to-cyan-500/10 border border-blue-500/30 rounded-lg text-center space-y-3">
+            <h3 className="text-md font-semibold text-cyan-300 mb-1">Game Rewards</h3>
             <p className="text-sm text-slate-200">
               The winner receives a unique NFT, issued autonomously by Teesa!
             </p>
