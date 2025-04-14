@@ -1,6 +1,8 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-chai-matchers";
 import "./tasks/compile";
 import "./tasks/deploy";
 
