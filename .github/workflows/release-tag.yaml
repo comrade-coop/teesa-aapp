@@ -44,14 +44,14 @@ jobs:
           sed -i "s#__AAPPBUILDARGPRIVYIOAPPSECRET__#${{ secrets.AAPPBUILDARGPRIVYIOAPPSECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGATTESTATIONURL__#${{ vars.AAPPBUILDARGATTESTATIONURL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"  
           sed -i "s#__AAPPBUILDARGLANGCHAINTRACINGV2__#${{ vars.AAPPBUILDARGLANGCHAINTRACINGV2 }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGINITIALWALLETPRIVATEKEY__#${{ vars.AAPPBUILDARGINITIALWALLETPRIVATEKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGINITIALWALLETPRIVATEKEY__#${{ secrets.AAPPBUILDARGINITIALWALLETPRIVATEKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGCONTRACTNETWORK__#${{ vars.AAPPBUILDARGCONTRACTNETWORK }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGRPCURL__#${{ secrets.AAPPBUILDARGRPCURL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGBLOCKCHAINSCANAPIKEY__#${{ secrets.AAPPBUILDARGBLOCKCHAINSCANAPIKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTEAMADDRESS__#${{ vars.AAPPBUILDARGTEAMADDRESS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGPINATAAPIKEY__#${{ vars.AAPPBUILDARGPINATAAPIKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGPINATAAPISECRET__#${{ vars.AAPPBUILDARGPINATAAPISECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGFALAIAPIKEY__#${{ vars.AAPPBUILDARGFALAIAPIKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGPINATAAPIKEY__#${{ secrets.AAPPBUILDARGPINATAAPIKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGPINATAAPISECRET__#${{ secrets.AAPPBUILDARGPINATAAPISECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGFALAIAPIKEY__#${{ secrets.AAPPBUILDARGFALAIAPIKEY }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGNFTCONTRACTADDRESS__#${{ vars.AAPPBUILDARGNFTCONTRACTADDRESS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           
           cat "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
@@ -67,7 +67,7 @@ jobs:
           vm_name: "teesa-${{ env.AAPP_CNAME }}"
           vm_disk_size: "30"
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
-          vm_ssh_enabled: "false"
+          vm_ssh_enabled: "true"
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           certbot_email: "dev@teesa.ai"
