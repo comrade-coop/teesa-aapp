@@ -90,7 +90,7 @@ export function SidePanel({
       </Button>
 
       {/* Panel */}
-      <div className={cn(`fixed top-0 right-0 bottom-0 w-full md:w-80 bg-slate-800/95 md:bg-slate-800/50 backdrop-blur-sm border-l border-blue-500/30 p-6 z-40 transition-transform duration-300 transform flex flex-col overflow-y-auto ${!isDesktop && !isOpen ? 'translate-x-full' : 'translate-x-0'}`, className)}>
+      <div className={cn(`fixed top-0 right-0 bottom-0 w-full md:w-80 bg-slate-800/95 md:bg-slate-800/50 backdrop-blur-sm border-l border-blue-500/30 p-4 z-40 transition-transform duration-300 transform flex flex-col overflow-y-auto ${!isDesktop && !isOpen ? 'translate-x-full' : 'translate-x-0'}`, className)}>
         <div className="flex-1">
           <div className="flex justify-center">
             <a
@@ -139,7 +139,7 @@ export function SidePanel({
           <div className="mt-6 mb-8 p-4 bg-gradient-to-r from-blue-600/10 to-cyan-500/10 border border-blue-500/30 rounded-lg text-center space-y-3">
             <h3 className="text-md font-semibold text-cyan-300 mb-1">Game Rewards</h3>
             <p className="text-sm text-slate-200">
-              The winner receives a unique NFT, issued autonomously by Teesa!
+            The winner gets a unique NFT of the secret word, generated autonomously by Teesa!
             </p>
             <div className="flex justify-center">
               <a
@@ -181,7 +181,7 @@ export function SidePanel({
           </div>
         </div>
 
-        <div className="border-t border-b border-blue-500/30 py-4 mt-6">
+        <div className="border-t border-b border-blue-500/30 py-3 mt-6">
           <div className="flex justify-center space-x-6">
             <a
               href="https://x.com/teesa_ai"
