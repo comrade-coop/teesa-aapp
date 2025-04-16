@@ -32,10 +32,17 @@
           "FALAI_API_KEY": "__AAPPBUILDARGFALAIAPIKEY__",
           "NFT_CONTRACT_ADDRESS": "__AAPPBUILDARGNFTCONTRACTADDRESS__"
         }
-      }
+      },
+      "volumes": [
+        {
+          "name": "cloud-aapp-vol",
+          "mount": "__AAPPBUILDARGCLOUDVOLUMEPATH__",
+          "type": "cloud"
+        }
+      ]
     },
     "ingress": {
-      "hostnames": ["__AAPPCNAME__.teesa.ai"],
+      "hostnames": ["__AAPPCNAME__.teesa.kubocloud.io"],
       "port": 3000
     },
     "developer": {
