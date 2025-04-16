@@ -23,7 +23,7 @@ deploy/Dockerfile
 /coverage.json
 ignition/deployments
 arguments.js
-abi
+abi/
 
 # Next.js files
 /.pnp
