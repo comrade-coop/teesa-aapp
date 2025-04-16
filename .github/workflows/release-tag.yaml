@@ -70,5 +70,5 @@ jobs:
           vm_ssh_enabled: "true"
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          certbot_email: "dev@teesa.ai"
+          certbot_email: "dev-gen2@teesa.ai"
           current_job_url: ${{ steps.get_job_html_url.outputs.result }}
