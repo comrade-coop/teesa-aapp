@@ -111,7 +111,7 @@ RUN bash -c '\
 # Compile the NFT contract to generate the ABI
 RUN bash -c '\
   . "/root/.nvm/nvm.sh" && \
-  corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm --filter @teesa-monorepo/nft compile'
+  corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm --filter @teesa-monorepo/nft compile-contracts'
 
 # Build the project
 # Next.js collects completely anonymous telemetry data about general usage.

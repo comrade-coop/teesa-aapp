@@ -26,6 +26,11 @@ sed -i "s|LANGCHAIN_TRACING_V2=.*|LANGCHAIN_TRACING_V2=$DOCKER_LANGCHAIN_TRACING
 # Update NFT contract environment variables
 #
 
+# Set the wallet private key to the initial wallet private key so we can compile the contracts
+# Later we will set the environment variable to the Teesa's wallet private key in the container process
+sed -i "s|WALLET_PRIVATE_KEY=.*|WALLET_PRIVATE_KEY=$DOCKER_INITIAL_WALLET_PRIVATE_KEY|g" .env
+
+# Update contract network
 sed -i "s|CONTRACT_NETWORK=.*|CONTRACT_NETWORK=$DOCKER_CONTRACT_NETWORK|g" .env
 
 # Update all RPC URLs regardless of network
