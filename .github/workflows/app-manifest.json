@@ -45,6 +45,9 @@
       "hostnames": ["__AAPPCNAME__.teesa.kubocloud.io"],
       "port": 3000
     },
+    "bootstrapping": {
+      "pattern": "*.teesa.kubocloud.io"
+    },
     "developer": {
       "key": "__AAPPDEVPUBKEY__"
     }
