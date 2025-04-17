@@ -4,8 +4,11 @@ import 'server-only';
 import { wordsList } from './words-list';
 import { MessageTypeEnum } from './message-type-enum';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
 
-const STATE_FILE_PATH = "./game-state.json";
+const STATE_FILE_PATH = process.env.DOCKER_CLOUD_VOLUME_PATH ? 
+                          path.join(process.env.DOCKER_CLOUD_VOLUME_PATH, "game-state.json") : 
+                          path.join(process.cwd(), "game-state.json");
 
 // Define possible answer results
 export enum AnswerResultEnum {
@@ -172,7 +175,7 @@ class GameState {
     this.gameEnded = defaultState.gameEnded;
     this.winnerAddress = defaultState.winnerAddress;
     this.nftId = defaultState.nftId;
-    
+
     await this.saveState();
   }
 }
