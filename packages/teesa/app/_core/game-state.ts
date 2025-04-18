@@ -74,13 +74,6 @@ class GameState {
     // Create default state
     const defaultState = this.createDefaultState();
 
-    // Create the file with default state
-    try {
-      fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(defaultState, null, 2));
-    } catch (error) {
-      console.error('Error creating game state file:', error);
-    }
-
     return defaultState;
   }
 

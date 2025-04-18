@@ -53,4 +53,4 @@ WALLET_PRIVATE_KEY=$(cat "$WALLET_PRIVATE_KEY_FILE_PATH")
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 cd /app-start/app/packages/teesa
-WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY exec node server.js 
+WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY DOCKER_CLOUD_VOLUME_PATH=$DOCKER_CLOUD_VOLUME_PATH exec node server.js 
