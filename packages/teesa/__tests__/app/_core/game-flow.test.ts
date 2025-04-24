@@ -1,4 +1,4 @@
-import { wordGame } from '../../../app/_core/word-game';
+import { WordGame, wordGame } from '../../../app/_core/word-game';
 import { gameState, AnswerResultEnum } from '../../../app/_core/game-state';
 import { MessageTypeEnum } from '../../../app/_core/message-type-enum';
 import { WON_GAME_MESSAGE } from '../../../app/_core/game-const';
@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { classifyAnswer } from './llm-test-utils';
 
 describe('Game Flow Integration Tests', () => {
-  // Set timeout to 30 seconds for all tests in this file
+  
   jest.setTimeout(30000);
 
   beforeEach(async () => {
@@ -51,6 +51,9 @@ describe('Game Flow Integration Tests', () => {
   });
 
   it('should handle a complete game flow with a correct guess', async () => {
+    // Reset the game state
+    await gameState.reset();
+
     const userId = 'user123';
 
     // Step 1: Ask a question
@@ -117,20 +120,20 @@ describe('Game Flow Integration Tests', () => {
 
     // Check that the history contains all messages
     const history = await gameState.getHistory();
-    expect(history).toHaveLength(6);
+    expect(history).toHaveLength(3);
 
     // Check the first message (question)
     expect(history[0].userId).toBe(userId);
     expect(history[0].messageType).toBe(MessageTypeEnum.QUESTION);
     expect(history[0].userMessage).toBe(questionInput);
-    expect(history[0].llmMessage).toBe('Yes, it has wheels.');
+    expect(await classifyAnswer(history[0].llmMessage)).toBe(true);
     expect(history[0].answerResult).toBe(AnswerResultEnum.YES);
 
     // Check the second message (question)
     expect(history[1].userId).toBe(userId);
     expect(history[1].messageType).toBe(MessageTypeEnum.QUESTION);
     expect(history[1].userMessage).toBe(question2Input);
-    expect(history[1].llmMessage).toBe('Yes, it has wheels.');
+    expect(await classifyAnswer(history[1].llmMessage)).toBe(true);
     expect(history[1].answerResult).toBe(AnswerResultEnum.YES);
 
     // Check the third message (guess)
@@ -142,6 +145,9 @@ describe('Game Flow Integration Tests', () => {
   });
 
   it('should handle a game flow with incorrect guesses', async () => {
+    // Reset the game state
+    await gameState.reset();
+    
     const userId = 'user123';
 
     // Step 1: Ask a question
@@ -207,7 +213,7 @@ describe('Game Flow Integration Tests', () => {
 
     // Check that the history contains all messages
     const history = await gameState.getHistory();
-    expect(history).toHaveLength(6);
+    expect(history).toHaveLength(3);
   });
 
   it('should handle ambiguous input correctly', async () => {

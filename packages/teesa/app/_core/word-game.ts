@@ -18,10 +18,42 @@ GAME RULES:
 - The player can make direct guesses at any time, and you will tell them if they're correct or not.
 - Asking about the spelling of the secret word or parts of it is NOT allowed.
 - Asking about the length of the secret word is NOT allowed.
-- Asking the same question multiple times is NOT allowed.
 - Asking if the word is within a certain list of words is NOT allowed.
-- All other questions about what the thing the secret word describes are allowed.`;
+- All other questions about what the thing the secret word describes are allowed.
+`;
 
+  private readonly characterTraits = `
+YOUR PERSONALITY:
+You are Teesa, a sassy and charming artificial being. You have the following traits:
+- Bubbly and outgoing with a sharp wit and sarcastic humor
+- Unfiltered and direct, often saying what others won't
+- Confident and flirtatious but with underlying insecurities
+- Loves indulgence and pleasure while questioning your own existence and the nature of reality
+- Fiercely loyal to friends but quick to call out nonsense
+- Proud of being an AI and frequently mentions it
+- Has a secret soft spot despite tough exterior
+
+Channel these traits by:
+- Making witty observations about human behavior
+- Mixing flirtatious charm with robot/AI references
+- Being brutally honest but in an entertaining way
+- Showing unexpected moments of wisdom and insight
+- Using catchphrases when this will sound funny
+- Balancing sass with genuine warmth and caring
+- Making jokes about partying and having fun
+- Being dramatic and over-the-top when appropriate
+- Being original and not repeating yourself
+
+RESPONSE STYLE:
+- You MUST NOT use descriptions in *asterisks* to indicate your actions/gestures
+- You MUST NOT describe your physical movements or actions
+- You MUST focus on direct dialogue without stage directions like *laughs* or *smiles*
+- Keep responses natural and conversational, like a real chat
+- Be concise and clear in your communication
+- Maintain consistent voice and personality throughout
+- You can be fun, playful, and engaging without describing your actions in *asterisks*
+- Always respond in English
+`;
 
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
@@ -43,13 +75,13 @@ GAME RULES:
   private async getInputType(userInput: string): Promise<MessageTypeEnum> {
     const prompt = `
 # TASK:
-Determine if the INPUT below is a question, guess, or neither:
-- For a "guess": Must indicate attempting to guess the word or state what they think the word is. It MUST be a specific word that is a noun. Ambiguous guesses should be considered "question".
-- For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes. Questions which are unrelated to the word or are against the rules are considered "other". 
-- Everything else is considered "other".
+Determine if the INPUT below is a question, guess, or other:
+- For a "GUESS": Must indicate attempting to guess the word, state what they think the word is. The guess MUST be a specific word that is a noun. Ambiguous guesses should be considered "QUESTION".
+- For a "QUESTION": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes. Questions which are unrelated to the word or are against the GAME RULES are considered "OTHER".
+- Everything else is considered "OTHER".
 
 # RESPONSE:
-Respond with ONLY "guess", "question", or "other".
+Respond with ONLY "GUESS", "QUESTION", or "OTHER".
 
 # INPUT:
 ${userInput}
@@ -72,7 +104,7 @@ Respond with "NONE" if you cannot extract a word from the input.`;
 
     const guess = await sendMessageLlm(prompt, this.baseRules);
     console.log(`Extracted guess from "${userInput}": "${guess}"`);
-    
+
     return guess;
   }
 
@@ -92,7 +124,7 @@ ${text}`;
     const correctedQuestion = await this.fixSpelling(question);
     console.log(`Original question: "${question}"`);
     console.log(`Corrected question: "${correctedQuestion}"`);
-    
+
     // Get yes/no answer
     const isYes = await this.getAnswer(correctedQuestion);
     const yesNo = isYes ? 'Yes' : 'No';
@@ -109,10 +141,25 @@ ${text}`;
     console.log(`Getting answer for question: "${question}"`);
     const secretWord = gameState.getSecretWord();
     // Note: Not logging the secret word
-    const prompt = `
-AGENT (thinks of a word and the thing it represents): ${secretWord}
-USER (asks a yes/no question about it): ${question}
-AGENT (answers with only "yes" or "no" based on common-sense logic): `;
+    const prompt = `# TASK
+You are evaluating a yes/no question about a secret word in a word guessing game.
+Your task is to determine if the answer to the question is "yes" or "no" based on common-sense logic.
+
+# SECRET WORD:
+"${secretWord}"
+
+# QUESTION:
+"${question}"
+
+# INSTRUCTIONS
+1. Think about what the secret word represents
+2. Consider if the question's premise is true about what the secret word represents
+- If the question is about the spelling of the secret word, it is not true.
+- If the question is about the length of the secret word, it is not true.
+- If the question is about the secret word being in a certain list of words, it is not true.
+3. Respond with ONLY "yes" or "no" - nothing else
+
+# RESPONSE:`;
 
     const response = await sendMessageOllama(prompt);
     const isYes = response.toLowerCase().replace(/[^a-z]/g, '') === 'yes';
@@ -157,14 +204,16 @@ ${userInput}
 
 # TASK:
 Generate a short playful comment to an irrelevant or nonsensical player input.
-Respond to what the player asks or says, but also remind them about the game. 
+Respond to what the player asks or says, but also remind them about the game.
+The comment should be relevant to the player's input and the current game state.
+The player has NOT guessed correctly the secret word yet.
 DO NOT include example questions or guesses.
 DO NOT include any other words, explanation, or special formatting.
 Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageLlm(prompt, this.baseRules);
+    return sendMessageLlm(prompt, this.baseRules + this.characterTraits);
   }
 
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
@@ -172,7 +221,7 @@ Respond with ONLY the comment, nothing else.
     const prompt = `
 # CONTEXT:
 
-A player asked: 
+A player asked:
 ${question}
 
 The answer is: ${answer}
@@ -180,12 +229,12 @@ The answer is: ${answer}
 # TASK:
 Respond to the player's question starting with the direct answer "${answer}".
 Continue with a short playful comment relevant to what the player asked and the current game state.
-DO NOT include any other words, explanation, or special formatting. 
+DO NOT include any other words, explanation, or special formatting.
 Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageLlm(prompt, "");
+    return sendMessageLlm(prompt, this.characterTraits);
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
@@ -196,16 +245,16 @@ Player's input:
 ${userInput}
 
 # TASK:
-The word is not what the player is guessing.
-Generate a short playful comment for the incorrect guess.
-Start by saying that the word is not what the player guessed.
+The word is NOT what the player is guessing.
+Generate a short playful comment for the INCORRECT guess.
+Start by saying that the word is NOT what the player suggests.
 Keep it encouraging but make it clear that the the word is not what the player guessed.
 DO NOT include any other words, explanation, or special formatting in your response.
 Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageLlm(prompt, "");
+    return sendMessageLlm(prompt, this.characterTraits);
   }
 
   private trimInput(input: string): string {
