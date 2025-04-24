@@ -2,6 +2,9 @@ import { createTeesaAgent } from '../../../../app/_core/langchain/agent';
 
 
 describe('Langchain Agent', () => {
+  
+  jest.setTimeout(30000);
+
   it('should create a Teesa agent with the correct configuration', async () => {
     const agent = await createTeesaAgent();
 

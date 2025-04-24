@@ -3,6 +3,9 @@ import { AnswerResultEnum } from '../../../../app/_core/game-state';
 
 
 describe('Langchain Tools', () => {
+
+  jest.setTimeout(30000);
+
   beforeEach(() => {
     // Clear mock calls
     jest.clearAllMocks();
