@@ -14,7 +14,8 @@ const createLlm = () => new ChatAnthropic({
 const createOllama = (model: string) => new ChatOllama({
   model: model || "llama3",
   temperature: 0,
-  maxRetries: 2,
+  maxRetries: 3,
+  baseUrl: "http://localhost:11434",
 });
 
 // Create singleton instances
@@ -47,9 +48,9 @@ export async function sendMessageOllama(message: string, systemMessage?: string 
   if (!model) {
     throw new Error('Missing required environment variables: OLLAMA_MODEL');
   }
-  
-  const llm = getOllama(model);
-  return await sendMessage(llm, message, systemMessage);
+
+    const llm = getOllama(model);
+    return await sendMessage(llm, message, systemMessage);
 }
 
 async function sendMessage(llm: BaseChatModel, message: string, systemMessage?: string | undefined): Promise<string> {
