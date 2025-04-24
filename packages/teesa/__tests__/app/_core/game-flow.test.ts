@@ -3,6 +3,7 @@ import { gameState, AnswerResultEnum } from '../../../app/_core/game-state';
 import { MessageTypeEnum } from '../../../app/_core/message-type-enum';
 import { WON_GAME_MESSAGE } from '../../../app/_core/game-const';
 import { v4 as uuidv4 } from 'uuid';
+import { classifyAnswer } from './llm-test-utils';
 
 describe('Game Flow Integration Tests', () => {
   // Set timeout to 30 seconds for all tests in this file
@@ -70,7 +71,8 @@ describe('Game Flow Integration Tests', () => {
       questionType
     );
 
-    expect(questionResponse).toBe('Yes, it has wheels.');
+    // Verify the response expresses a positive answer
+    expect(await classifyAnswer(questionResponse)).toBe(true);
 
     // Step 2: Ask another question
     const question2Id = uuidv4();
@@ -90,7 +92,8 @@ describe('Game Flow Integration Tests', () => {
       question2Type
     );
 
-    expect(question2Response).toBe('Yes, it has wheels.'); // Using our mock response
+    // Verify the response expresses a positive answer
+    expect(await classifyAnswer(question2Response)).toBe(true);
 
     // Step 3: Make a guess
     const guessId = uuidv4();
@@ -114,7 +117,7 @@ describe('Game Flow Integration Tests', () => {
 
     // Check that the history contains all messages
     const history = await gameState.getHistory();
-    expect(history).toHaveLength(3);
+    expect(history).toHaveLength(6);
 
     // Check the first message (question)
     expect(history[0].userId).toBe(userId);
@@ -159,7 +162,8 @@ describe('Game Flow Integration Tests', () => {
       questionType
     );
 
-    expect(questionResponse).toBe('No, it\'s not alive.');
+    // Verify the response expresses a negative answer
+    expect(await classifyAnswer(questionResponse)).toBe(false);
 
     // Step 2: Make an incorrect guess
     const guessId = uuidv4();
@@ -178,7 +182,7 @@ describe('Game Flow Integration Tests', () => {
       guessInput
     );
 
-    expect(guessResponse).toBe("Sorry, that's not the word I'm thinking of.");
+    expect(await classifyAnswer(guessResponse)).toBe(false);
     expect(answerResult).toBe(AnswerResultEnum.INCORRECT);
 
     // Step 3: Make a correct guess
@@ -203,7 +207,7 @@ describe('Game Flow Integration Tests', () => {
 
     // Check that the history contains all messages
     const history = await gameState.getHistory();
-    expect(history).toHaveLength(3);
+    expect(history).toHaveLength(6);
   });
 
   it('should handle ambiguous input correctly', async () => {
