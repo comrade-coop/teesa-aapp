@@ -1,7 +1,8 @@
 import { AnswerResultEnum } from '../../../app/_core/game-state';
-import { WON_GAME_MESSAGE } from '../../../app/_core/game-const';
+import { WON_GAME_MESSAGE, PROCESSING_ERROR_MESSAGE } from '../../../app/_core/game-const';
 import { WordGame } from '../../../app/_core/word-game';
 import { MessageTypeEnum } from '../../../app/_core/message-type-enum';
+import { classifyAnswer } from './llm-test-utils';
 
 describe('WordGame', () => {
   // Set timeout to 30 seconds for all tests in this file
@@ -54,7 +55,8 @@ describe('WordGame', () => {
         MessageTypeEnum.QUESTION
       );
 
-      expect(response).toBe('Yes, it has wheels.');
+      // Verify the response expresses a positive answer
+      expect(await classifyAnswer(response)).toBe(true);
     });
 
     it('should handle errors gracefully', async () => {
@@ -63,9 +65,9 @@ describe('WordGame', () => {
       const timestamp = Date.now();
       const input = 'does it have wheels?';
 
-      // Force an error by making the agent throw
-      const originalInvoke = wordGame['agent'].invoke;
-      wordGame['agent'].invoke = jest.fn().mockRejectedValue(new Error('Test error'));
+      // Cast to any to simulate error in answerQuestion
+      const originalAnswerQuestion = (wordGame as any).answerQuestion;
+      (wordGame as any).answerQuestion = jest.fn().mockRejectedValue(new Error('Test error'));
 
       const response = await wordGame.processUserMessage(
         userId,
@@ -75,10 +77,10 @@ describe('WordGame', () => {
         MessageTypeEnum.QUESTION
       );
 
-      expect(response).toBe("I'm sorry, I'm having trouble processing your message. Please try again.");
+      expect(response).toBe(PROCESSING_ERROR_MESSAGE);
 
-      // Restore the original invoke method
-      wordGame['agent'].invoke = originalInvoke;
+      // Restore the original answerQuestion method
+      (wordGame as any).answerQuestion = originalAnswerQuestion;
     });
   });
 
@@ -96,8 +98,8 @@ describe('WordGame', () => {
         input
       );
 
-      expect(response).toBe(WON_GAME_MESSAGE);
       expect(answerResult).toBe(AnswerResultEnum.CORRECT);
+      expect(response).toBe(WON_GAME_MESSAGE);
     });
 
     it('should correctly identify an incorrect guess', async () => {
@@ -113,8 +115,8 @@ describe('WordGame', () => {
         input
       );
 
-      expect(response).toBe("Sorry, that's not the word I'm thinking of.");
       expect(answerResult).toBe(AnswerResultEnum.INCORRECT);
+      expect(await classifyAnswer(response)).toBe(false);
     });
 
     it('should handle errors gracefully', async () => {
@@ -123,9 +125,9 @@ describe('WordGame', () => {
       const timestamp = Date.now();
       const input = 'car';
 
-      // Force an error by making the agent throw
-      const originalInvoke = wordGame['agent'].invoke;
-      wordGame['agent'].invoke = jest.fn().mockRejectedValue(new Error('Test error'));
+      // Cast to any to simulate error in checkGuess
+      const originalCheckGuess = (wordGame as any).checkGuess;
+      (wordGame as any).checkGuess = jest.fn().mockRejectedValue(new Error('Test error'));
 
       const [response, answerResult] = await wordGame.checkGuessMessage(
         userId,
@@ -134,11 +136,11 @@ describe('WordGame', () => {
         input
       );
 
-      expect(response).toBe("I'm sorry, I'm having trouble processing your guess. Please try again.");
+      expect(response).toBe(PROCESSING_ERROR_MESSAGE);
       expect(answerResult).toBe(AnswerResultEnum.INCORRECT);
 
-      // Restore the original invoke method
-      wordGame['agent'].invoke = originalInvoke;
+      // Restore the original checkGuess method
+      (wordGame as any).checkGuess = originalCheckGuess;
     });
   });
 });

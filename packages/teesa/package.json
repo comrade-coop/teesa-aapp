@@ -6,7 +6,7 @@
     "build": "cp ../../.env . && next build && rm ./.env",
     "start": "./scripts/start-ollama.sh next start",
     "lint": "next lint",
-    "test": "./scripts/start-ollama.sh jest"
+    "test": "./scripts/start-ollama.sh jest --verbose --silent=false"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",

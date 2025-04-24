@@ -1,7 +1,7 @@
 import 'server-only'
 import { HistoryEntry, gameState } from './game-state';
 import { sendMessageLlm, sendMessageOllama } from './llm-client';
-import { WON_GAME_MESSAGE } from './game-const';
+import { WON_GAME_MESSAGE, PROCESSING_ERROR_MESSAGE } from './game-const';
 import { MessageTypeEnum } from './message-type-enum';
 import { AnswerResultEnum } from './game-state';
 
@@ -44,8 +44,8 @@ GAME RULES:
     const prompt = `
 # TASK:
 Determine if the INPUT below is a question, guess, or neither:
-- For a "guess": Must indicate attempting to guess the word or state what they think the word is. It should be a specific word that is a noun.
-- For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes. Questions which are unrelated to the word or are against the rules are considered "other". Keep in mind that some people might ask something like "Are you a ..." meaning they are asking about the secret word (determine based on the specific question).
+- For a "guess": Must indicate attempting to guess the word or state what they think the word is. It MUST be a specific word that is a noun. Ambiguous guesses should be considered "question".
+- For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes. Questions which are unrelated to the word or are against the rules are considered "other". 
 - Everything else is considered "other".
 
 # RESPONSE:
@@ -227,10 +227,16 @@ Respond with ONLY the comment, nothing else.
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.UNKNOWN;
 
-    if (inputType == MessageTypeEnum.QUESTION) {
-      [response, answerResult] = await this.answerQuestion(trimmedInput);
-    } else {
-      response = await this.getRandomResponse(trimmedInput);
+    try {
+      if (inputType == MessageTypeEnum.QUESTION) {
+        [response, answerResult] = await this.answerQuestion(trimmedInput);
+      } else {
+        response = await this.getRandomResponse(trimmedInput);
+      }
+    } catch (error) {
+      console.error('Error processing user message:', error);
+      response = PROCESSING_ERROR_MESSAGE;
+      answerResult = AnswerResultEnum.UNKNOWN;
     }
 
     const message: HistoryEntry = {
@@ -256,15 +262,21 @@ Respond with ONLY the comment, nothing else.
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.INCORRECT;
 
-    const guessedWord = await this.extractGuess(trimmedInput);
-    const isCorrect = await this.checkGuess(guessedWord);
+    try {
+      const guessedWord = await this.extractGuess(trimmedInput);
+      const isCorrect = await this.checkGuess(guessedWord);
 
-    if (isCorrect) {
-      console.log(`CORRECT GUESS! User ${userId} has won the game!`);
-      response = WON_GAME_MESSAGE;
-      answerResult = AnswerResultEnum.CORRECT;
-    } else {
-      response = await this.getIncorrectGuessResponse(trimmedInput);
+      if (isCorrect) {
+        console.log(`CORRECT GUESS! User ${userId} has won the game!`);
+        response = WON_GAME_MESSAGE;
+        answerResult = AnswerResultEnum.CORRECT;
+      } else {
+        response = await this.getIncorrectGuessResponse(trimmedInput);
+        answerResult = AnswerResultEnum.INCORRECT;
+      }
+    } catch (error) {
+      console.error('Error checking guess message:', error);
+      response = PROCESSING_ERROR_MESSAGE;
       answerResult = AnswerResultEnum.INCORRECT;
     }
 
