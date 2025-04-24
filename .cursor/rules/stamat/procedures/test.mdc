@@ -1,0 +1,18 @@
+---
+description: Run tests and debug
+globs: *test*
+alwaysApply: false
+---
+When testing and and debugging follow this procedure:
+1. Run the relevant tests using [run_tests.sh](mdc:tests/run_tests.sh)
+2. Identify the test suite which has the fewest amount of fails and/or is easiest to fix
+3. Include the source files involved in this test and all their local dependencies (within our code, no libs)
+4. Analythe why the test is failing and prepare a plan how to fix it. Determine if the problem is in the test or in the code being tested. 
+5. Implement the fix
+6. Run the test again the test to check if the fix worked
+7. Itrerate over all fails from easy to hard, until all tests pass
+
+Rules:
+- Always use the provided [run_tests.sh](mdc:tests/run_tests.sh) script
+- Always run the tests in debug and verbose mode (run_tests.sh -d -v)
+- When debugging a specific issue, run only the relevant test
