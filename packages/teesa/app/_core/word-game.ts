@@ -1,7 +1,6 @@
 import 'server-only'
 import { HistoryEntry, gameState } from './game-state';
 import { sendMessageLlm, sendMessageOllama } from './llm-client';
-import { sendMessageEliza } from './eliza-client';
 import { WON_GAME_MESSAGE } from './game-const';
 import { MessageTypeEnum } from './message-type-enum';
 import { AnswerResultEnum } from './game-state';
@@ -9,29 +8,20 @@ import { AnswerResultEnum } from './game-state';
 export class WordGame {
   private readonly baseRules = `
 Your name is Teesa.
-You are an AI agent who is the host of a word guessing game. 
+You are an AI agent who is the host of a word guessing game.
 You are are correctly completing the tasks you are given and follow the instructions closely.
-                                
+
 GAME RULES:
-You select a random secret word and the players try to guess it by asking yes/no questions about what it describes. 
-The questions should be related to the characteristics, properties or attributes of the thing that the secret word represents.
-All secret words are nouns.
-The player can make direct guesses at any time, and you will tell them if they're correct or not. 
-Asking about the spelling of the secret word or parts of it is NOT allowed.
-Asking about the length of the secret word is NOT allowed.
-Asking the same question multiple times is NOT allowed.
-Asking if the word is within a certain list of words is NOT allowed.
-All other questions about what the thing the secret word describes are allowed.`;
+- You select a random secret word and the players try to guess it by asking yes/no questions about what it describes.
+- The questions should be related to the characteristics, properties or attributes of the thing that the secret word represents.
+- All secret words are nouns.
+- The player can make direct guesses at any time, and you will tell them if they're correct or not.
+- Asking about the spelling of the secret word or parts of it is NOT allowed.
+- Asking about the length of the secret word is NOT allowed.
+- Asking the same question multiple times is NOT allowed.
+- Asking if the word is within a certain list of words is NOT allowed.
+- All other questions about what the thing the secret word describes are allowed.`;
 
-  // Cache for extracted guesses to avoid duplicate LLM calls
-  private extractGuessCache: Map<string, string> = new Map();
-
-  // Method to clear the cache if needed (e.g., for testing or if memory concerns arise)
-  public clearExtractGuessCache(): void {
-    const cacheSize = this.extractGuessCache.size;
-    this.extractGuessCache.clear();
-    console.log(`Cleared extract guess cache (${cacheSize} entries)`);
-  }
 
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
@@ -49,43 +39,20 @@ All other questions about what the thing the secret word describes are allowed.`
     });
   }
 
-  private async getQuestionHistoryForPrompt() { 
-    const history = await gameState.getHistory();
-    console.log(`Retrieved ${history.length} history entries for prompt`);
-    const questionHistory = history.filter(h => h.messageType === MessageTypeEnum.QUESTION);
-    
-    // Return only the user messages (questions), not the system's responses
-    return questionHistory.map(h => ({
-      role: 'user',
-      content: h.userMessage
-    }));
-  }
 
   private async getInputType(userInput: string): Promise<MessageTypeEnum> {
-    const history = await this.getQuestionHistoryForPrompt();
     const prompt = `
-# TASK: 
-Determine if the INPUT below is a question, guess, or neither: 
-- For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes.
-- For a "guess": Must indicate attempting to guess the word or state what they think the word is. 
+# TASK:
+Determine if the INPUT below is a question, guess, or neither:
+- For a "guess": Must indicate attempting to guess the word or state what they think the word is. It should be a specific word that is a noun.
+- For a "question": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes. Questions which are unrelated to the word or are against the rules are considered "other". Keep in mind that some people might ask something like "Are you a ..." meaning they are asking about the secret word (determine based on the specific question).
 - Everything else is considered "other".
 
-# RULES:
-All secret words are nouns. When determining the type:
-- Single words or phrases asking about properties (e.g. "alive", "is it red", "can it move", "is it a machine") are "question"
-- Direct statements or questions that name a specific noun (e.g. "is it cat", "I think it's a flower", "dog") are "guess"
-- Questions about properties should be "question" even if they contain nouns (e.g. "does it eat plants", "is it bigger than a car")
-- If the input is not compliant with the GAME RULES, respond with "other"
-- If the input is a question that was previously asked (including rephrased versions seeking the same information), respond with "question_repeated".
-
 # RESPONSE:
-Respond with ONLY "question", "question_repeated", "guess", or "other".
+Respond with ONLY "guess", "question", or "other".
 
 # INPUT:
 ${userInput}
-
-# HISTORY:
-${JSON.stringify(history)}
 `;
 
     const response = await sendMessageLlm(prompt, this.baseRules);
@@ -98,13 +65,6 @@ ${JSON.stringify(history)}
   }
 
   private async extractGuess(userInput: string): Promise<string> {
-    // Check if we have a cached result for this input
-    if (this.extractGuessCache.has(userInput)) {
-      const cachedGuess = this.extractGuessCache.get(userInput)!;
-      console.log(`Using cached extracted guess for "${userInput}": "${cachedGuess}"`);
-      return cachedGuess;
-    }
-
     const prompt = `
 Extract the exact word being guessed from this input: "${userInput}"
 Respond with ONLY the guessed word, nothing else.
@@ -113,23 +73,19 @@ Respond with "NONE" if you cannot extract a word from the input.`;
     const guess = await sendMessageLlm(prompt, this.baseRules);
     console.log(`Extracted guess from "${userInput}": "${guess}"`);
     
-    // Cache the result
-    this.extractGuessCache.set(userInput, guess);
-    
     return guess;
   }
 
   private async fixSpelling(text: string): Promise<string> {
     const prompt = `
-Fix the spelling and grammar of the text below. 
-Translate it to English if it's in another language. 
+Fix the spelling and grammar of the text below.
+Translate it to English if it's in another language.
 Do not include any other words or explanation.
 ---
 ${text}`;
 
     return sendMessageLlm(prompt);
   }
-
 
   private async answerQuestion(question: string): Promise<[string, AnswerResultEnum]> {
     // Fix spelling and grammar before processing
@@ -208,7 +164,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, this.baseRules);
+    return sendMessageLlm(prompt, this.baseRules);
   }
 
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
@@ -229,7 +185,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, "");
+    return sendMessageLlm(prompt, "");
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
@@ -249,7 +205,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageEliza(prompt, "");
+    return sendMessageLlm(prompt, "");
   }
 
   private trimInput(input: string): string {
@@ -259,21 +215,8 @@ Respond with ONLY the comment, nothing else.
   public async getInputTypeForMessage(input: string): Promise<MessageTypeEnum> {
     console.log(`Processing new input: "${input}"`);
     const trimmedInput = this.trimInput(input);
-
     let inputType = await this.getInputType(trimmedInput);
-
-    // If initially classified as a guess, verify that we can extract a word
-    if (inputType === MessageTypeEnum.GUESS) {
-      const guessedWord = await this.extractGuess(trimmedInput);
-      
-      if (guessedWord === "NONE") {
-        console.log(`Input initially classified as guess but no word detected. Reclassifying as a question: "${trimmedInput}"`);
-        // Reclassify as a question if no guessable word found
-        inputType = MessageTypeEnum.QUESTION;
-      }
-    }
-
-    console.log(`Final input type: ${MessageTypeEnum[inputType]}`);
+    console.log(`Input type: ${MessageTypeEnum[inputType]}`);
     return inputType;
   }
 
@@ -281,7 +224,6 @@ Respond with ONLY the comment, nothing else.
     console.log(`Processing ${MessageTypeEnum[inputType]} from user: ${userId}, message ID: ${messageId}`);
 
     const trimmedInput = this.trimInput(input);
-
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.UNKNOWN;
 
@@ -311,7 +253,6 @@ Respond with ONLY the comment, nothing else.
     console.log(`Checking guess message from user: ${userId}, message ID: ${messageId}`);
 
     const trimmedInput = this.trimInput(input);
-
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.INCORRECT;
 
