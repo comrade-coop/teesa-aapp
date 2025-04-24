@@ -52,7 +52,7 @@
     }
   },
   "postCreateCommand": "pnpm install",
-  "postStartCommand": "bash packages/teesa/scripts/start-ollama.sh",
+  "postStartCommand": "",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
