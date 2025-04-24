@@ -7,3 +7,9 @@ node_modules/
 
 deploy.sh
 volumes/
+.idea/.gitignore
+.idea/AugmentWebviewStateStore.xml
+.idea/modules.xml
+.idea/teesa-aapp.iml
+.idea/vcs.xml
+.idea/inspectionProfiles/Project_Default.xml

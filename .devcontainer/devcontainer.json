@@ -1,0 +1,62 @@
+{
+  "name": "Teesa Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "forwardPorts": [
+    3000,
+    11434
+  ],
+  "mounts": [
+    "source=teesa-node-modules,target=/workspaces/teesa-aapp/node_modules,type=volume",
+    "source=teesa-packages-node-modules,target=/workspaces/teesa-aapp/packages/teesa/node_modules,type=volume",
+    "source=teesa-ollama,target=/root/.ollama,type=volume",
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/teesa-aapp,type=bind,consistency=cached",
+  "workspaceFolder": "/workspaces/teesa-aapp",
+  "remoteUser": "root",
+  "containerEnv": {
+    "OLLAMA_MODEL": "${localEnv:OLLAMA_MODEL:llama3.2}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker",
+        "github.copilot",
+        "github.vscode-github-actions",
+        "ms-vscode.js-debug",
+        "ms-vscode.vscode-typescript-tslint-plugin",
+        "mikestead.dotenv"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "always"
+        },
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash",
+            "args": [
+              "-l"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "postCreateCommand": "pnpm install",
+  "postStartCommand": "bash packages/teesa/scripts/start-ollama.sh",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    }
+  }
+}
