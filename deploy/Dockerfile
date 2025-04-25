@@ -10,8 +10,10 @@ ARG CLOUD_VOLUME_PATH
 #
 # Teesa build arguments
 #
-# API key of the anthropic to use in the app
-ARG ANTHROPIC_API_KEY
+# OpenRouter configuration
+ARG OPENROUTER_API_KEY
+ARG OPENROUTER_LOGIC_MODEL
+ARG OPENROUTER_CREATIVE_MODEL
 # The URL for the Eliza API and the agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
 ARG ELIZA_API_URL
 ARG ELIZA_AGENT_ID
@@ -47,7 +49,9 @@ ARG NFT_CONTRACT_ADDRESS
 
 # Set environment variables that will be available at runtime
 ENV DOCKER_CLOUD_VOLUME_PATH=${CLOUD_VOLUME_PATH}
-ENV DOCKER_ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+ENV DOCKER_OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+ENV DOCKER_OPENROUTER_LOGIC_MODEL=${OPENROUTER_LOGIC_MODEL}
+ENV DOCKER_OPENROUTER_CREATIVE_MODEL=${OPENROUTER_CREATIVE_MODEL}
 ENV DOCKER_ELIZA_API_URL=${ELIZA_API_URL}
 ENV DOCKER_ELIZA_AGENT_ID=${ELIZA_AGENT_ID}
 ENV DOCKER_PRIVYIO_APP_ID=${PRIVYIO_APP_ID}
@@ -67,9 +71,9 @@ ENV DOCKER_NFT_CONTRACT_ADDRESS=${NFT_CONTRACT_ADDRESS}
 
 # Update apt-get and install all the required packages
 RUN apt-get update && \
-    apt-get install -y curl && \
-    apt-get install -y build-essential python3 make g++ && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+  apt-get install -y curl && \
+  apt-get install -y build-essential python3 make g++ && \
+  apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install NVM (Node Version Manager)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -100,8 +104,8 @@ COPY deploy/update-env.sh .
 
 # Copy and update the .env file
 RUN cp .env.example .env && \
-    chmod +x update-env.sh && \
-    ./update-env.sh
+  chmod +x update-env.sh && \
+  ./update-env.sh
 
 # Install dependencies
 RUN bash -c '\

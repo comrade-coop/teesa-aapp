@@ -1,6 +1,6 @@
 import 'server-only'
 import { HistoryEntry, gameState } from './game-state';
-import { sendMessageLlm, sendMessageOllama } from './llm-client';
+import { sendMessageLlm, sendMessageCreativeLlm, sendMessageOllama } from './llm-client';
 import { WON_GAME_MESSAGE, PROCESSING_ERROR_MESSAGE } from './game-const';
 import { MessageTypeEnum } from './message-type-enum';
 import { AnswerResultEnum } from './game-state';
@@ -213,7 +213,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageLlm(prompt, this.baseRules + this.characterTraits);
+    return sendMessageCreativeLlm(prompt, this.baseRules + this.characterTraits);
   }
 
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
@@ -234,7 +234,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageLlm(prompt, this.characterTraits);
+    return sendMessageCreativeLlm(prompt, this.characterTraits);
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
@@ -254,7 +254,7 @@ Respond with ONLY the comment, nothing else.
 
 # TEESA RESPONSE:`;
 
-    return sendMessageLlm(prompt, this.characterTraits);
+    return sendMessageCreativeLlm(prompt, this.characterTraits);
   }
 
   private trimInput(input: string): string {
