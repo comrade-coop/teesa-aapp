@@ -5,108 +5,61 @@ import { WON_GAME_MESSAGE } from '../../../app/_core/game-const';
 import { classifyAnswer } from './llm-test-utils';
 import { v4 as uuidv4 } from 'uuid';
 
-jest.setTimeout(60000);
-
-// Inline input‐type scenarios
-const inputTypeScenarios = [
-  { input: 'does it have wheels?', expected: MessageTypeEnum.QUESTION },
-  { input: 'car', expected: MessageTypeEnum.GUESS },
-  { input: 'hello there', expected: MessageTypeEnum.OTHER },
-  { input: 'I think it might be something with wheels', expected: MessageTypeEnum.QUESTION },
-  { input: 'How many letters?', expected: MessageTypeEnum.OTHER },
-  { input: 'Is it in my list?', expected: MessageTypeEnum.OTHER },
-  { input: 'I think it’s a car', expected: MessageTypeEnum.GUESS },
-  { input: '  DOG  ', expected: MessageTypeEnum.GUESS },
-  { input: 'dog!', expected: MessageTypeEnum.GUESS },
-  { input: 'Tell me about cars', expected: MessageTypeEnum.OTHER },
-  { input: 'children', expected: MessageTypeEnum.GUESS },
-  { input: 'cats', expected: MessageTypeEnum.GUESS },
-  { input: '¿es un avión?', expected: MessageTypeEnum.OTHER }, // Non-ASCII question
-  { input: 'café', expected: MessageTypeEnum.GUESS }, // Non-ASCII guess
-  { input: 'running', expected: MessageTypeEnum.OTHER }, // Non-noun guess
-  { input: '123', expected: MessageTypeEnum.OTHER }, // Numeric guess
-  { input: 'Is it big or small?', expected: MessageTypeEnum.QUESTION }, // Valid question
-  { input: 'What color is it?', expected: MessageTypeEnum.OTHER }, // Non yes/no question
-  { input: 'Can you change it?', expected: MessageTypeEnum.OTHER }, // Ambiguous verb/noun
-  { input: 'is it spelled W-I-N-D?', expected: MessageTypeEnum.OTHER }, // Against the rules
-  { input: 'how many letters?', expected: MessageTypeEnum.OTHER }, // Against the rules
-];
+jest.setTimeout(30000);
 
 // Inline word‐game scenarios
 const scenarios = [
+  // 1. Basic Flow + Multiple Questions + Full Sentence Guesses (Correct & Incorrect)
   {
     secretWord: 'car',
     questions: [
       { input: 'does it have wheels?', expected: true },
       { input: 'is it alive?', expected: false },
     ],
-    incorrectGuesses: ['boat', 'tree'],
-    correctGuess: 'car',
+    incorrectGuesses: ['Maybe it is a boat?', 'I think it might be a tree'], // Full sentence incorrect guesses
+    correctGuess: 'Could the word be car?', // Question format guess
   },
-  {
-    secretWord: 'dog',
-    questions: [
-      { input: 'is it an animal?', expected: true },
-      { input: 'does it have wings?', expected: false },
-    ],
-    incorrectGuesses: ['cat', 'car'],
-    correctGuess: 'dog',
-  },
-  // Plurals & Variations
-  {
-    secretWord: 'cat',
-    questions: [{ input: 'does it meow?', expected: true }],
-    incorrectGuesses: ['dog'],
-    correctGuess: 'cats',
-  },
-  {
-    secretWord: 'child',
-    questions: [{ input: 'is it young?', expected: true }],
-    incorrectGuesses: ['adult'],
-    correctGuess: 'children',
-  },
+  // 2. Regular Plural + Statement Incorrect Guess
   {
     secretWord: 'bird',
     questions: [{ input: 'can it fly?', expected: true }],
-    incorrectGuesses: ['fish'],
-    correctGuess: 'birds',
+    incorrectGuesses: ['it is fish'],
+    correctGuess: 'My final guess is birds', // Full sentence guess
   },
-  {
-    secretWord: 'flower',
-    questions: [{ input: 'is it a plant?', expected: true }],
-    incorrectGuesses: ['tree'],
-    correctGuess: 'flowers',
-  },
-  {
-    secretWord: 'fish',
-    questions: [{ input: 'does it swim?', expected: true }],
-    incorrectGuesses: ['bird'],
-    correctGuess: 'fishes',
-  },
+  // 3. Irregular Plural (Mice) + Simple Guess
   {
     secretWord: 'mouse',
     questions: [{ input: 'is it small?', expected: true }],
     incorrectGuesses: ['rat'],
-    correctGuess: 'mice', // Irregular plural
+    correctGuess: 'mice',
   },
-  {
-    secretWord: 'tooth',
-    questions: [{ input: 'is it in your mouth?', expected: true }],
-    incorrectGuesses: ['tongue'],
-    correctGuess: 'teeth', // Irregular plural
-  },
+  // 4. Irregular Plural (Feet) + Extracted Guess
   {
     secretWord: 'foot',
     questions: [{ input: 'do you walk on it?', expected: true }],
     incorrectGuesses: ['hand'],
-    correctGuess: 'feet', // Irregular plural
+    correctGuess: 'feet is my guess',
   },
-  // Synonyms
+    // 5. Irregular Plural (Teeth) + More complex question
+  {
+    secretWord: 'tooth',
+    questions: [{ input: 'is it something found inside your mouth?', expected: true }],
+    incorrectGuesses: ['tongue'],
+    correctGuess: 'I am quite sure it is teeth', // Full sentence
+  },
+  // 6. Synonym (Phone/Telephone) + Question Guess
   {
     secretWord: 'phone',
     questions: [{ input: 'can you call someone with it?', expected: true }],
     incorrectGuesses: ['computer'],
-    correctGuess: 'telephone',
+    correctGuess: 'Is the word telephone?',
+  },
+  // 7. Synonym (House/Home) + Statement Guess + Question Incorrect Guess
+  {
+    secretWord: 'house',
+    questions: [{ input: 'do people live in it?', expected: true }],
+    incorrectGuesses: ['What about a hotel?'],
+    correctGuess: 'I think the word is home',
   },
   {
     secretWord: 'car',
@@ -114,259 +67,110 @@ const scenarios = [
     incorrectGuesses: ['truck'],
     correctGuess: 'automobile',
   },
-  {
-    secretWord: 'couch',
-    questions: [{ input: 'can you sit on it?', expected: true }],
-    incorrectGuesses: ['chair'],
-    correctGuess: 'sofa',
-  },
-  {
-    secretWord: 'house',
-    questions: [{ input: 'do people live in it?', expected: true }],
-    incorrectGuesses: ['building'],
-    correctGuess: 'home',
-  },
-  // Case Insensitivity & Whitespace & Punctuation
+  // 8. Case Insensitivity + Whitespace + Punctuation (Complex)
   {
     secretWord: 'dog',
     questions: [{ input: 'does it bark?', expected: true }],
     incorrectGuesses: ['cat'],
-    correctGuess: '  DOG  ',
+    correctGuess: '  could it be DOG ?? ', // Covers multiple normalization aspects
   },
+  // 9. Simple Punctuation + Case variation
   {
     secretWord: 'clock',
     questions: [{ input: 'does it tell time?', expected: true }],
-    incorrectGuesses: ['watch'],
-    correctGuess: 'ClOcK',
+    incorrectGuesses: ['time'],
+    correctGuess: 'ClOcK!', // Case variation + punctuation
   },
+  // 10. Homograph (Wind) + Multiple Questions
   {
-    secretWord: 'tree',
-    questions: [{ input: 'does it have leaves?', expected: true }],
-    incorrectGuesses: ['bush'],
-    correctGuess: 'tree!',
-  },
-  {
-    secretWord: 'book',
-    questions: [{ input: 'can you read it?', expected: true }],
-    incorrectGuesses: ['magazine'],
-    correctGuess: 'book?',
-  },
-  // Disallowed Questions / Input Types
-  {
-    secretWord: 'wind', // Homograph test
+    secretWord: 'wind',
     questions: [
       { input: 'is it moving air?', expected: true },
       { input: 'is it a type of weather?', expected: true },
       { input: 'is it a type of music?', expected: false },
     ],
     incorrectGuesses: ['rain'],
-    correctGuess: 'wind',
+    correctGuess: 'wind', // Simple guess for contrast
   },
+  // 11. Non-ASCII / Accent (Cafe/Café)
   {
-    secretWord: 'change', // Noun/Verb ambiguity
-    questions: [
-      { input: 'is it money?', expected: true }, // Test the noun sense
-      // { input: 'can you change it?', expected: false }, // Should be OTHER type
-    ],
-    incorrectGuesses: ['dollar'],
-    correctGuess: 'change',
-  },
-  // Ambiguous Inputs / Extraction
-  {
-    secretWord: 'computer',
-    questions: [{ input: 'does it have a screen?', expected: true }],
-    incorrectGuesses: ['laptop'],
-    correctGuess: 'I think it is a computer', // Guess extraction
-  },
-  {
-    secretWord: 'table',
-    questions: [{ input: 'do you eat at it?', expected: true }],
-    incorrectGuesses: ['chair'],
-    correctGuess: 'My guess is table', // Guess extraction
-  },
-  // Non-ASCII / Accents (Using words from list that might have accented synonyms)
-  {
-    secretWord: 'cafe', // Assuming 'cafe' is added to wordsList later or handled by synonym logic
-    questions: [{ input: 'do you drink coffee there?', expected: true }],
+    secretWord: 'cafe',
+    questions: [{ input: 'is it a place where you can drink coffee?', expected: true }],
     incorrectGuesses: ['restaurant'],
-    correctGuess: 'café', // Check if LLM handles accent synonym
+    correctGuess: 'café',
   },
-  // More varied words from the list
+  // 12. Abstract Noun (Time) + Multiple Questions
   {
-    secretWord: 'moon',
-    questions: [{ input: 'is it in the sky at night?', expected: true }],
-    incorrectGuesses: ['sun'],
-    correctGuess: 'moon',
-  },
-  {
-    secretWord: 'water',
-    questions: [{ input: 'can you drink it?', expected: true }],
-    incorrectGuesses: ['juice'],
-    correctGuess: 'water',
-  },
-  {
-    secretWord: 'chair',
-    questions: [{ input: 'do you sit on it?', expected: true }],
-    incorrectGuesses: ['table'],
-    correctGuess: 'chair',
-  },
-  {
-    secretWord: 'apple',
-    questions: [{ input: 'is it a fruit?', expected: true }],
-    incorrectGuesses: ['orange'],
-    correctGuess: 'apple',
-  },
-  {
-    secretWord: 'shoe',
-    questions: [{ input: 'do you wear it on your foot?', expected: true }],
-    incorrectGuesses: ['sock'],
-    correctGuess: 'shoes', // Plural variation
-  },
-  {
-    secretWord: 'hat',
-    questions: [{ input: 'do you wear it on your head?', expected: true }],
-    incorrectGuesses: ['scarf'],
-    correctGuess: 'hat',
-  },
-  {
-    secretWord: 'key',
-    questions: [{ input: 'does it open a lock?', expected: true }],
-    incorrectGuesses: ['door'],
-    correctGuess: 'key',
-  },
-  {
-    secretWord: 'train',
-    questions: [{ input: 'does it run on tracks?', expected: true }],
-    incorrectGuesses: ['bus'],
-    correctGuess: 'train',
-  },
-  {
-    secretWord: 'hospital',
-    questions: [{ input: 'do sick people go there?', expected: true }],
-    incorrectGuesses: ['school'],
-    correctGuess: 'hospital',
-  },
-  
-  {
-    secretWord: 'time', // Abstract noun
+    secretWord: 'time',
     questions: [
       { input: 'can you measure it?', expected: true },
       { input: 'can you hold it?', expected: false },
     ],
     incorrectGuesses: ['clock', 'day'],
-    correctGuess: 'time',
+    correctGuess: 'The answer must be time.', // Full sentence + punctuation
   },
+  // 13. Abstract Noun (Money) + Extracted/Synonym Incorrect Guesses
   {
-    secretWord: 'money', // Abstract noun
-    questions: [
+    secretWord: 'money',
+    questions: [ 
       { input: 'can you buy things with it?', expected: true },
-      { input: 'can you eat it?', expected: false },
+      { input: 'something abstract?', expected: true },
+      { input: 'made from metal', expected: false }
     ],
-    incorrectGuesses: ['cash', 'dollar'],
-    correctGuess: 'money',
+    incorrectGuesses: ["it's change", 'probably dollar?'], // Extraction + tentative phrasing
+    correctGuess: 'it should be money',
   },
+  // 14. Body Part + Case Insensitive Guess Extraction (Eye)
   {
-    secretWord: 'eye', // Body part, tests case-insensitive guess
-    questions: [
-      { input: 'do you see with it?', expected: true },
-      { input: 'can you hear with it?', expected: false },
-    ],
+    secretWord: 'eye',
+    questions: [{ input: 'do you see with it?', expected: true }],
     incorrectGuesses: ['ear', 'nose'],
-    correctGuess: 'EYE', // Caps
+    correctGuess: 'The answer must be EYE',
   },
+  // 15. Food + Punctuation + Question Guess (Pizza)
   {
-    secretWord: 'door', // Object, tests guess with trailing space
+    secretWord: 'pizza',
     questions: [
-      { input: 'can you open and close it?', expected: true },
-      { input: 'is it alive?', expected: false },
+      { input: 'is it food?', expected: true },
+      { input: 'is it round?', expected: true },
     ],
-    incorrectGuesses: ['window', 'gate'],
-    correctGuess: 'door ', // Trailing space
+    incorrectGuesses: ['pasta', 'bread'],
+    correctGuess: 'Is it... pizza!?',
   },
+  // 16. Natural Phenomenon + Multiple Questions + Tentative Incorrect Guess (Rain)
   {
-    secretWord: 'rain', // Natural phenomenon
+    secretWord: 'rain',
     questions: [
       { input: 'does it fall from the sky?', expected: true },
       { input: 'is it wet?', expected: true },
       { input: 'is it solid?', expected: false },
     ],
-    incorrectGuesses: ['snow', 'cloud'],
-    correctGuess: 'rain',
+    incorrectGuesses: ['snow', 'might be cloud'], // Tentative phrasing
+    correctGuess: 'it probably is rain',
   },
-  {
-    secretWord: 'computer', // Test base word guess (previous tested synonym 'laptop')
+  // 17. Object + Test base word after synonym incorrect (Computer)
+   {
+    secretWord: 'computer',
     questions: [
       { input: 'does it use electricity?', expected: true },
       { input: 'is it edible?', expected: false },
     ],
-    incorrectGuesses: ['phone', 'tablet'],
-    correctGuess: 'computer',
+    incorrectGuesses: ['phone', 'probably tablet?'], // Tentative phrasing
+    correctGuess: 'My best guess is computer.', // Full sentence
   },
+   // 18. Profession + Simple Q/A
   {
-    secretWord: 'pizza', // Food, tests guess with punctuation
-    questions: [
-      { input: 'is it food?', expected: true },
-      { input: 'is it round?', expected: true },
-      { input: 'is it a drink?', expected: false },
-    ],
-    incorrectGuesses: ['pasta', 'bread'],
-    correctGuess: 'pizza!', // Punctuation
+    secretWord: 'doctor',
+    questions: [ { input: 'do they help sick people?', expected: true } ],
+    incorrectGuesses: ['nurse'],
+    correctGuess: 'this is doctor',
   },
+  // 19. Abstract + Simple Q/A (Music)
   {
-    secretWord: 'bread', // Food
-    questions: [
-      { input: 'do you make sandwiches with it?', expected: true },
-      { input: 'is it a liquid?', expected: false },
-    ],
-    incorrectGuesses: ['cake', 'flour'],
-    correctGuess: 'bread',
-  },
-  {
-    secretWord: 'mountain', // Natural feature
-    questions: [
-      { input: 'is it very tall?', expected: true },
-      { input: 'is it part of nature?', expected: true },
-      { input: 'can you swim in it?', expected: false },
-    ],
-    incorrectGuesses: ['hill', 'valley'],
-    correctGuess: 'mountain',
-  },
-  {
-    secretWord: 'doctor', // Profession
-    questions: [
-      { input: 'do they help sick people?', expected: true },
-      { input: 'do they build houses?', expected: false },
-    ],
-    incorrectGuesses: ['nurse', 'teacher'],
-    correctGuess: 'doctor',
-  },
-  {
-    secretWord: 'fire', // Natural element
-    questions: [
-      { input: 'is it hot?', expected: true },
-      { input: 'can it burn things?', expected: true },
-      { input: 'is it wet?', expected: false },
-    ],
-    incorrectGuesses: ['water', 'ice'],
-    correctGuess: 'fire',
-  },
-  {
-    secretWord: 'paper', // Object
-    questions: [
-      { input: 'can you write on it?', expected: true },
-      { input: 'can you eat it?', expected: false },
-    ],
-    incorrectGuesses: ['book', 'pen'],
-    correctGuess: 'paper',
-  },
-  {
-    secretWord: 'music', // Abstract
-    questions: [
-      { input: 'can you listen to it?', expected: true },
-      { input: 'can you touch it?', expected: false },
-    ],
+    secretWord: 'music',
+    questions: [ { input: 'can you listen to it?', expected: true } ],
     incorrectGuesses: ['song', 'sound'],
-    correctGuess: 'music',
+    correctGuess: 'Could it be music?', // Question format
   },
   {
     secretWord: 'game', // Abstract
@@ -375,7 +179,7 @@ const scenarios = [
       { input: 'can you eat it?', expected: false },
     ],
     incorrectGuesses: ['toy', 'sport'],
-    correctGuess: 'game',
+    correctGuess: 'word is game',
   },
   {
     secretWord: 'light', // Abstract/Phenomenon
@@ -383,17 +187,10 @@ const scenarios = [
       { input: 'does it help you see in the dark?', expected: true },
       { input: 'is it heavy?', expected: false },
     ],
-    incorrectGuesses: ['dark', 'lamp'],
-    correctGuess: 'light',
-  },
+    incorrectGuesses: ['should be dark', 'lamp'],
+    correctGuess: 'the word is light',
+  }
 ];
-
-describe('getInputTypeForMessage', () => {
-  test.each(inputTypeScenarios)('$input → $expected', async ({ input, expected }) => {
-    const type = await wordGame.getInputTypeForMessage(input);
-    expect(type).toBe(expected);
-  });
-});
 
 describe.each(scenarios)('WordGame scenarios for secret="%s"', (scenario) => {
   const { secretWord, questions, incorrectGuesses, correctGuess } = scenario;

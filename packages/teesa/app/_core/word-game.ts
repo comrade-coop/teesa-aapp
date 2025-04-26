@@ -20,6 +20,7 @@ GAME RULES:
 - Asking about the length of the secret word is NOT allowed.
 - Asking if the word is within a certain list of words is NOT allowed.
 - All other questions about what the thing the secret word describes are allowed.
+- Questions and guesses in languages other than English are not allowed.
 `;
 
   private readonly characterTraits = `
@@ -75,13 +76,31 @@ RESPONSE STYLE:
   private async getInputType(userInput: string): Promise<MessageTypeEnum> {
     const prompt = `
 # TASK:
-Determine if the INPUT below is a question, guess, or other:
-- For a "GUESS": Must indicate attempting to guess the word, state what they think the word is. The guess MUST be a specific word that is a noun. Ambiguous guesses should be considered "QUESTION".
-- For a "QUESTION": Must be a yes/no question about the characteristics, properties, behaviors, attributes, or the nature of what the secret word describes. Questions which are unrelated to the word or are against the GAME RULES are considered "OTHER".
-- Everything else is considered "OTHER".
+Classify the player's input into one of three categories: GUESS, QUESTION, or OTHER.
+
+GUESS:
+- The player is attempting to guess the secret word.
+- It must state the word they think it is, as a specific noun or noun phrase.
+- Common guess patterns include:
+  * Single-word guesses (e.g., 'car', 'dog', 'café', 'children')
+  * Phrases like 'I think it is X', 'Maybe it is X', 'It is X', 'Is it an X', or 'Is the word you are thinking of X?'.
+- Do NOT treat vague statements, descriptions, or property guesses (e.g., 'something with wheels') as GUESS.
+- Do NOT treat numeric inputs or non-noun words (e.g., '123', 'running') as GUESS.
+
+QUESTION:
+- A yes/no question about the secret thing's characteristics, properties, behavior, attributes, or nature.
+- It must be answerable with YES or NO.
+- Typically starts with yes/no words: is, are, can, could, would, should, does, do, will, did, has, have.
+- Must NOT violate game rules: no questions about spelling, letters, word length, list membership, or name details.
+- Single-word questions (e.g., 'Heavy?') are valid if they're clearly yes/no.
+- Do NOT treat other question types ('what', 'where', 'why', 'how') as QUESTION.
+
+OTHER:
+- Any input not matching GUESS or QUESTION.
+- Includes greetings, non-English text, nonsensical inputs, disallowed questions, ambiguous phrasing, and generic descriptions.
 
 # RESPONSE:
-Respond with ONLY "GUESS", "QUESTION", or "OTHER".
+Respond with ONLY one of: GUESS, QUESTION, or OTHER.
 
 # INPUT:
 ${userInput}
@@ -100,7 +119,7 @@ ${userInput}
     const prompt = `
 Extract the exact word being guessed from this input: "${userInput}"
 Respond with ONLY the guessed word, nothing else.
-Respond with "NONE" if you cannot extract a word from the input.`;
+Respond with "NONE" if you cannot extract a specific word being guessed from the input.`;
 
     const guess = await sendMessageLlm(prompt, this.baseRules);
     console.log(`Extracted guess from "${userInput}": "${guess}"`);
@@ -110,8 +129,7 @@ Respond with "NONE" if you cannot extract a word from the input.`;
 
   private async fixSpelling(text: string): Promise<string> {
     const prompt = `
-Fix the spelling and grammar of the text below.
-Translate it to English if it's in another language.
+Fix the spelling, grammar, and punctuation of the text below.
 Do not include any other words or explanation.
 ---
 ${text}`;
@@ -119,14 +137,9 @@ ${text}`;
     return sendMessageLlm(prompt);
   }
 
-  private async answerQuestion(question: string): Promise<[string, AnswerResultEnum]> {
-    // Fix spelling and grammar before processing
-    const correctedQuestion = await this.fixSpelling(question);
-    console.log(`Original question: "${question}"`);
-    console.log(`Corrected question: "${correctedQuestion}"`);
-
+  private async answerQuestion(question: string): Promise<[string, AnswerResultEnum]> {    
     // Get yes/no answer
-    const isYes = await this.getAnswer(correctedQuestion);
+    const isYes = await this.getAnswer(question);
     const yesNo = isYes ? 'Yes' : 'No';
     const answerResult = isYes ? AnswerResultEnum.YES : AnswerResultEnum.NO;
 
@@ -141,25 +154,27 @@ ${text}`;
     console.log(`Getting answer for question: "${question}"`);
     const secretWord = gameState.getSecretWord();
     // Note: Not logging the secret word
-    const prompt = `# TASK
-You are evaluating a yes/no question about a secret word in a word guessing game.
-Your task is to determine if the answer to the question is "yes" or "no" based on common-sense logic.
+    const prompt = `
+ROLE: You are the host of a "20 Questions" game. Your goal is to answer yes/no questions about a secret word accurately and fairly, based on common-sense knowledge. 
 
-# SECRET WORD:
-"${secretWord}"
+TASK: Determine whether to answer the following yes/no question about a secret word with YES or NO.
 
-# QUESTION:
-"${question}"
+You will receive:
+- SECRET WORD: the noun to evaluate.
+- QUESTION: a yes/no question about that noun.
 
-# INSTRUCTIONS
-1. Think about what the secret word represents
-2. Consider if the question's premise is true about what the secret word represents
-- If the question is about the spelling of the secret word, it is not true.
-- If the question is about the length of the secret word, it is not true.
-- If the question is about the secret word being in a certain list of words, it is not true.
-3. Respond with ONLY "yes" or "no" - nothing else
+GUIDELINES:
+1. Use common-sense logic about the secret word and its meaning. Respond as an average person would.
+2. Do not overthink and over-analyze the question. 
+3. Avoid overly literal interpretations.
+4. Respond with ONLY the word YES or NO, without any additional text.
+5. If it is really impossible to answer the question with either YES or NO, respond with MAYBE.
 
-# RESPONSE:`;
+SECRET WORD: "${secretWord}"
+QUESTION: "${question}"
+
+RESPONSE:
+`;
 
     const response = await sendMessageOllama(prompt);
     const isYes = response.toLowerCase().replace(/[^a-z]/g, '') === 'yes';
@@ -172,24 +187,35 @@ Your task is to determine if the answer to the question is "yes" or "no" based o
     const secretWord = gameState.getSecretWord();
     // Note: Not logging the secret word
     const prompt = `
-Secret word: "${secretWord}".
-User guess: "${guess}"
+# TASK:
+Determine if Word 2 is essentially the same noun as Word 1 or it is a synonym of the same word, ignoring differences in plurality (singular/plural) and common spelling variations (e.g., US/UK English).
 
-Check if the User guess matches the secret word exactly, or is a close synonym, plural form, or minor variation.
-For example:
-- "cat" matches "cats" or "kitty"
-- "phone" matches "telephone" or "cellphone"
-- "couch" matches "sofa"
-But reject guesses that are:
-- Different concepts entirely
-- Too general or specific
-- Only loosely related
+# EXAMPLES:
+- Word 1: "dog", Word 2: "dogs" -> YES
+- Word 1: "fish", Word 2: "fishes" -> YES
+- Word 1: "child", Word 2: "children" -> YES
+- Word 1: "color", Word 2: "colour" -> YES
+- Word 1: "sheep", Word 2: "animal" -> NO
+- Word 1: "tree", Word 2: "leaf" -> NO
+- Word 1: "book", Word 2: "paper" -> NO
+- Word 1: "chef", Word 2: "cook" -> YES
+- Word 1: "chef", Word 2: "waiter" -> NO
+- Word 1: "day", Word 2: "night" -> NO
 
-Remember this is a guessing game and the guess should be accurate to be considered correct.
-Respond with ONLY "correct" or "incorrect", nothing else.`;
+# INSTRUCTIONS:
+- Respond "YES" only if the words are essentially the same noun, or they are synonyms, or they are variations of the same noun (plural/singular, spelling).
+- Respond "NO" in all other cases.
+- Respond with ONLY YES or NO. Do not include explanations or any other text.
+
+# WORDS TO COMPARE:
+Word 1: "${secretWord}"
+Word 2: "${guess}"
+
+# RESPONSE:
+`;
 
     const response = await sendMessageOllama(prompt);
-    const isCorrect = response.toLowerCase().replace(/[^a-z]/g, '') === 'correct';
+    const isCorrect = response.toLowerCase().replace(/[^a-z]/g, '') === 'yes';
     console.log(`Guess "${guess}" check result: ${isCorrect ? 'correct' : 'incorrect'}`);
     return isCorrect;
   }
@@ -199,15 +225,15 @@ Respond with ONLY "correct" or "incorrect", nothing else.`;
     const prompt = `
 # CONTEXT:
 
-Player's input:
+Player wrote:
 ${userInput}
 
 # TASK:
-Generate a short playful comment to an irrelevant or nonsensical player input.
-Respond to what the player asks or says, but also remind them about the game.
-The comment should be relevant to the player's input and the current game state.
+Generate a short playful comment to what the player wrote. This exchange is not part of the game.
+The comment should be relevant to what the player wrote and the current game state.
+Remind the player about the game.
 The player has NOT guessed correctly the secret word yet.
-DO NOT include example questions or guesses.
+
 DO NOT include any other words, explanation, or special formatting.
 Respond with ONLY the comment, nothing else.
 
@@ -272,15 +298,20 @@ Respond with ONLY the comment, nothing else.
   public async processUserMessage(userId: string, messageId: string, timestamp: number, input: string, inputType: MessageTypeEnum): Promise<string> {
     console.log(`Processing ${MessageTypeEnum[inputType]} from user: ${userId}, message ID: ${messageId}`);
 
-    const trimmedInput = this.trimInput(input);
+    const originalInput = this.trimInput(input); // Keep original for history
+    let correctedInput = originalInput; // Default to original
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.UNKNOWN;
 
     try {
+      correctedInput = await this.fixSpelling(originalInput);
+      console.log(`Original input: "${originalInput}"`);
+      console.log(`Corrected input: "${correctedInput}"`);
+
       if (inputType == MessageTypeEnum.QUESTION) {
-        [response, answerResult] = await this.answerQuestion(trimmedInput);
+        [response, answerResult] = await this.answerQuestion(correctedInput); // Use corrected input
       } else {
-        response = await this.getRandomResponse(trimmedInput);
+        response = await this.getRandomResponse(correctedInput); // Use corrected input
       }
     } catch (error) {
       console.error('Error processing user message:', error);
@@ -293,7 +324,7 @@ Respond with ONLY the comment, nothing else.
       userId: userId,
       timestamp: timestamp,
       messageType: inputType,
-      userMessage: input,
+      userMessage: originalInput,
       llmMessage: response,
       answerResult: answerResult
     };
@@ -307,21 +338,42 @@ Respond with ONLY the comment, nothing else.
   public async checkGuessMessage(userId: string, messageId: string, timestamp: number, input: string): Promise<[string, AnswerResultEnum]> {
     console.log(`Checking guess message from user: ${userId}, message ID: ${messageId}`);
 
-    const trimmedInput = this.trimInput(input);
+    const originalInput = this.trimInput(input); // Keep original for history
+    let correctedInput = originalInput; // Default to original
     let response: string = '';
     let answerResult: AnswerResultEnum = AnswerResultEnum.INCORRECT;
 
     try {
-      const guessedWord = await this.extractGuess(trimmedInput);
-      const isCorrect = await this.checkGuess(guessedWord);
+      // Fix spelling at the beginning
+      correctedInput = await this.fixSpelling(originalInput);
+      console.log(`Original input: "${originalInput}"`);
+      console.log(`Corrected input: "${correctedInput}"`);
 
-      if (isCorrect) {
-        console.log(`CORRECT GUESS! User ${userId} has won the game!`);
-        response = WON_GAME_MESSAGE;
-        answerResult = AnswerResultEnum.CORRECT;
-      } else {
-        response = await this.getIncorrectGuessResponse(trimmedInput);
+      const guessedWord = await this.extractGuess(correctedInput);
+
+      if (guessedWord.toLowerCase().replace(/[^a-z]/g, '') === 'none') {
+        console.log(`Could not extract a specific guess from "${correctedInput}"`);
+        const prompt = `
+# TASK:
+Respond that you are not able to understand what exactly is the player's guess. Explain how the player should properly phrase their guess based on the game rules.
+
+Player wrote:
+${correctedInput}
+
+# RESPONSE:
+`;
+        response = await sendMessageCreativeLlm(prompt, this.baseRules + this.characterTraits);
         answerResult = AnswerResultEnum.INCORRECT;
+      } else {
+        const isCorrect = await this.checkGuess(guessedWord);
+        if (isCorrect) {
+          console.log(`CORRECT GUESS! User ${userId} has won the game!`);
+          response = WON_GAME_MESSAGE;
+          answerResult = AnswerResultEnum.CORRECT;
+        } else {
+          response = await this.getIncorrectGuessResponse(correctedInput); // Use corrected input
+          answerResult = AnswerResultEnum.INCORRECT;
+        }
       }
     } catch (error) {
       console.error('Error checking guess message:', error);
@@ -334,7 +386,7 @@ Respond with ONLY the comment, nothing else.
       userId: userId,
       timestamp: timestamp,
       messageType: MessageTypeEnum.GUESS,
-      userMessage: input,
+      userMessage: originalInput,
       llmMessage: response,
       answerResult: answerResult
     };
