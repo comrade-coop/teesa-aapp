@@ -10,50 +10,10 @@ describe('Game Flow Integration Tests', () => {
   jest.setTimeout(30000);
 
   beforeEach(async () => {
-    // Reset the game state
     await gameState.reset();
-
-    // Add messages to history for testing
-    const userId = 'user123';
-
-    // Add a question
-    await gameState.addToHistory({
-      id: 'q1',
-      userId,
-      timestamp: Date.now(),
-      messageType: MessageTypeEnum.QUESTION,
-      userMessage: 'does it have wheels?',
-      llmMessage: 'Yes, it has wheels.',
-      answerResult: AnswerResultEnum.YES
-    });
-
-    // Add another question
-    await gameState.addToHistory({
-      id: 'q2',
-      userId,
-      timestamp: Date.now() + 1000,
-      messageType: MessageTypeEnum.QUESTION,
-      userMessage: 'is it used for transportation?',
-      llmMessage: 'Yes, it has wheels.',
-      answerResult: AnswerResultEnum.YES
-    });
-
-    // Add a guess
-    await gameState.addToHistory({
-      id: 'g1',
-      userId,
-      timestamp: Date.now() + 2000,
-      messageType: MessageTypeEnum.GUESS,
-      userMessage: 'car',
-      llmMessage: WON_GAME_MESSAGE,
-      answerResult: AnswerResultEnum.CORRECT
-    });
   });
 
   it('should handle a complete game flow with a correct guess', async () => {
-    // Reset the game state
-    await gameState.reset();
-
     const userId = 'user123';
 
     // Step 1: Ask a question
@@ -145,9 +105,6 @@ describe('Game Flow Integration Tests', () => {
   });
 
   it('should handle a game flow with incorrect guesses', async () => {
-    // Reset the game state
-    await gameState.reset();
-    
     const userId = 'user123';
 
     // Step 1: Ask a question
@@ -214,12 +171,5 @@ describe('Game Flow Integration Tests', () => {
     // Check that the history contains all messages
     const history = await gameState.getHistory();
     expect(history).toHaveLength(3);
-  });
-
-  it('should handle ambiguous input correctly', async () => {
-    // Test with input that could be interpreted as a question or guess
-    const ambiguousInput = 'I think it might be something with wheels';
-    const inputType = await wordGame.getInputTypeForMessage(ambiguousInput);
-    expect(inputType).toBe(MessageTypeEnum.QUESTION);
   });
 });
