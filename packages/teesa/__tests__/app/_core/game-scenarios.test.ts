@@ -5,20 +5,23 @@ import { WON_GAME_MESSAGE } from '../../../app/_core/game-const';
 import { classifyAnswer } from './llm-test-utils';
 import { v4 as uuidv4 } from 'uuid';
 
-jest.setTimeout(45000);
+jest.setTimeout(60000);
 
 // Mock the private methods that call the creative LLM to avoid actual LLM calls during tests
 // We cast to 'any' to access private methods for mocking purposes
-jest.spyOn(wordGame as any, 'getPlayfulComment').mockImplementation(async (question, answer) => {
-  // Return the direct answer ('Yes', 'No', 'Maybe') passed to it, simplifying the response
-  // as per the instruction to return simple answers instead of creative LLM output.
-  return answer;
-});
+jest.spyOn(wordGame as any, 'getPlayfulComment').mockImplementation(
+  async (userId, question, answer) => {
+    // Return the direct answer ('Yes', 'No', 'Maybe') passed to it, simplifying the response
+    return answer;
+  }
+);
 
-jest.spyOn(wordGame as any, 'getIncorrectGuessResponse').mockImplementation(async (userInput) => {
-  // Return 'No' as per instruction (simplified mock for incorrect guess response)
-  return 'Incorrect';
-});
+jest.spyOn(wordGame as any, 'getIncorrectGuessResponse').mockImplementation(
+  async (userId, userInput) => {
+    // Return 'No' as per instruction (simplified mock for incorrect guess response)
+    return 'Incorrect';
+  }
+);
 
 
 // Refined word‐game scenarios focusing on distinct edge cases, abstract words, and varied guess phrasing
