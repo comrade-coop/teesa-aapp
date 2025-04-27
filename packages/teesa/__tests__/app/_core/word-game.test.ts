@@ -5,8 +5,7 @@ import { MessageTypeEnum } from '../../../app/_core/message-type-enum';
 import { classifyAnswer } from './llm-test-utils';
 
 describe('WordGame', () => {
-  // Set timeout to 30 seconds for all tests in this file
-  jest.setTimeout(45000);
+  jest.setTimeout(60000);
 
   beforeEach(async () => {
     await gameState.reset();

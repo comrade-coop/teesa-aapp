@@ -137,7 +137,7 @@ ${text}`;
     return sendMessageLlm(prompt);
   }
 
-  private async answerQuestion(question: string): Promise<[string, AnswerResultEnum]> {    
+  private async answerQuestion(userId: string, question: string): Promise<[string, AnswerResultEnum]> {    
     // Get answer (YES, NO, MAYBE, or UNKNOWN) from LLM
     const result = await this.getAnswer(question);
     // Map result to response text
@@ -157,7 +157,7 @@ ${text}`;
         break;
     }
     // Optionally add playful comment (currently same as responseText)
-    const comment = await this.getPlayfulComment(question, responseText);
+    const comment = await this.getPlayfulComment(userId, question, responseText);
     return [comment, result];
   }
 
@@ -253,7 +253,7 @@ Word 2: "${guess}"
     return isCorrect;
   }
 
-  private async getRandomResponse(userInput: string): Promise<string> {
+  private async getRandomResponse(userId: string, userInput: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
 # TASK:
@@ -270,7 +270,7 @@ Respond with ONLY the comment, nothing else.
 History:
 ${history}
 
-Player wrote:
+Player ${userId} wrote:
 ${userInput}
 
 # TEESA RESPONSE:
@@ -279,11 +279,11 @@ ${userInput}
     return sendMessageCreativeLlm(prompt, this.baseRules + this.characterTraits);
   }
 
-  private async getPlayfulComment(question: string, answer: string): Promise<string> {
+  private async getPlayfulComment(userId: string, question: string, answer: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
 # TASK:
-Respond to the player's question starting with the direct answer "${answer}".
+Respond to the player's question about the secret word starting with the direct answer "${answer}".
 Continue with a short playful comment relevant to what the player asked and the game history.
 Respond with ONLY the comment, nothing else.
 
@@ -292,7 +292,7 @@ Respond with ONLY the comment, nothing else.
 History:
 ${history}
 
-Player asked:
+Player ${userId} asked:
 ${question}
 
 The answer is: ${answer}
@@ -303,7 +303,7 @@ The answer is: ${answer}
     return sendMessageCreativeLlm(prompt, this.characterTraits);
   }
 
-  private async getIncorrectGuessResponse(userInput: string): Promise<string> {
+  private async getIncorrectGuessResponse(userId: string, userInput: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
 # TASK:
@@ -318,7 +318,7 @@ Respond with ONLY the comment, nothing else.
 History:
 ${history}
 
-Player wrote:
+Player ${userId} wrote:
 ${userInput}
 
 # TEESA RESPONSE:
@@ -353,9 +353,9 @@ ${userInput}
       console.log(`Corrected input: "${correctedInput}"`);
 
       if (inputType == MessageTypeEnum.QUESTION) {
-        [response, answerResult] = await this.answerQuestion(correctedInput); // Use corrected input
+        [response, answerResult] = await this.answerQuestion(userId, correctedInput); // Use corrected input
       } else {
-        response = await this.getRandomResponse(correctedInput); // Use corrected input
+        response = await this.getRandomResponse(userId, correctedInput); // Use corrected input
       }
     } catch (error) {
       console.error('Error processing user message:', error);
@@ -415,7 +415,7 @@ ${correctedInput}
           response = WON_GAME_MESSAGE;
           answerResult = AnswerResultEnum.CORRECT;
         } else {
-          response = await this.getIncorrectGuessResponse(correctedInput); 
+          response = await this.getIncorrectGuessResponse(userId, correctedInput); 
           answerResult = AnswerResultEnum.INCORRECT;
         }
       }
