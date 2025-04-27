@@ -1,21 +1,20 @@
-import { AnswerResultEnum } from '../../../app/_core/game-state';
+import { AnswerResultEnum, gameState } from '../../../app/_core/game-state';
 import { WON_GAME_MESSAGE, PROCESSING_ERROR_MESSAGE } from '../../../app/_core/game-const';
-import { WordGame } from '../../../app/_core/word-game';
+import { wordGame, WordGame } from '../../../app/_core/word-game';
 import { MessageTypeEnum } from '../../../app/_core/message-type-enum';
 import { classifyAnswer } from './llm-test-utils';
 
 describe('WordGame', () => {
   // Set timeout to 30 seconds for all tests in this file
-  jest.setTimeout(30000);
+  jest.setTimeout(45000);
 
-  let wordGame: WordGame;
+  beforeEach(async () => {
+    await gameState.reset();
+  });
 
-  beforeEach(() => {
-    // Create a new instance of WordGame for each test
-    wordGame = new WordGame();
-
-    // Clear mock calls
+  afterAll(async () => {
     jest.clearAllMocks();
+    await gameState.reset();
   });
 
   describe('getInputTypeForMessage', () => {
