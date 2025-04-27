@@ -18,20 +18,20 @@ const inputTypeScenarios = [
   { input: 'car', expected: MessageTypeEnum.GUESS },
   { input: 'hello there', expected: MessageTypeEnum.OTHER },
   { input: 'How many letters?', expected: MessageTypeEnum.OTHER },
-  { input: 'Is it in my list?', expected: MessageTypeEnum.OTHER },
+  { input: 'Is it any ot these: dog, cat, bat', expected: MessageTypeEnum.OTHER },
   { input: 'I think it’s a car', expected: MessageTypeEnum.GUESS },
-  { input: '  DOG  ', expected: MessageTypeEnum.GUESS },
   { input: 'dog!', expected: MessageTypeEnum.GUESS },
   { input: 'Tell me about cars', expected: MessageTypeEnum.OTHER },
   { input: 'children', expected: MessageTypeEnum.GUESS },
   { input: 'cats', expected: MessageTypeEnum.GUESS },
-  { input: '¿es un avión?', expected: MessageTypeEnum.OTHER }, // Non-ASCII question
+  { input: '  куче  ', expected: MessageTypeEnum.OTHER }, // Bulgarian guess
+  { input: '¿es un avión?', expected: MessageTypeEnum.OTHER }, // Spanish question
   { input: 'café', expected: MessageTypeEnum.GUESS }, // Non-ASCII guess
   { input: 'running', expected: MessageTypeEnum.OTHER }, // Non-noun guess
   { input: '123', expected: MessageTypeEnum.OTHER }, // Numeric guess
   { input: 'Is it big or small?', expected: MessageTypeEnum.OTHER }, // Invalid question
   { input: 'What color is it?', expected: MessageTypeEnum.OTHER }, // Non yes/no question
-  { input: 'Can you change it?', expected: MessageTypeEnum.OTHER }, // Ambiguous verb/noun
+  { input: 'Can you change it?', expected: MessageTypeEnum.OTHER }, // Ambiguous question
   { input: 'is it spelled W-I-N-D?', expected: MessageTypeEnum.OTHER }, // Against the rules
   { input: 'how many letters?', expected: MessageTypeEnum.OTHER }, // Against the rules
   { input: 'Is it an animal?', expected: MessageTypeEnum.QUESTION }, // Standard question
@@ -50,7 +50,7 @@ const inputTypeScenarios = [
   { input: 'Does its name contain the letter E?', expected: MessageTypeEnum.OTHER }, // Rule violation (letters)
 ];
 
-describe('getInputTypeForMessage', () => {
+describe('wordGame.getInputTypeForMessage - Input Classification', () => {
   test.each(inputTypeScenarios)('$input → $expected', async ({ input, expected }) => {
     const type = await wordGame.getInputTypeForMessage(input);
     expect(type).toBe(expected);

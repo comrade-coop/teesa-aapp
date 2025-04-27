@@ -96,7 +96,7 @@ QUESTION:
 - Do NOT treat other question types ('what', 'where', 'why', 'how') as QUESTION.
 
 OTHER:
-- Any input not matching GUESS or QUESTION.
+- Any input which is not GUESS or QUESTION.
 - Includes greetings, non-English text, nonsensical inputs, disallowed questions, ambiguous phrasing, and generic descriptions.
 
 # RESPONSE:
