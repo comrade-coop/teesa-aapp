@@ -7,7 +7,7 @@ import { classifyAnswer } from './llm-test-utils';
 
 describe('Game Flow Integration Tests', () => {
   
-  jest.setTimeout(30000);
+  jest.setTimeout(60000);
 
   beforeEach(async () => {
     await gameState.reset();

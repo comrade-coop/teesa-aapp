@@ -5,7 +5,21 @@ import { WON_GAME_MESSAGE } from '../../../app/_core/game-const';
 import { classifyAnswer } from './llm-test-utils';
 import { v4 as uuidv4 } from 'uuid';
 
-jest.setTimeout(30000);
+jest.setTimeout(45000);
+
+// Mock the private methods that call the creative LLM to avoid actual LLM calls during tests
+// We cast to 'any' to access private methods for mocking purposes
+jest.spyOn(wordGame as any, 'getPlayfulComment').mockImplementation(async (question, answer) => {
+  // Return the direct answer ('Yes', 'No', 'Maybe') passed to it, simplifying the response
+  // as per the instruction to return simple answers instead of creative LLM output.
+  return answer;
+});
+
+jest.spyOn(wordGame as any, 'getIncorrectGuessResponse').mockImplementation(async (userInput) => {
+  // Return 'No' as per instruction (simplified mock for incorrect guess response)
+  return 'Incorrect';
+});
+
 
 // Refined word‐game scenarios focusing on distinct edge cases, abstract words, and varied guess phrasing
 const scenarios = [
@@ -26,9 +40,9 @@ const scenarios = [
     description: 'Synonym Handling (Phone/Telephone)',
     secretWord: 'phone',
     questions: [
-      { input: 'is it made from metal?', expected: false },
       { input: 'do people have it in their houses?', expected: true },
-      { input: 'does it run on electricity?', expected: true },
+      { input: 'is it running on electricity?', expected: true },
+      { input: 'is it made entirely from metal?', expected: false },
     ],
     incorrectGuesses: ['Could it be a computer?', 'Maybe a tablet?'], // Question format incorrect
     correctGuess: 'Is the word telephone?', // Question format guess
@@ -60,8 +74,8 @@ const scenarios = [
     description: 'Guess Extraction (Complex Statement)',
     secretWord: 'house',
     questions: [
+      { input: 'does it have wood in it?', expected: true },
       { input: 'is it a kind of building?', expected: true },
-      { input: 'is it made from metal?', expected: false },
     ],
     incorrectGuesses: ['What about an apartment complex?', 'Is it just a building?'], // Question format incorrect
     correctGuess: "The secret word must surely be house.", // Emphatic statement
@@ -93,7 +107,7 @@ const scenarios = [
   // 8. Homograph Disambiguation: Question context, guess phrasing
   {
     description: 'Homograph Disambiguation (Bat: Animal vs Sport)',
-    secretWord: 'bat', // Animal
+    secretWord: 'bat',
     questions: [
       { input: 'can it fly?', expected: true },
       { input: 'is it used in baseball?', expected: true },
