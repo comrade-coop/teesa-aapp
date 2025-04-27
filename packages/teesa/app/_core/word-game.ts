@@ -59,19 +59,26 @@ RESPONSE STYLE:
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
     console.log(`Retrieved ${history.length} history entries for prompt`);
-    return history.flatMap(h => {
-      const userMessage = {
-        role: 'user',
-        content: h.userMessage
-      };
-      const llmMessage = {
-        role: 'assistant',
-        content: h.llmMessage
-      };
-      return [userMessage, llmMessage];
-    });
-  }
+    const historyLines = [];
+    for (const h of history) {
+      if (h.userMessage) {
+        const action = h.messageType === MessageTypeEnum.GUESS ? ' guesses' :
+                       h.messageType === MessageTypeEnum.QUESTION ? ' asks' : '';
+        historyLines.push(`- Player ${h.userId}${action}: ${h.userMessage}`);
 
+        // Include Teesa's simple answer only for questions and guesses
+        if (h.messageType === MessageTypeEnum.QUESTION || h.messageType === MessageTypeEnum.GUESS) {
+          const simpleAnswer = AnswerResultEnum[h.answerResult];
+          if (simpleAnswer) {
+            historyLines.push(`- Teesa answers: ${simpleAnswer}`);
+          }
+        }
+      }
+    }
+    const historyString = historyLines.join('\n');
+    console.log(`History for prompt:\n${historyString}`);
+    return historyString;
+  }
 
   private async getInputType(userInput: string): Promise<MessageTypeEnum> {
     const prompt = `
@@ -175,7 +182,8 @@ GUIDELINES:
 5. If it is really impossible to answer the question with either YES or NO, respond with MAYBE.
 
 SECRET WORD: "${secretWord}"
-QUESTION: "${question}"
+QUESTION: 
+${question}
 
 RESPONSE:
 `;
@@ -248,21 +256,25 @@ Word 2: "${guess}"
   private async getRandomResponse(userInput: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
+# TASK:
+Respond with a short playful comment to what the player wrote. This exchange is not part of the game itself.
+The comment should be relevant to what the player wrote and the game history.
+If the player asked for a recap of the game, respond with a helpful summary.
+If the player asked other question, answer it, but keep in mind it's not part of the game.
+Remind the player about the game.
+The player has NOT guessed correctly the secret word yet.
+Respond with ONLY the comment, nothing else.
+
 # CONTEXT:
+
+History:
+${history}
 
 Player wrote:
 ${userInput}
 
-# TASK:
-Generate a short playful comment to what the player wrote. This exchange is not part of the game.
-The comment should be relevant to what the player wrote and the current game state.
-Remind the player about the game.
-The player has NOT guessed correctly the secret word yet.
-
-DO NOT include any other words, explanation, or special formatting.
-Respond with ONLY the comment, nothing else.
-
-# TEESA RESPONSE:`;
+# TEESA RESPONSE:
+`;
 
     return sendMessageCreativeLlm(prompt, this.baseRules + this.characterTraits);
   }
@@ -270,40 +282,47 @@ Respond with ONLY the comment, nothing else.
   private async getPlayfulComment(question: string, answer: string): Promise<string> {
     const history = await this.getHistoryForPrompt();
     const prompt = `
+# TASK:
+Respond to the player's question starting with the direct answer "${answer}".
+Continue with a short playful comment relevant to what the player asked and the game history.
+Respond with ONLY the comment, nothing else.
+
 # CONTEXT:
 
-A player asked:
+History:
+${history}
+
+Player asked:
 ${question}
 
 The answer is: ${answer}
 
-# TASK:
-Respond to the player's question starting with the direct answer "${answer}".
-Continue with a short playful comment relevant to what the player asked and the current game state.
-DO NOT include any other words, explanation, or special formatting.
-Respond with ONLY the comment, nothing else.
-
-# TEESA RESPONSE:`;
+# TEESA RESPONSE:
+`;
 
     return sendMessageCreativeLlm(prompt, this.characterTraits);
   }
 
   private async getIncorrectGuessResponse(userInput: string): Promise<string> {
+    const history = await this.getHistoryForPrompt();
     const prompt = `
-# CONTEXT:
-
-Player's input:
-${userInput}
-
 # TASK:
 The word is NOT what the player is guessing.
 Generate a short playful comment for the INCORRECT guess.
 Start by saying that the word is NOT what the player suggests.
 Keep it encouraging but make it clear that the the word is not what the player guessed.
-DO NOT include any other words, explanation, or special formatting in your response.
 Respond with ONLY the comment, nothing else.
 
-# TEESA RESPONSE:`;
+# CONTEXT:
+
+History:
+${history}
+
+Player wrote:
+${userInput}
+
+# TEESA RESPONSE:
+`;
 
     return sendMessageCreativeLlm(prompt, this.characterTraits);
   }

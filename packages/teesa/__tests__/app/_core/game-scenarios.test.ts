@@ -168,6 +168,7 @@ describe.each(scenarios)('Scenario: $description (Secret: "$secretWord")', (scen
   });
 
   afterAll(async () => {
+    jest.clearAllMocks();
     await gameState.reset();
   });
 
