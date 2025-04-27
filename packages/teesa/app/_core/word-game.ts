@@ -138,19 +138,30 @@ ${text}`;
   }
 
   private async answerQuestion(question: string): Promise<[string, AnswerResultEnum]> {    
-    // Get yes/no answer
-    const isYes = await this.getAnswer(question);
-    const yesNo = isYes ? 'Yes' : 'No';
-    const answerResult = isYes ? AnswerResultEnum.YES : AnswerResultEnum.NO;
-
-    // Get playful comment
-    const comment = await this.getPlayfulComment(correctedQuestion, yesNo);
-
-    const fullResponse = `${comment}`;
-    return [fullResponse, answerResult];
+    // Get answer (YES, NO, MAYBE, or UNKNOWN) from LLM
+    const result = await this.getAnswer(question);
+    // Map result to response text
+    let responseText: string;
+    switch (result) {
+      case AnswerResultEnum.YES:
+        responseText = 'Yes';
+        break;
+      case AnswerResultEnum.NO:
+        responseText = 'No';
+        break;
+      case AnswerResultEnum.MAYBE:
+        responseText = 'Maybe';
+        break;
+      default:
+        responseText = 'Maybe';
+        break;
+    }
+    // Optionally add playful comment (currently same as responseText)
+    const comment = await this.getPlayfulComment(question, responseText);
+    return [comment, result];
   }
 
-  private async getAnswer(question: string): Promise<boolean> {
+  private async getAnswer(question: string): Promise<AnswerResultEnum> {
     console.log(`Getting answer for question: "${question}"`);
     const secretWord = gameState.getSecretWord();
     // Note: Not logging the secret word
@@ -177,9 +188,18 @@ RESPONSE:
 `;
 
     const response = await sendMessageOllama(prompt);
-    const isYes = response.toLowerCase().replace(/[^a-z]/g, '') === 'yes';
-    console.log(`Answer to "${question}": ${isYes ? 'yes' : 'no'}`);
-    return isYes;
+    // Normalize response to lowercase alphabets
+    const normalized = response.toLowerCase().replace(/[^a-z]/g, '');
+    let resultEnum: AnswerResultEnum;
+    if (normalized === 'yes') {
+      resultEnum = AnswerResultEnum.YES;
+    } else if (normalized === 'no') {
+      resultEnum = AnswerResultEnum.NO;
+    } else {
+      resultEnum = AnswerResultEnum.MAYBE;
+    }
+    console.log(`Answer to "${question}": ${AnswrResultEnum[resultEnum]}`);
+    return resultEnum;
   }
 
   private async checkGuess(guess: string): Promise<boolean> {

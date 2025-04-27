@@ -16,7 +16,8 @@ export enum AnswerResultEnum {
   NO,
   CORRECT,
   INCORRECT,
-  UNKNOWN
+  UNKNOWN,
+  MAYBE
 }
 
 export interface HistoryEntry {
