@@ -75,21 +75,26 @@ RESPONSE STYLE:
 
   private async getInputType(userInput: string): Promise<MessageTypeEnum> {
     const prompt = `
+# ROLE:
+You are the host of a "20 Questions" game where the players try to guess a secret word by asking yes/no questions about what it describes.
+
 # TASK:
-Classify the player's input into one of three categories: GUESS, QUESTION, or OTHER.
+Your goal is to classify the INPUT from the player into one of three categories: GUESS, QUESTION, or OTHER.
 
 GUESS:
-- The player is attempting to guess the secret word.
-- It must state the word they think it is, as a specific noun or noun phrase.
-- Common guess patterns include:
-  * Single-word guesses (e.g., 'car', 'dog', 'café', 'children')
-  * Phrases like 'I think it is X', 'Maybe it is X', 'It is X', 'Is it an X', or 'Is the word you are thinking of X?'.
+- An attempt to guess the secret word.
+- Must state a specific noun or noun phrase as a guess.
+- Common guess examples include, but are not limited to:
+  * Single-word guesses (e.g., 'car', 'dog', 'café', 'children', etc.)
+  * Guesses phrased as a statement - e.g., 'My guess is X', 'I think it is X', 'Maybe it is X', 'It is an X', etc.
+  * Guesses phrased as a question - e.g., 'Is it X?', 'Could it be X?', 'Is the word you are thinking of X?', etc. 
+  ('X' represents the specific noun or noun phrase being guessed)
 - Do NOT treat vague statements, descriptions, or property guesses (e.g., 'something with wheels') as GUESS.
 - Do NOT treat numeric inputs or non-noun words (e.g., '123', 'running') as GUESS.
 
 QUESTION:
 - A yes/no question about the secret thing's characteristics, properties, behavior, attributes, or nature.
-- It must be answerable with YES or NO.
+- It MUST be answerable with only YES or NO.
 - Typically starts with yes/no words: is, are, can, could, would, should, does, do, will, did, has, have.
 - Must NOT violate game rules: no questions about spelling, letters, word length, list membership, or name details.
 - Single-word questions (e.g., 'Heavy?') are valid if they're clearly yes/no.
@@ -113,18 +118,6 @@ ${userInput}
     return inputType === 'question' ? MessageTypeEnum.QUESTION
       : inputType === 'guess' ? MessageTypeEnum.GUESS
         : MessageTypeEnum.OTHER;
-  }
-
-  private async extractGuess(userInput: string): Promise<string> {
-    const prompt = `
-Extract the exact word being guessed from this input: "${userInput}"
-Respond with ONLY the guessed word, nothing else.
-Respond with "NONE" if you cannot extract a specific word being guessed from the input.`;
-
-    const guess = await sendMessageLlm(prompt, this.baseRules);
-    console.log(`Extracted guess from "${userInput}": "${guess}"`);
-
-    return guess;
   }
 
   private async fixSpelling(text: string): Promise<string> {
@@ -198,8 +191,20 @@ RESPONSE:
     } else {
       resultEnum = AnswerResultEnum.MAYBE;
     }
-    console.log(`Answer to "${question}": ${AnswrResultEnum[resultEnum]}`);
+    console.log(`Answer to "${question}": ${AnswerResultEnum[resultEnum]}`);
     return resultEnum;
+  }
+
+  private async extractGuess(userInput: string): Promise<string> {
+    const prompt = `
+Extract the exact word being guessed from this input: "${userInput}"
+Respond with ONLY the guessed word, nothing else.
+Respond with "NONE" if you cannot extract a specific word being guessed from the input.`;
+
+    const guess = await sendMessageLlm(prompt, this.baseRules);
+    console.log(`Extracted guess from "${userInput}": "${guess}"`);
+
+    return guess;
   }
 
   private async checkGuess(guess: string): Promise<boolean> {
@@ -391,7 +396,7 @@ ${correctedInput}
           response = WON_GAME_MESSAGE;
           answerResult = AnswerResultEnum.CORRECT;
         } else {
-          response = await this.getIncorrectGuessResponse(correctedInput); // Use corrected input
+          response = await this.getIncorrectGuessResponse(correctedInput); 
           answerResult = AnswerResultEnum.INCORRECT;
         }
       }

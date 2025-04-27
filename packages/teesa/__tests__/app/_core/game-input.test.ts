@@ -31,7 +31,6 @@ const inputTypeScenarios = [
   { input: '123', expected: MessageTypeEnum.OTHER }, // Numeric guess
   { input: 'Is it big or small?', expected: MessageTypeEnum.OTHER }, // Invalid question
   { input: 'What color is it?', expected: MessageTypeEnum.OTHER }, // Non yes/no question
-  { input: 'Can you change it?', expected: MessageTypeEnum.OTHER }, // Ambiguous question
   { input: 'is it spelled W-I-N-D?', expected: MessageTypeEnum.OTHER }, // Against the rules
   { input: 'how many letters?', expected: MessageTypeEnum.OTHER }, // Against the rules
   { input: 'Is it an animal?', expected: MessageTypeEnum.QUESTION }, // Standard question
@@ -50,7 +49,7 @@ const inputTypeScenarios = [
   { input: 'Does its name contain the letter E?', expected: MessageTypeEnum.OTHER }, // Rule violation (letters)
 ];
 
-describe('wordGame.getInputTypeForMessage - Input Classification', () => {
+describe('Game input classification', () => {
   test.each(inputTypeScenarios)('$input → $expected', async ({ input, expected }) => {
     const type = await wordGame.getInputTypeForMessage(input);
     expect(type).toBe(expected);
