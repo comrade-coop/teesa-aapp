@@ -171,11 +171,9 @@ export function SidePanel({
               <ul className="text-sm list-disc list-inside space-y-2">
                 <li>Ask <span className="font-bold">yes/no</span> questions about the word</li>
                 <li>Questions should be about characteristics or properties</li>
-                <li>Make a direct guess at any time</li>
                 <li>No asking about spelling or word length</li>
-                <li>No repeating questions</li>
-                <li>You can ask questions about the word to help you guess it</li>
-                <li>When guessing, start with an explicit statement like "My guess is..." or "The word is..."</li>
+                <li>Make a direct guess at any time</li>
+                <li>When guessing, start with an explicit statement like "my guess is..." or "the word is..."</li>
               </ul>
             </div>
           </div>
