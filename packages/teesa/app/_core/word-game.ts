@@ -260,6 +260,7 @@ Word 2: "${guess}"
 Respond with a short playful comment to what the player wrote. This exchange is not part of the game itself.
 The comment should be relevant to what the player wrote and the game history.
 If the player asked for a recap of the game, respond with a helpful summary.
+If the player made a guess or asked a question in a way that doesn't follow the game rules, explain the correct way to interact.
 If the player asked other question, answer it, but keep in mind it's not part of the game.
 Remind the player about the game.
 The player has NOT guessed correctly the secret word yet.
