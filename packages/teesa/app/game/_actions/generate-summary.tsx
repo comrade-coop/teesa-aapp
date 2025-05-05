@@ -1,7 +1,7 @@
 'use server';
 
 import { gameState, AnswerResultEnum } from '../../_core/game-state';
-import { sendMessageLlm } from '../../_core/llm-client';
+import { sendMessageCreativeLlm } from '../../_core/llm-client';
 import { MessageTypeEnum } from '../../_core/message-type-enum';
 
 // Cache to store the latest summary
@@ -85,7 +85,7 @@ ${conversationText}
 Summary:
 `;
 
-    const summary = await sendMessageLlm(prompt);
+    const summary = await sendMessageCreativeLlm(prompt);
     
     // Cache the result
     cachedSummary = summary;
