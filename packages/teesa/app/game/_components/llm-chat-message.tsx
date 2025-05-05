@@ -95,7 +95,7 @@ export function LlmChatMessage({
               >
                 <ShieldCheck className="w-4 h-4 me-1" />
                 <span className="text-xs">
-                  TEE secured
+                  TEE Secured
                 </span>
               </a>
             </div>

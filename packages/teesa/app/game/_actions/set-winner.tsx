@@ -68,7 +68,7 @@ async function onGenerateNftFailure(attempt: number, userId: string, timestamp: 
 }
 
 function restartGame() {
-  let timeToRestart = 5 * 60 * 1000; // 5 minutes
+  let timeToRestart = 30 * 60 * 1000; // 30 minutes
   if (process.env.ENV_MODE === 'dev') {
     timeToRestart = 10 * 1000; // 10 seconds
   }
