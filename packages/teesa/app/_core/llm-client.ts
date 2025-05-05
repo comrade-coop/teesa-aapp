@@ -94,7 +94,7 @@ export async function sendMessageLlm(message: string, systemMessage?: string | u
       // max_tokens: 2000,
       exclude: true
     }
-  });
+  } as any);
 
   var content = response.choices[0].message.content || '';
 
@@ -124,8 +124,8 @@ export async function sendMessageCreativeLlm(message: string, systemMessage?: st
 
   const response = await llm.chat.completions.create({
     model: creativeModel,
-    messages: messages,
     temperature: 0.7, // Slightly higher temperature for more creative responses
+    messages: messages,
   });
 
   return response.choices[0].message.content || '';

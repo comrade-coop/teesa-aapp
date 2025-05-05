@@ -148,11 +148,13 @@ OTHER:
 - Any input which is not GUESS or QUESTION.
 - Includes greetings, non-English text, nonsensical inputs, disallowed questions, ambiguous phrasing, and generic descriptions.
 
-# RESPONSE:
+# RESPONSE FORMAT:
 Respond with ONLY one of: GUESS, QUESTION, or OTHER.
 
 # INPUT:
 ${userInput}
+
+# RESPONSE:
 `;
 
     const response = await sendMessageLlm(prompt, this.baseRules);
