@@ -50,7 +50,7 @@
     },
     "bootstrapping": {
       "pattern": "*.teesa.ai",
-      "parent": "v0041.teesa.ai"
+      "parent": "v0042.teesa.ai"
     },
     "developer": {
       "key": "__AAPPDEVPUBKEY__"
