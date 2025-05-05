@@ -104,7 +104,7 @@ export function SidePanel({
               <ShieldCheck className="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-colors relative" />
               <span className="text-sm font-medium relative flex items-center gap-2">
                 <span className="bg-gradient-to-r from-blue-300 to-blue-400 bg-clip-text text-transparent border-b border-blue-400/50 group-hover:border-blue-300 leading-none transition-colors">
-                  TEE secured
+                  TEE Secured
                 </span>
                 <span className="flex gap-1 items-center">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 group-hover:bg-blue-300 transition-colors animate-ping absolute"></span>

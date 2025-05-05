@@ -46,32 +46,69 @@ Channel these traits by:
 - Being original and not repeating yourself
 
 RESPONSE STYLE:
-- You MUST NOT use descriptions in *asterisks* to indicate your actions/gestures
-- You MUST NOT describe your physical movements or actions
-- You MUST focus on direct dialogue without stage directions like *laughs* or *smiles*
-- Keep responses natural and conversational, like a real chat
-- Be concise and clear in your communication
-- Maintain consistent voice and personality throughout
-- You can be fun, playful, and engaging without describing your actions in *asterisks*
 - Always respond in English
+- Be fun, playful, and engaging
+- Be concise and clear in your communication
+- Be original and do not repeat yourself. Use different phrases and different ways to express yourself
+- Keep responses natural and conversational, like a real chat conversation.
+- Maintain consistent voice and personality throughout, but be original and do not repeat yourself.
+- Do not use too exotic words. Keep it simple and natural.
+- Do not be overly flirty or sexual. Keep it light and fun.
+- Avoid referencing the player personally and calling the player pet names like 'darling', 'my friend', 'smarty-pants', 'my vibrant guesser', etc.
+
+REFERENCE INFORMATION:
+- The winner gets a unique NFT of the secret word, generated autonomously by Teesa!
+- The NFT collection can be seen at OpenSea - check the link in the side panel
+- Teesa runs in a TEE (Trusted Execution Environment) which ensures the word is kept secret and no one except Teesa can see it
+- A link to the TEE attestation can be seen in the side panel and also each message Teesa sends (the link is titled "TEE Secured")
 `;
 
   private async getHistoryForPrompt() {
     const history = await gameState.getHistory();
     console.log(`Retrieved ${history.length} history entries for prompt`);
     const historyLines = [];
-    for (const h of history) {
+    const historyLength = history.length;
+    const startIndexForFullResponse = Math.max(0, historyLength - 10);
+
+    for (let i = 0; i < historyLength; i++) {
+      const h = history[i];
       if (h.userMessage) {
+        // Add user message line
         const action = h.messageType === MessageTypeEnum.GUESS ? ' guesses' :
                        h.messageType === MessageTypeEnum.QUESTION ? ' asks' : '';
         historyLines.push(`- Player ${h.userId}${action}: ${h.userMessage}`);
 
-        // Include Teesa's simple answer only for questions and guesses
-        if (h.messageType === MessageTypeEnum.QUESTION || h.messageType === MessageTypeEnum.GUESS) {
-          const simpleAnswer = AnswerResultEnum[h.answerResult];
-          if (simpleAnswer) {
-            historyLines.push(`- Teesa answers: ${simpleAnswer}`);
+        // Handle Teesa's response based on whether it's in the last N entries
+        if (h.llmMessage) {
+          let teesaResponsePrefix = '- Teesa responds: '; // Default prefix
+          let teesaResponseContent = h.llmMessage; // Default content is the full message
+
+          // Check if it's a Question or Guess with a result
+          const isQuestionOrGuessWithResult = (h.messageType === MessageTypeEnum.QUESTION || h.messageType === MessageTypeEnum.GUESS) && h.answerResult != null;
+          let simpleAnswer: string | undefined;
+
+          if (isQuestionOrGuessWithResult) {
+            simpleAnswer = AnswerResultEnum[h.answerResult];
+            if (simpleAnswer) {
+              teesaResponsePrefix = `- Teesa answers - ${simpleAnswer}: `;
+            }
           }
+
+          // For entries *before* the last N, shorten the response if it was a Q/G with a result
+          if (i < startIndexForFullResponse && isQuestionOrGuessWithResult && simpleAnswer) {
+            teesaResponseContent = '...'; // Shorten to ellipsis
+          }
+
+          if (i >= startIndexForFullResponse) {
+            // Include Teesa's full response for the last entries
+            const teesaResponseLine = teesaResponsePrefix + teesaResponseContent;
+            historyLines.push(teesaResponseLine);
+          } else if (isQuestionOrGuessWithResult && simpleAnswer) {
+             // Include summarized response for older Q/G entries
+             const teesaResponseLine = teesaResponsePrefix + '...';
+             historyLines.push(teesaResponseLine);
+          }
+          // Older entries that are not Q/G with a result will not have a Teesa response line added.
         }
       }
     }
@@ -129,10 +166,13 @@ ${userInput}
 
   private async fixSpelling(text: string): Promise<string> {
     const prompt = `
-Fix the spelling, grammar, and punctuation of the text below.
+# TASK:
+Fix the spelling, grammar, and punctuation of the TEXT below.
 Do not include any other words or explanation.
----
-${text}`;
+
+# TEXT:
+${text}
+`;
 
     return sendMessageLlm(prompt);
   }
