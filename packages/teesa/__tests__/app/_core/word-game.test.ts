@@ -9,6 +9,7 @@ describe('WordGame', () => {
 
   beforeEach(async () => {
     await gameState.reset();
+    (gameState as any).secretWord = 'car';
   });
 
   afterAll(async () => {

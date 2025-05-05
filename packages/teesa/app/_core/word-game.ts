@@ -68,7 +68,7 @@ REFERENCE INFORMATION:
     console.log(`Retrieved ${history.length} history entries for prompt`);
     const historyLines = [];
     const historyLength = history.length;
-    const startIndexForFullResponse = Math.max(0, historyLength - 10);
+    const startIndexForFullResponse = Math.max(0, historyLength - 20);
 
     for (let i = 0; i < historyLength; i++) {
       const h = history[i];
@@ -149,7 +149,7 @@ OTHER:
 - Includes greetings, non-English text, nonsensical inputs, disallowed questions, ambiguous phrasing, and generic descriptions.
 
 # RESPONSE FORMAT:
-Respond with ONLY one of: GUESS, QUESTION, or OTHER.
+Respond on a new line with ONLY one of: GUESS, QUESTION, or OTHER.
 
 # INPUT:
 ${userInput}
@@ -170,10 +170,13 @@ ${userInput}
     const prompt = `
 # TASK:
 Fix the spelling, grammar, and punctuation of the TEXT below.
+Respond on a new line with ONLY the corrected text, nothing else.
 Do not include any other words or explanation.
 
 # TEXT:
 ${text}
+
+# RESPONSE:
 `;
 
     return sendMessageLlm(prompt);
@@ -249,7 +252,8 @@ RESPONSE:
     const prompt = `
 # TASK:
 Extract the exact word being guessed from the input.
-Respond with ONLY the guessed word, nothing else.
+Respond on a new line with ONLY the guessed word, nothing else.
+The guessed word should be a noun.
 Respond with "NONE" if you cannot extract a specific word being guessed from the input.
 
 # INPUT:

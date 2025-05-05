@@ -11,6 +11,7 @@ describe('Game Flow Integration Tests', () => {
 
   beforeEach(async () => {
     await gameState.reset();
+    (gameState as any).secretWord = 'car';
   });
 
   afterAll(async () => {
