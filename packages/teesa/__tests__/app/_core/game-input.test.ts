@@ -50,6 +50,10 @@ const inputTypeScenarios = [
 ];
 
 describe('Game input classification', () => {
+  afterAll(async () => {
+    await gameState.reset();
+  });
+
   test.each(inputTypeScenarios)('$input → $expected', async ({ input, expected }) => {
     const type = await wordGame.getInputTypeForMessage(input);
     expect(type).toBe(expected);

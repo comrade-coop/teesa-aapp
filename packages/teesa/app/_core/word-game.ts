@@ -245,9 +245,16 @@ RESPONSE:
 
   private async extractGuess(userInput: string): Promise<string> {
     const prompt = `
-Extract the exact word being guessed from this input: "${userInput}"
+# TASK:
+Extract the exact word being guessed from the input.
 Respond with ONLY the guessed word, nothing else.
-Respond with "NONE" if you cannot extract a specific word being guessed from the input.`;
+Respond with "NONE" if you cannot extract a specific word being guessed from the input.
+
+# INPUT:
+${userInput}
+
+# RESPONSE:
+`;
 
     const guess = await sendMessageLlm(prompt, this.baseRules);
     console.log(`Extracted guess from "${userInput}": "${guess}"`);
