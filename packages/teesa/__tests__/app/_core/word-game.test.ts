@@ -12,7 +12,6 @@ describe('WordGame', () => {
   });
 
   afterAll(async () => {
-    jest.clearAllMocks();
     await gameState.reset();
   });
 

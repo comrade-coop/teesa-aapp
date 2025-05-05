@@ -86,11 +86,28 @@ export async function sendMessageLlm(message: string, systemMessage?: string | u
 
   const response = await llm.chat.completions.create({
     model: logicModel,
-    messages: messages,
     temperature: 0,
+    messages: messages,
+    include_reasoning: false,
+    reasoning: {
+      // effort: "high",
+      // max_tokens: 2000,
+      exclude: true
+    }
   });
 
-  return response.choices[0].message.content || '';
+  var content = response.choices[0].message.content || '';
+
+  // Mitigate the issue of OpenRouter returning the reasoning tokens in the response
+  const lines = content.split('\n');
+  const nonEmptyLines = lines.filter(line => line.trim() !== '');
+  if (nonEmptyLines.length > 0) {
+    content = nonEmptyLines[nonEmptyLines.length - 1];
+  } else {
+    content = '';
+  }
+
+  return content;
 }
 
 export async function sendMessageCreativeLlm(message: string, systemMessage?: string | undefined): Promise<string> {

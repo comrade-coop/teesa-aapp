@@ -13,6 +13,10 @@ describe('Game Flow Integration Tests', () => {
     await gameState.reset();
   });
 
+  afterAll(async () => {
+    await gameState.reset();
+  });
+
   it('should handle a complete game flow with a correct guess', async () => {
     const userId = 'user123';
 
