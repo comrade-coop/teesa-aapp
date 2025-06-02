@@ -1,10 +1,10 @@
+import 'server-only';
+
 import { Mutex } from 'async-mutex';
 import fs from 'fs';
-import 'server-only';
-import { wordsList } from './words-list';
-import { MessageTypeEnum } from './message-type-enum';
-import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { wordsList } from './words-list';
 
 const STATE_FILE_PATH = process.env.DOCKER_CLOUD_VOLUME_PATH ? 
                           path.join(process.env.DOCKER_CLOUD_VOLUME_PATH, "game-state.json") : 
@@ -14,26 +14,34 @@ const STATE_FILE_PATH = process.env.DOCKER_CLOUD_VOLUME_PATH ?
 export enum AnswerResultEnum {
   YES,
   NO,
-  CORRECT,
-  INCORRECT,
-  UNKNOWN,
-  MAYBE
+  UNKNOWN
+}
+
+export interface Question {
+  question: string;
+  answer: AnswerResultEnum;
+}
+
+export enum AgentClientsEnum {
+  WEB,
+  TWITTER
 }
 
 export interface HistoryEntry {
   id: string;
   userId: string;
   timestamp: number;
-  messageType: MessageTypeEnum;
+  agentClient: AgentClientsEnum;
   userMessage: string | undefined;
   llmMessage: string;
-  answerResult: AnswerResultEnum;
 }
 
 interface GameStateData {
   id: string;
   secretWord: string;
   history: HistoryEntry[];
+  questions: Question[];
+  incorrectGuesses: string[];
   gameEnded: boolean;
   winnerAddress: string | undefined;
   nftId: string | undefined;
@@ -45,6 +53,8 @@ class GameState {
   private id: string;
   private secretWord: string;
   private history: HistoryEntry[];
+  private questions: Question[];
+  private incorrectGuesses: string[];
   private gameEnded: boolean;
   private winnerAddress: string | undefined;
   private nftId: string | undefined;
@@ -57,6 +67,8 @@ class GameState {
     this.id = state.id;
     this.secretWord = state.secretWord;
     this.history = state.history;
+    this.questions = state.questions;
+    this.incorrectGuesses = state.incorrectGuesses;
     this.gameEnded = state.gameEnded;
     this.winnerAddress = state.winnerAddress;
     this.nftId = state.nftId;
@@ -83,6 +95,8 @@ class GameState {
       id: uuidv4(),
       secretWord: process.env.ENV_MODE === 'dev' ? 'car' : this.selectRandomWord(),
       history: [],
+      questions: [],
+      incorrectGuesses: [],
       gameEnded: false,
       winnerAddress: undefined,
       nftId: undefined
@@ -95,6 +109,8 @@ class GameState {
         id: this.id,
         secretWord: this.secretWord,
         history: this.history,
+        questions: this.questions,
+        incorrectGuesses: this.incorrectGuesses,
         gameEnded: this.gameEnded,
         winnerAddress: this.winnerAddress,
         nftId: this.nftId
@@ -125,6 +141,28 @@ class GameState {
   async addToHistory(message: HistoryEntry): Promise<any> {
     await this.mutex.runExclusive(async () => {
       this.history.push(message);
+      await this.saveState();
+    });
+  }
+
+  async getQuestions(): Promise<Question[]> {
+    return this.questions;
+  }
+
+  async addQuestion(question: Question): Promise<any> {
+    await this.mutex.runExclusive(async () => {
+      this.questions.push(question);
+      await this.saveState();
+    });
+  }
+
+  async getIncorrectGuesses(): Promise<string[]> {
+    return this.incorrectGuesses;
+  }
+
+  async addIncorrectGuess(guess: string): Promise<any> {
+    await this.mutex.runExclusive(async () => {
+      this.incorrectGuesses.push(guess);
       await this.saveState();
     });
   }
@@ -166,6 +204,8 @@ class GameState {
     this.id = defaultState.id;
     this.secretWord = defaultState.secretWord;
     this.history = defaultState.history;
+    this.questions = defaultState.questions;
+    this.incorrectGuesses = defaultState.incorrectGuesses;
     this.gameEnded = defaultState.gameEnded;
     this.winnerAddress = defaultState.winnerAddress;
     this.nftId = defaultState.nftId;

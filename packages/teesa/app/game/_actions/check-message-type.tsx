@@ -1,8 +1,7 @@
 'use server';
 
-import { wordGame } from "../../_core/word-game";
-import { MessageTypeEnum } from "../../_core/message-type-enum";
+import { isMessageGuess } from "@/agent/get-message-type";
 
-export async function checkMessageType(message: string): Promise<MessageTypeEnum> {
-  return await wordGame.getInputTypeForMessage(message);
+export async function checkMessageType(message: string): Promise<boolean> {
+  return await isMessageGuess(message);
 }

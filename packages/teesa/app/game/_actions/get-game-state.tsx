@@ -1,6 +1,6 @@
 'use server';
 
-import { gameState } from '../../_core/game-state';
+import { gameState } from '../../../agent/game-state';
 
 export async function getGameState() {
   const [id, gameEnded, winnerAddress] = await Promise.all([

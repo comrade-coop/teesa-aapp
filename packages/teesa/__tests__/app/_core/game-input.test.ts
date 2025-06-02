@@ -1,7 +1,7 @@
 import { wordGame } from '../../../app/_core/word-game';
-import { gameState, AnswerResultEnum } from '../../../app/_core/game-state';
-import { MessageTypeEnum } from '../../../app/_core/message-type-enum';
-import { WON_GAME_MESSAGE } from '../../../app/_core/game-const';
+import { gameState, AnswerResultEnum } from '../../../agent/game-state';
+import { MessageTypeEnum } from '../../../agent/message-type-enum';
+import { WON_GAME_MESSAGE } from '../../../agent/message-const';
 import { classifyAnswer } from './llm-test-utils';
 import { v4 as uuidv4 } from 'uuid';
 

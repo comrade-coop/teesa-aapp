@@ -1,71 +1,57 @@
 'use server';
 
-import { gameState, AnswerResultEnum } from '../../_core/game-state';
-import { sendMessageCreativeLlm } from '../../_core/llm-client';
-import { MessageTypeEnum } from '../../_core/message-type-enum';
+import { sendMessageLlm } from '@/agent/llm';
+import { gameState, AnswerResultEnum } from '@/agent/game-state';
 
 // Cache to store the latest summary
 let cachedSummary = '';
 let lastMessageCount = 0;
 
 export async function generateSummary(): Promise<string> {
+
+  return '';
   try {
     // Get all messages from the conversation
-    const allMessages = await gameState.getHistory();
+    const questions = await gameState.getQuestions();
     
-    // Filter to only include questions and guesses
-    const relevantMessages = allMessages.filter(
-      msg => msg.messageType === MessageTypeEnum.QUESTION || msg.messageType === MessageTypeEnum.GUESS
-    );
-    
-    if (relevantMessages.length === 0) {
+    if (questions.length === 0) {
       return '';
     }
 
     // If the number of relevant messages hasn't changed, return the cached summary
-    if (relevantMessages.length === lastMessageCount && cachedSummary) {
+    if (questions.length === lastMessageCount && cachedSummary) {
       return cachedSummary;
     }
     
     // Update the message count
-    lastMessageCount = relevantMessages.length;
+    lastMessageCount = questions.length;
 
     // Extract relevant information from the messages
-    const conversationText = relevantMessages.map(msg => {
+    const conversationText = questions.map(question => {
       // Skip if user message is undefined
-      if (!msg.userMessage) return '';
+      if (!question.question) return '';
       
       let text = '';
-      const userQuestion = msg.userMessage;
+      const userQuestion = question.question;
       
       // Use the stored answerResult if available, otherwise fall back to text parsing
       let simpleAnswer = 'Unknown';
       
-      if (msg.answerResult !== undefined) {
+      if (question.answer !== undefined) {
         // Use the stored answer result
-        switch(msg.answerResult) {
+        switch(question.answer) {
           case AnswerResultEnum.YES:
             simpleAnswer = 'Yes';
             break;
           case AnswerResultEnum.NO:
             simpleAnswer = 'No';
             break;
-          case AnswerResultEnum.CORRECT:
-            simpleAnswer = 'Correct!';
-            break;
-          case AnswerResultEnum.INCORRECT:
-            simpleAnswer = 'Incorrect';
-            break;
           default:
             simpleAnswer = 'Unknown';
         }
 
         // Format the Q&A pair
-        if (msg.messageType === MessageTypeEnum.QUESTION) {
-          text = `Question: ${userQuestion}\nAnswer: ${simpleAnswer}\n`;
-        } else if (msg.messageType === MessageTypeEnum.GUESS) {
-          text = `Guess: ${userQuestion}\nResult: ${simpleAnswer}\n`;
-        }
+        text = `Question: ${userQuestion}\nAnswer: ${simpleAnswer}\n`;
       }
       
       return text;
@@ -85,7 +71,7 @@ ${conversationText}
 Summary:
 `;
 
-    const summary = await sendMessageCreativeLlm(prompt);
+    const summary = await sendMessageLlm(prompt);
     
     // Cache the result
     cachedSummary = summary;

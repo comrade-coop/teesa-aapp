@@ -4,7 +4,6 @@ import { getLocaleClient, getTimestamp } from '@/lib/utils';
 import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { MessageTypeEnum } from '../_core/message-type-enum';
 import { checkMessageType } from './_actions/check-message-type';
 import { generateSummary } from './_actions/generate-summary';
 import { getGameState } from './_actions/get-game-state';
@@ -200,24 +199,24 @@ export default function Page() {
 
     setLoading(true);
 
-    const inputType = await checkMessageType(message);
+    const isMessageGuess = await checkMessageType(message);
 
     // If user is trying to make a guess but isn't authenticated, show prompt to connect wallet
-    if (inputType == MessageTypeEnum.GUESS && !walletAddress) {
+    if (isMessageGuess && !walletAddress) {
       setLoading(false);
       setShowConnectWalletMessage(true);
 
       return;
     }
 
-    const id = uuidv4();
+    const messageId = uuidv4();
     const timestamp = getTimestamp();
-    const response = await sendMessage(anonymousUserId!, walletAddress, id, timestamp, message, inputType);
+    const response = await sendMessage(anonymousUserId!, walletAddress, messageId, timestamp, message);
 
     setMessages(previousMessages => [
       ...previousMessages,
       {
-        id: id,
+        id: messageId,
         userId: anonymousUserId!,
         timestamp: timestamp,
         display: response
