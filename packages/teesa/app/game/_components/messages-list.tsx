@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageUiStateModel } from "../_models/message-ui-state-model";
 import { ChevronDown } from "lucide-react";
-import { INITIAL_MESSAGE } from "@/app/_core/game-const";
+import { INITIAL_MESSAGE } from "@/agent/message-const";
 import { LlmChatMessage } from "./llm-chat-message";
 
 export function MessagesList({

@@ -1,7 +1,7 @@
-import { AnswerResultEnum, gameState } from '../../../app/_core/game-state';
-import { WON_GAME_MESSAGE, PROCESSING_ERROR_MESSAGE } from '../../../app/_core/game-const';
+import { AnswerResultEnum, gameState } from '../../../agent/game-state';
+import { WON_GAME_MESSAGE, PROCESSING_ERROR_MESSAGE } from '../../../agent/message-const';
 import { wordGame, WordGame } from '../../../app/_core/word-game';
-import { MessageTypeEnum } from '../../../app/_core/message-type-enum';
+import { MessageTypeEnum } from '../../../agent/message-type-enum';
 import { classifyAnswer } from './llm-test-utils';
 
 describe('WordGame', () => {
