@@ -1,4 +1,4 @@
-import { createTwitterClient } from "./client";
+import { createTwitterClient } from "./twitter-client";
 
 (async () => {
   const client = await createTwitterClient({
@@ -13,7 +13,7 @@ import { createTwitterClient } from "./client";
   const scraper = client.getScraper();
 
   // Send a test tweet
-  await scraper.sendTweet('Testing interaction monitoring system.');
+  await scraper.sendTweet('123 qwe 123');
 
   // Start monitoring interactions and responding automatically
   // This will check for mentions/replies every 5 minutes and respond with hardcoded messages
