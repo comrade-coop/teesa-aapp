@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
-    "@langchain/anthropic": "^0.3.21",
     "@langchain/community": "^0.3.18",
     "@langchain/core": "^0.3.57",
     "@langchain/langgraph": "^0.2.74",

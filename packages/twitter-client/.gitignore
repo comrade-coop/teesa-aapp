@@ -1,0 +1,7 @@
+node_modules
+
+# dist folder
+dist
+
+# cache
+cache
