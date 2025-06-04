@@ -1,0 +1,20 @@
+{
+  "name": "@teesa-monorepo/twitter-client",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "twitter": "tsc && node dist/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "agent-twitter-client": "0.0.18",
+    "glob": "11.0.0",
+    "uuid": "^11.1.0"
+  },
+  "peerDependencies": {
+    "whatwg-url": "7.1.0"
+  }
+}
