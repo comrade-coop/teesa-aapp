@@ -1,0 +1,29 @@
+import { RunnableConfig } from "@langchain/core/runnables";
+import { tool } from "@langchain/core/tools";
+import { z } from "zod";
+import { gameState } from "../state/agent-state";
+import { AgentClientsEnum, HistoryEntry } from "../state/types";
+
+function formatHistoryMessage(history: HistoryEntry): string {
+  return `
+User: ${history.userMessage}
+Teesa: ${history.llmMessage}
+	`;
+}
+
+export const getHistoryWithCurrentUser = tool(
+  async (config: RunnableConfig) => {
+    console.log("TOOL: getHistoryWithCurrentUser");
+
+    const userId = config.configurable?.userId;
+
+    const history = (await gameState.getHistory()).filter(f => f.userId == userId && f.agentClient == AgentClientsEnum.WEB);
+
+    return history.map(h => formatHistoryMessage(h)).join("\n");
+  },
+  {
+    name: "getHistoryWithCurrentUser",
+    description: "Get the chat history with the current user",
+    schema: z.object({})
+  }
+);

@@ -1,0 +1,7 @@
+node_modules
+
+# dist folder
+dist
+
+# state
+agent-state.json

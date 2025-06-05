@@ -8,8 +8,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "nft": "pnpm --filter @teesa-monorepo/nft initialize",
-    "dev": "pnpm --filter @teesa-monorepo/teesa dev",
-    "teesa": "pnpm --filter @teesa-monorepo/teesa start",
+    "dev": "pnpm --filter @teesa-monorepo/agent build && pnpm --filter @teesa-monorepo/web-app dev",
+    "start": "pnpm --filter @teesa-monorepo/agent build && pnpm --filter @teesa-monorepo/twitter-client start && pnpm --filter @teesa-monorepo/web-app start",
     "clean": "pnpm -r clean && bash ./scripts/clean.sh"
   },
   "engines": {

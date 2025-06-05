@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "twitter": "tsc && node dist/index.js"
+    "build": "cp ../../.env . && tsc && rm ./.env",
+    "start": "node dist/index.js"
   },
   "author": "",
   "license": "MIT",
