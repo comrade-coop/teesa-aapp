@@ -31,11 +31,13 @@ export interface HistoryEntry {
 
 export interface AgentStateData {
   id: string;
+  // Game details
   secretWord: string;
-  history: HistoryEntry[];
-  questions: Question[];
-  incorrectGuesses: IncorrectGuess[];
   gameEnded: boolean;
   winnerAddress: string | undefined;
   nftId: string | undefined;
+  // User interactions
+  history: HistoryEntry[];
+  questions: Question[];
+  incorrectGuesses: IncorrectGuess[];
 }

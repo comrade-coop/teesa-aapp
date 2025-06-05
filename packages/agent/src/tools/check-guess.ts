@@ -1,14 +1,15 @@
 import { RunnableConfig } from "@langchain/core/runnables";
 import { tool } from "@langchain/core/tools";
-import { generateNft } from "@teesa-monorepo/nft/src/generate-nft";
-import { getNftContractAddress } from "@teesa-monorepo/nft/src/get-nft-contract-address";
-import { getNetwork } from "@teesa-monorepo/nft/src/networks";
+import { generateNft, getNftContractAddress, getNetwork } from "@teesa-monorepo/nft";
 import { v4 as uuidv4 } from 'uuid';
 import { z } from "zod";
 import { sendMessageLlm, sendMessageOllama } from "../llm";
 import { PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../message-const";
-import { gameState, resetState } from "../state/agent-state";
+import { agentState, resetState } from "../state/agent-state";
 import { AgentClientsEnum, HistoryEntry } from "../state/types";
+import path from 'path';
+
+require('dotenv').config({ path: path.resolve(process.cwd(), '../../.env') });
 
 function retryWithExponentialBackoff(
   operation: () => Promise<any>,
@@ -70,7 +71,7 @@ async function extractGuess(userGuessMessage: string): Promise<string> {
 }
 
 async function check(guess: string): Promise<boolean> {
-  const secretWord = gameState.getSecretWord();
+  const secretWord = agentState.getSecretWord();
   
   const prompt = `
 # TASK:
@@ -108,7 +109,7 @@ Word 2: "${guess}"
 }
 
 function setWinner(userId: string, userAddress: string, timestamp: number) {
-  gameState.setWinner(userAddress);
+  agentState.setWinner(userAddress);
 
   if (process.env.ENV_MODE === 'dev') {
     console.log(`DEV MODE: NFT sent to user ${userAddress}`);
@@ -120,14 +121,14 @@ function setWinner(userId: string, userAddress: string, timestamp: number) {
 
   // Generate NFT and send it to the user
   retryWithExponentialBackoff(
-    () => generateNft(userAddress, gameState.getId(), gameState.getSecretWord()),
+    () => generateNft(userAddress, agentState.getId(), agentState.getSecretWord()),
     (nftId) => onGenerateNftSuccess(userId, timestamp, nftId),
     (attempt) => onGenerateNftFailure(attempt, userId, timestamp)
   );
 }
 
 async function onGenerateNftSuccess(userId: string, timestamp: number, nftId: string) {
-  await gameState.setNftId(nftId);
+  await agentState.setNftId(nftId);
 
   const network = getNetwork();
   const contractAddress = getNftContractAddress();
@@ -142,7 +143,7 @@ async function onGenerateNftSuccess(userId: string, timestamp: number, nftId: st
     agentClient: AgentClientsEnum.WEB
   };
 
-  await gameState.addToHistory(message);
+  await agentState.addToHistory(message);
 
   restartGame();
 }
@@ -161,7 +162,7 @@ async function onGenerateNftFailure(attempt: number, userId: string, timestamp: 
     agentClient: AgentClientsEnum.WEB
   };
 
-  gameState.addToHistory(message);
+  agentState.addToHistory(message);
 }
 
 function restartGame() {
@@ -181,6 +182,12 @@ export const checkGuess = tool(
   async (input: { userGuessMessage  : string }, config: RunnableConfig) => {
     console.log("TOOL: checkGuess");
 
+    const agentClient = config.configurable?.agentClient;
+    
+    if (agentClient == AgentClientsEnum.TWITTER) {
+      return "Repond that the user can make a guess only from the game's website. This is the URL of the game's website: https://teesa.ai";
+    }
+
     const { userGuessMessage } = input;
 
     const guess = await extractGuess(userGuessMessage);
@@ -194,7 +201,7 @@ export const checkGuess = tool(
     if (!isCorrect) {
       const messageId = config.configurable?.messageId;
 
-      await gameState.addIncorrectGuess({
+      await agentState.addIncorrectGuess({
         messageId,
         guess
       });

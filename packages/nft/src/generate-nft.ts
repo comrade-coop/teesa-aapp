@@ -1,7 +1,7 @@
+import { fal } from "@fal-ai/client";
 import path from 'path';
 import { Readable } from 'stream';
-import { imageToReadableStream, mintNft, pinata, urlToReadableStream } from "./nft-utils";
-import { fal } from "@fal-ai/client";
+import { mintNft, pinata, urlToReadableStream } from "./nft-utils";
 
 require('dotenv').config({ path: path.resolve(process.cwd(), '../../../.env') });
 

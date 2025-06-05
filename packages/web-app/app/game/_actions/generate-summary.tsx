@@ -1,7 +1,7 @@
 'use server';
 
 import { sendMessageLlm } from '@teesa-monorepo/agent/src/llm';
-import { gameState } from '@teesa-monorepo/agent/src/state/agent-state';
+import { agentState } from '@teesa-monorepo/agent/src/state/agent-state';
 import { AnswerResultEnum } from '@teesa-monorepo/agent/src/state/types';
 
 // Cache to store the latest summary
@@ -13,7 +13,7 @@ export async function generateSummary(): Promise<string> {
   return '';
   try {
     // Get all messages from the conversation
-    const questions = await gameState.getQuestions();
+    const questions = await agentState.getQuestions();
     
     if (questions.length === 0) {
       return '';

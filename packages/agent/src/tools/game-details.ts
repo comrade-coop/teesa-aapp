@@ -1,13 +1,13 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { gameState } from "../state/agent-state";
+import { agentState } from "../state/agent-state";
 
 export const gameDetails = tool(
   async () => {
     console.log("TOOL: gameDetails");
 
-    const questions = await gameState.getQuestions();
-    const incorrectGuesses = await gameState.getIncorrectGuesses();
+    const questions = await agentState.getQuestions();
+    const incorrectGuesses = await agentState.getIncorrectGuesses();
 
     return `
 - The game is currently in progress.

@@ -1,6 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { gameState } from "../state/agent-state";
+import { agentState } from "../state/agent-state";
 import { Question } from "../state/types";
 
 function formatQuestion(question: Question): string {
@@ -14,7 +14,7 @@ export const getQuestions = tool(
   async () => {
     console.log("TOOL: getQuestions");
 
-    const questions = await gameState.getQuestions();
+    const questions = await agentState.getQuestions();
 
     return questions.map(formatQuestion).join("\n");
   },

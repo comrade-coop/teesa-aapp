@@ -15,15 +15,18 @@ export interface TwitterCookie {
   sameSite?: string;
 }
 
-export interface TwitterConfig {
-  credentials: TwitterCredentials;
-  retryLimit?: number;
-  requestDelay?: { min: number; max: number };
-}
-
 export interface CacheManager {
   get<T>(key: string): Promise<T | undefined>;
   set<T>(key: string, value: T, options?: { expires?: number }): Promise<void>;
+}
+
+export interface TwitterInteraction {
+  id: string;
+  username: string;
+  userId: string;
+  text: string;
+  isRetweet: boolean;
+  [key: string]: any; // Allow additional properties from the API
 }
 
 export interface EventListeners {
@@ -31,6 +34,7 @@ export interface EventListeners {
   authenticationError?: (error: Error) => void;
   profileLoaded?: (profile: any) => void;
   logout?: () => void;
+  interactionReceived?: (interaction: TwitterInteraction) => void;
 }
 
 export interface TwitterAuthConfig {

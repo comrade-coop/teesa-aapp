@@ -57,7 +57,7 @@ cleanup() {
     ollama stop "$OLLAMA_MODEL"
 
     # # Remove the .env file
-    # rm -f .env
+    rm -f .env
 }
 
 # Set trap to ensure cleanup runs on script exit

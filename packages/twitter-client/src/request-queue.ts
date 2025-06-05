@@ -1,10 +1,13 @@
+const DELAY_MIN = 1500;
+const DELAY_MAX = 3000;
+
 export class RequestQueue {
   private queue: (() => Promise<any>)[] = [];
   private processing = false;
   private requestDelay: { min: number; max: number };
 
-  constructor(delay: { min: number; max: number } = { min: 1500, max: 3000 }) {
-    this.requestDelay = delay;
+  constructor() {
+    this.requestDelay = { min: DELAY_MIN, max: DELAY_MAX };
   }
 
   async add<T>(request: () => Promise<T>): Promise<T> {

@@ -1,5 +1,5 @@
 import { tool } from "@langchain/core/tools";
-import { getNetwork } from "@teesa-monorepo/nft/src/networks";
+import { getNetwork } from "@teesa-monorepo/nft";
 import { z } from "zod";
 
 export const nftDetails = tool(
