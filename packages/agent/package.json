@@ -1,0 +1,23 @@
+{
+  "name": "@teesa-monorepo/agent",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "cp ../../.env . && tsc && rm ./.env"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "@teesa-monorepo/nft": "workspace:*",
+    "@langchain/community": "^0.3.18",
+    "@langchain/core": "^0.3.57",
+    "@langchain/langgraph": "^0.2.74",
+    "@langchain/ollama": "^0.1.5",
+    "@langchain/openai": "^0.3.14",
+    "async-mutex": "^0.5.0",
+    "langchain": "^0.3.7",
+    "uuid": "^11.0.3",
+    "zod": "^3.24.1"
+  }
+}

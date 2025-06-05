@@ -13,7 +13,7 @@ import { createTwitterClient } from "./twitter-client";
   const scraper = client.getScraper();
 
   // Send a test tweet
-  await scraper.sendTweet('123 qwe 123');
+  await scraper.sendTweet('new test tweet qwe');
 
   // Start monitoring interactions and responding automatically
   // This will check for mentions/replies every 5 minutes and respond with hardcoded messages
