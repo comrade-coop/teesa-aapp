@@ -3,6 +3,9 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatOllama } from "@langchain/ollama";
 import { ChatOpenAI } from "@langchain/openai";
+import path from 'path';
+
+require('dotenv').config({ path: path.resolve(process.cwd(), '../../.env') });
 
 export const llm = new ChatOpenAI({
   model: process.env.OPENROUTER_MODEL,

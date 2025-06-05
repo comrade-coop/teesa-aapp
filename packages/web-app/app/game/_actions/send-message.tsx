@@ -1,6 +1,6 @@
 'use server';
 
-import { runAgent } from "@teesa-monorepo/agent/src/agent";
+import { replyToUser } from "@teesa-monorepo/agent/src/agent";
 import { AgentClientsEnum } from "@teesa-monorepo/agent/src/state/types";
 import { createStreamableUI } from "ai/rsc";
 import { getLocaleServer } from "../../../lib/server-utils";
@@ -18,7 +18,7 @@ export async function sendMessage(userId: string, userAddress: string | undefine
   </>);
 
   (async () => {
-    let llmMessage = await runAgent(AgentClientsEnum.WEB, userId, userAddress, messageId, timestamp, message);
+    let llmMessage = await replyToUser(AgentClientsEnum.WEB, userId, userAddress, messageId, timestamp, message);
     
     responseUi.update(<>
       <UserChatMessage timestamp={timestamp} locale={locale} message={message} userId={userId} />

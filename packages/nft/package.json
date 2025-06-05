@@ -1,7 +1,8 @@
 {
   "name": "@teesa-monorepo/nft",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "tsc",
     "clean": "npx hardhat clean && rm -rf ./ignition/deployments",

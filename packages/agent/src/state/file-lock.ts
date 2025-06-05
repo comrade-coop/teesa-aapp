@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 
 export class FileLock {
   private lockFilePath: string;
@@ -10,6 +11,12 @@ export class FileLock {
   private async acquireLock(): Promise<void> {
     const maxRetries = 100;
     const retryDelay = 50; // 50ms
+    
+    // Ensure the directory exists before trying to create the lock file
+    const lockDir = path.dirname(this.lockFilePath);
+    if (!fs.existsSync(lockDir)) {
+      fs.mkdirSync(lockDir, { recursive: true });
+    }
     
     for (let i = 0; i < maxRetries; i++) {
       try {

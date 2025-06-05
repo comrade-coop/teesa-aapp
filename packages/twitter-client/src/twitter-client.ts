@@ -1,12 +1,13 @@
-import { Scraper } from 'agent-twitter-client';
-import { SearchMode } from 'agent-twitter-client';
-import { TwitterConfig, TwitterCookie, CacheManager, EventListeners, TwitterAuthConfig } from './types';
+import { Scraper, SearchMode } from 'agent-twitter-client';
 import { FileCacheManager } from './cache-manager';
 import { RequestQueue } from './request-queue';
+import { CacheManager, EventListeners, TwitterCookie, TwitterCredentials, TwitterInteraction } from './types';
+
+const AUTHENTICATION_RETRY_LIMIT = 5;
 
 export class TwitterAuthenticationClient {
   private scraper: Scraper;
-  private config: TwitterConfig;
+  private credentials: TwitterCredentials;
   private cacheManager: CacheManager;
   private requestQueue: RequestQueue;
   private isLoggedIn: boolean = false;
@@ -14,15 +15,12 @@ export class TwitterAuthenticationClient {
   private eventListeners: EventListeners = {};
   private processedInteractions: Set<string> = new Set();
   private interactionMonitoringActive: boolean = false;
+  private monitoringStartTime: Date | null = null;
 
-  constructor(config: TwitterConfig, cacheManager?: CacheManager) {
-    this.config = {
-      retryLimit: 5,
-      requestDelay: { min: 1500, max: 3000 },
-      ...config
-    };
-    this.cacheManager = cacheManager || new FileCacheManager();
-    this.requestQueue = new RequestQueue(this.config.requestDelay);
+  constructor(credentials: TwitterCredentials) {
+    this.credentials = credentials;
+    this.cacheManager = new FileCacheManager();
+    this.requestQueue = new RequestQueue();
 
     this.scraper = new Scraper();
   }
@@ -100,8 +98,8 @@ export class TwitterAuthenticationClient {
    * Perform fresh authentication with credentials
    */
   private async performAuthentication(): Promise<void> {
-    const { username, password, email, twoFactorSecret } = this.config.credentials;
-    let retries = this.config.retryLimit || 5;
+    const { username, password, email, twoFactorSecret } = this.credentials;
+    let retries = AUTHENTICATION_RETRY_LIMIT;
 
     console.log(`🔑 Attempting login for user: ${username}`);
 
@@ -157,7 +155,7 @@ export class TwitterAuthenticationClient {
   private async loadUserProfile(): Promise<void> {
     try {
       this.profile = await this.requestQueue.add(() =>
-        this.scraper.getProfile(this.config.credentials.username)
+        this.scraper.getProfile(this.credentials.username)
       );
 
       console.log(`👤 Loaded profile for: ${this.profile.name} (@${this.profile.username})`);
@@ -190,7 +188,7 @@ export class TwitterAuthenticationClient {
    * Get cached cookies
    */
   private async getCachedCookies(): Promise<TwitterCookie[] | undefined> {
-    const cacheKey = `twitter/${this.config.credentials.username}/cookies`;
+    const cacheKey = `twitter/${this.credentials.username}/cookies`;
     return await this.cacheManager.get<TwitterCookie[]>(cacheKey);
   }
 
@@ -198,7 +196,7 @@ export class TwitterAuthenticationClient {
    * Cache cookies
    */
   private async cacheCookies(cookies: any[]): Promise<void> {
-    const cacheKey = `twitter/${this.config.credentials.username}/cookies`;
+    const cacheKey = `twitter/${this.credentials.username}/cookies`;
     await this.cacheManager.set(cacheKey, cookies);
   }
 
@@ -212,7 +210,7 @@ export class TwitterAuthenticationClient {
   }> {
     return {
       isAuthenticated: this.isLoggedIn,
-      username: this.config.credentials.username,
+      username: this.credentials.username,
       profile: this.profile
     };
   }
@@ -241,7 +239,7 @@ export class TwitterAuthenticationClient {
       await this.scraper.clearCookies();
 
       // Clear cached cookies
-      const cacheKey = `twitter/${this.config.credentials.username}/cookies`;
+      const cacheKey = `twitter/${this.credentials.username}/cookies`;
       await this.cacheManager.set(cacheKey, []);
 
       this.isLoggedIn = false;
@@ -290,24 +288,45 @@ export class TwitterAuthenticationClient {
   /**
    * Fetch interactions (mentions and replies) for the authenticated user
    */
-  private async fetchInteractions(): Promise<any[]> {
+  private async fetchInteractions(): Promise<TwitterInteraction[]> {
     if (!this.isLoggedIn) {
       throw new Error('Not authenticated. Call initialize() first.');
     }
 
     try {
       console.log('🔍 Fetching interactions...');
-      
+
       // Fetch mentions using the scraper
       const mentions = await this.requestQueue.add(() =>
-        this.scraper.fetchSearchTweets(`@${this.config.credentials.username}`, 20, SearchMode.Latest)
+        this.scraper.fetchSearchTweets(`@${this.credentials.username}`, 20, SearchMode.Latest)
       ) as any;
 
       // Filter out interactions we've already processed
       const newInteractions = mentions?.tweets?.filter((tweet: any) => {
-        return !this.processedInteractions.has(tweet.id) && 
-               tweet.userId !== this.profile?.userId && // Don't reply to our own tweets
-               !tweet.isRetweet; // Don't reply to retweets
+        // Skip if already processed
+        if (this.processedInteractions.has(tweet.id)) {
+          return false;
+        }
+        
+        // Skip our own tweets
+        if (tweet.userId === this.profile?.userId) {
+          return false;
+        }
+        
+        // Skip retweets
+        if (tweet.isRetweet) {
+          return false;
+        }
+        
+        // Skip interactions that happened before monitoring started
+        if (this.monitoringStartTime && tweet.timeParsed) {
+          const tweetTime = new Date(tweet.timeParsed);
+          if (tweetTime < this.monitoringStartTime) {
+            return false;
+          }
+        }
+        
+        return true;
       }) || [];
 
       console.log(`📨 Found ${newInteractions.length} new interactions`);
@@ -320,43 +339,48 @@ export class TwitterAuthenticationClient {
   }
 
   /**
-   * Generate a hardcoded response - you can customize these responses
+   * Post a new tweet
    */
-  private generateResponse(originalTweet: any): string {
-    const responses = [
-      "Thanks for engaging! Always appreciate the conversation.",
-      "Great point! Thanks for sharing your thoughts on this.",
-      "I appreciate you taking the time to respond! 💭",
-      "Thanks for the interaction! Love connecting with the community.",
-      "Interesting perspective! Thanks for adding to the discussion.",
-      "Appreciate the feedback! Always learning from the community.",
-      "Thanks for engaging with my content! 🚀",
-      "Great to see you in the conversation! Thanks for commenting.",
-      "Love the engagement! Thanks for being part of the discussion.",
-      "Thanks for the response! The community interactions make it all worthwhile."
-    ];
+  async postTweet(text: string): Promise<void> {
+    if (!this.isLoggedIn) {
+      throw new Error('Not authenticated. Call initialize() first.');
+    }
 
-    // Select a random response
-    const randomIndex = Math.floor(Math.random() * responses.length);
-    return responses[randomIndex];
+    try {
+      console.log(`📝 Posting tweet: "${text}"`);
+
+      await this.requestQueue.add(() =>
+        this.scraper.sendTweet(text)
+      );
+
+      console.log('✅ Tweet posted successfully');
+
+    } catch (error) {
+      console.error('❌ Error posting tweet:', (error as Error).message);
+      throw error;
+    }
   }
 
   /**
-   * Reply to a specific tweet
+   * Reply to a specific tweet - public method for external use
    */
-  private async replyToTweet(tweetId: string, replyText: string): Promise<void> {
+  async replyToInteraction(tweetId: string, replyText: string): Promise<void> {
     if (!this.isLoggedIn) {
       throw new Error('Not authenticated. Call initialize() first.');
     }
 
     try {
       console.log(`💬 Replying to tweet ${tweetId}: "${replyText}"`);
-      
+
       await this.requestQueue.add(() =>
         this.scraper.sendTweet(replyText, tweetId)
       );
 
       console.log('✅ Reply sent successfully');
+
+      // Mark interaction as processed and cache it
+      this.processedInteractions.add(tweetId);
+      await this.cacheProcessedInteraction(tweetId);
 
     } catch (error) {
       console.error('❌ Error sending reply:', (error as Error).message);
@@ -376,19 +400,16 @@ export class TwitterAuthenticationClient {
           // Mark as processed first to avoid duplicates
           this.processedInteractions.add(interaction.id);
 
-          // Generate response
-          const response = this.generateResponse(interaction);
-
-          // Reply to the interaction
-          await this.replyToTweet(interaction.id, response);
-
-          console.log(`✅ Responded to @${interaction.username}: "${response}"`);
+          // Emit event for external handler to process
+          if (this.eventListeners.interactionReceived) {
+            this.eventListeners.interactionReceived(interaction);
+          }
 
           // Cache processed interaction to persist across sessions
           await this.cacheProcessedInteraction(interaction.id);
 
-          // Add delay between responses to be more natural
-          await new Promise(resolve => setTimeout(resolve, 5000 + Math.random() * 5000));
+          // Add delay between processing interactions
+          await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
 
         } catch (error) {
           console.error(`❌ Error processing interaction ${interaction.id}:`, (error as Error).message);
@@ -404,19 +425,19 @@ export class TwitterAuthenticationClient {
    * Cache processed interaction ID
    */
   private async cacheProcessedInteraction(interactionId: string): Promise<void> {
-    const cacheKey = `twitter/${this.config.credentials.username}/processed_interactions`;
-    
+    const cacheKey = `twitter/${this.credentials.username}/processed_interactions`;
+
     try {
       let processedIds = await this.cacheManager.get<string[]>(cacheKey) || [];
-      
+
       if (!processedIds.includes(interactionId)) {
         processedIds.push(interactionId);
-        
+
         // Keep only last 1000 processed interactions to prevent cache from growing too large
         if (processedIds.length > 1000) {
           processedIds = processedIds.slice(-1000);
         }
-        
+
         await this.cacheManager.set(cacheKey, processedIds);
       }
     } catch (error) {
@@ -428,8 +449,8 @@ export class TwitterAuthenticationClient {
    * Load previously processed interactions from cache
    */
   private async loadProcessedInteractions(): Promise<void> {
-    const cacheKey = `twitter/${this.config.credentials.username}/processed_interactions`;
-    
+    const cacheKey = `twitter/${this.credentials.username}/processed_interactions`;
+
     try {
       const processedIds = await this.cacheManager.get<string[]>(cacheKey) || [];
       this.processedInteractions = new Set(processedIds);
@@ -442,7 +463,7 @@ export class TwitterAuthenticationClient {
   /**
    * Start monitoring interactions and responding automatically
    */
-  async startInteractionMonitoring(intervalSeconds: number = 5): Promise<void> {
+  async startInteractionMonitoring(intervalSeconds: number): Promise<void> {
     if (this.interactionMonitoringActive) {
       console.log('⚠️ Interaction monitoring is already active');
       return;
@@ -453,11 +474,15 @@ export class TwitterAuthenticationClient {
     }
 
     console.log(`🎯 Starting interaction monitoring (checking every ${intervalSeconds} seconds)...`);
-    
+
     // Load previously processed interactions
     await this.loadProcessedInteractions();
-    
+
     this.interactionMonitoringActive = true;
+    this.monitoringStartTime = new Date();
+
+    console.log(`⏰ Monitoring started at: ${this.monitoringStartTime.toISOString()}`);
+    console.log('📝 Only interactions after this time will be processed');
 
     // Initial processing
     await this.processInteractions();
@@ -484,6 +509,7 @@ export class TwitterAuthenticationClient {
    */
   stopInteractionMonitoring(): void {
     this.interactionMonitoringActive = false;
+    this.monitoringStartTime = null;
     console.log('🛑 Interaction monitoring stopped');
   }
 
@@ -501,22 +527,8 @@ export class TwitterAuthenticationClient {
   }
 }
 
-export async function createTwitterClient(
-  config: TwitterAuthConfig,
-  cacheManager?: CacheManager
-): Promise<TwitterAuthenticationClient> {
-
-  const authConfig = {
-    credentials: {
-      username: config.username,
-      password: config.password,
-      email: config.email,
-      twoFactorSecret: config.twoFactorSecret
-    },
-    retryLimit: config.retryLimit || 5
-  };
-
-  const client = new TwitterAuthenticationClient(authConfig, cacheManager);
+export async function createTwitterClient(credentials: TwitterCredentials): Promise<TwitterAuthenticationClient> {
+  const client = new TwitterAuthenticationClient(credentials);
 
   // Set up event listeners for monitoring
   client.on('authenticated', (data: any) => {

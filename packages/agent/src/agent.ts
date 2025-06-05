@@ -4,7 +4,7 @@ import { MessagesAnnotation } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { llm } from "./llm";
 import { PROCESSING_ERROR_MESSAGE } from "./message-const";
-import { gameState } from "./state/agent-state";
+import { agentState } from "./state/agent-state";
 import { AgentClientsEnum, HistoryEntry } from "./state/types";
 import { answerQuestion } from "./tools/answer-question";
 import { checkGuess } from "./tools/check-guess";
@@ -106,13 +106,14 @@ Teesa: ${history.llmMessage}
 }
 
 // Helper function to run the agent
-export async function runAgent(agentClient: AgentClientsEnum, userId: string, userAddress: string | undefined, messageId: string, timestamp: number, userMessage: string) {
+export async function replyToUser(agentClient: AgentClientsEnum, userId: string, userAddress: string | undefined, messageId: string, timestamp: number, userMessage: string) {
   try {
-    const history = (await gameState.getHistory()).filter(f => f.agentClient == AgentClientsEnum.WEB).slice(-20);
+    const history = (await agentState.getHistory()).filter(f => f.agentClient == AgentClientsEnum.WEB).slice(-20);
 
     const response = await agent.invoke(
       { messages: userMessage },
       { configurable: { 
+        agentClient: agentClient,
         userId: userId, 
         userAddress: userAddress, 
         latestMessages: history,
@@ -123,7 +124,7 @@ export async function runAgent(agentClient: AgentClientsEnum, userId: string, us
 
     const result = response.messages[response.messages.length - 1].content.toString();
 
-    await gameState.addToHistory({
+    await agentState.addToHistory({
       id: messageId,
       userId: userId,
       timestamp: timestamp,

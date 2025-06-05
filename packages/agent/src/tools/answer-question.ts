@@ -2,11 +2,11 @@ import { tool } from "@langchain/core/tools";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { z } from "zod";
 import { sendMessageOllama } from "../llm";
-import { gameState } from "../state/agent-state";
+import { agentState } from "../state/agent-state";
 import { AnswerResultEnum } from "../state/types";
 
 async function answer(question: string): Promise<AnswerResultEnum> {
-  const secretWord = gameState.getSecretWord();
+  const secretWord = agentState.getSecretWord();
 
   const prompt = `
 ROLE: You are the host of a "20 Questions" game. Your goal is to answer yes/no questions about a secret word accurately and fairly, based on common-sense knowledge. 
@@ -55,7 +55,7 @@ export const answerQuestion = tool(
 
     const answerResult = await answer(question);
 
-    await gameState.addQuestion({ 
+    await agentState.addQuestion({ 
       messageId,
       question, 
       answer: answerResult

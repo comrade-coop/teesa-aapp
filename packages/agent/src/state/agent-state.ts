@@ -5,9 +5,11 @@ import { FileLock } from './file-lock';
 import { AgentStateData, HistoryEntry, IncorrectGuess, Question } from './types';
 import { wordsList } from './words-list';
 
+require('dotenv').config({ path: path.resolve(process.cwd(), '../../.env') });
+
 const STATE_FILE_PATH = process.env.DOCKER_CLOUD_VOLUME_PATH ?
-  path.join(process.env.DOCKER_CLOUD_VOLUME_PATH, "agent-state.json") :
-  path.join(process.cwd(), "../agent", "agent-state.json");
+  path.join(process.env.DOCKER_CLOUD_VOLUME_PATH, 'agent', 'agent-state.json') :
+  path.join(process.cwd(), '../agent', 'agent-state.json');
 
 class AgentState {
   private lastModified: number = 0;
@@ -80,17 +82,23 @@ class AgentState {
     return {
       id: uuidv4(),
       secretWord: process.env.ENV_MODE === 'dev' ? 'car' : this.selectRandomWord(),
+      gameEnded: false,
+      winnerAddress: undefined,
+      nftId: undefined,
       history: [],
       questions: [],
       incorrectGuesses: [],
-      gameEnded: false,
-      winnerAddress: undefined,
-      nftId: undefined
     };
   }
 
   async saveState(): Promise<void> {
     try {
+      // Ensure the directory exists before writing the file
+      const stateDir = path.dirname(STATE_FILE_PATH);
+      if (!fs.existsSync(stateDir)) {
+        await fs.promises.mkdir(stateDir, { recursive: true });
+      }
+      
       await fs.promises.writeFile(STATE_FILE_PATH, JSON.stringify(this.state, null, 2));
       this.updateLastModified();
     } catch (error) {
@@ -201,9 +209,9 @@ const globalState = globalThis as unknown as {
   _agentState?: AgentState;
 };
 
-export const gameState = (() => {
+export const agentState = (() => {
   if (typeof window !== 'undefined') {
-    throw new Error('GameState should only be used on the server');
+    throw new Error('AgentState should only be used on the server');
   }
 
   if (!globalState._agentState) {
@@ -215,13 +223,13 @@ export const gameState = (() => {
 
 export async function resetState() {
   if (typeof window !== 'undefined') {
-    throw new Error('GameState should only be used on the server');
+    throw new Error('AgentState should only be used on the server');
   }
 
   try {
-    await gameState.reset();
+    await agentState.reset();
   } catch (error) {
-    console.error('Error resetting game state:', error);
+    console.error('Error resetting agent state:', error);
     throw error;
   }
 };

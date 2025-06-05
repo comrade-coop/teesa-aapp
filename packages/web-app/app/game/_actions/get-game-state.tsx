@@ -1,13 +1,13 @@
 'use server';
 
-import { gameState } from '@teesa-monorepo/agent/src/state/agent-state';
+import { agentState } from '@teesa-monorepo/agent/src/state/agent-state';
 
 export async function getGameState() {
   const [id, gameEnded, winnerAddress] = await Promise.all([
-    gameState.getId(),
-    gameState.getGameEnded(),
-    gameState.getWinnerAddress()
+    agentState.getId(),
+    agentState.getGameEnded(),
+    agentState.getWinnerAddress()
   ]);
 
-  return { id, gameEnded, winnerAddress };
+  return { id, gameEnded, winnerAddress };  
 }

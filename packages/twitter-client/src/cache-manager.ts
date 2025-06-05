@@ -3,7 +3,17 @@ import path from 'path';
 import { CacheManager } from './types';
 
 export class FileCacheManager implements CacheManager {
-  private readonly CACHE_DIR = './cache';
+  private readonly CACHE_DIR = process.env.DOCKER_CLOUD_VOLUME_PATH ?
+    path.join(process.env.DOCKER_CLOUD_VOLUME_PATH, 'twitter') :
+    path.join(process.cwd(), './cache');
+
+  constructor() {
+    try {
+      require('fs').mkdirSync(this.CACHE_DIR, { recursive: true });
+    } catch (error) {
+      console.warn('Failed to create cache directory:', (error as Error).message);
+    }
+  }
 
   private getCacheFilePath(key: string): string {
     const result = key.replace(/[^a-zA-Z0-9-_]/g, '_');
@@ -15,13 +25,13 @@ export class FileCacheManager implements CacheManager {
       const filePath = this.getCacheFilePath(key);
       const data = await fs.readFile(filePath, 'utf-8');
       const parsed = JSON.parse(data);
-      
+
       // Check if cache entry has expired
       if (parsed.expires && Date.now() > parsed.expires) {
         await this.delete(key);
         return undefined;
       }
-      
+
       return parsed.value;
     } catch (error) {
       // File doesn't exist or is corrupted

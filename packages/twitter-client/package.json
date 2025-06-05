@@ -1,20 +1,26 @@
 {
   "name": "@teesa-monorepo/twitter-client",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "cp ../../.env . && tsc && rm ./.env",
-    "start": "node dist/index.js"
+    "build": "tsup src/index.ts --format cjs --dts --clean --splitting false --sourcemap",
+    "start": "pnpm build && node dist/index.js"
   },
   "author": "",
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "@teesa-monorepo/agent": "workspace:*",
     "agent-twitter-client": "0.0.18",
+    "dotenv": "^16.5.0",
     "glob": "11.0.0",
     "uuid": "^11.1.0"
   },
   "peerDependencies": {
     "whatwg-url": "7.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
   }
 }
