@@ -1,4 +1,4 @@
-export { replyToUser } from './agent';
+export { replyToUser, generateTwitterPost } from './agent';
 export { agentState, resetState } from './state/agent-state';
 export { AgentClientsEnum, AnswerResultEnum } from './state/types';
 export { isMessageGuess } from './get-message-type';

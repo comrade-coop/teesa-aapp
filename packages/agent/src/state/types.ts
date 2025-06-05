@@ -40,4 +40,6 @@ export interface AgentStateData {
   history: HistoryEntry[];
   questions: Question[];
   incorrectGuesses: IncorrectGuess[];
+  // Twitter posts
+  twitterPosts: string[];
 }

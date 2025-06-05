@@ -1,8 +1,8 @@
-import { replyToUser, AgentClientsEnum } from "@teesa-monorepo/agent";
+import { AgentClientsEnum, generateTwitterPost, replyToUser } from "@teesa-monorepo/agent";
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import { createTwitterClient, TwitterAuthenticationClient } from "./twitter-client";
 import { TwitterInteraction } from "./types";
-import { v4 as uuidv4 } from 'uuid';
 
 require('dotenv').config({ path: path.resolve(process.cwd(), '../../.env') });
 
@@ -27,7 +27,16 @@ async function startTweetLoop() {
 }
 
 async function postTweet() {
-  const tweet = "TWEET";
+  const postPrompt = `
+Generate a tweet with updates about the game.
+Get the details about the game and the latest questions.
+Write a summary of what we know about the word so far.
+If nothing new is discovered since the last tweet, just say that the game is still ongoing and invite the players to join.
+
+THE TWEET MUST BE NO MORE THAN 280 CHARACTERS. BE SHORT AND CONCISE.
+  `;
+
+  const tweet = await generateTwitterPost(postPrompt);
 
   try {
     console.log(`📝 Posting tweet: "${tweet}"`);
@@ -75,8 +84,11 @@ async function replyToInteraction(interaction: TwitterInteraction) {
   // Handle interaction events and generate custom replies
   client.on('interactionReceived', replyToInteraction);
 
-  // Start tweet loop
-  startTweetLoop();
+  // Start tweet loop in background
+  isStarted = true;
+  (async () => {
+    await startTweetLoop();
+  })();
 
   // Start monitoring interactions and responding automatically
   await client.startInteractionMonitoring(parseInt(process.env.TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS!));
