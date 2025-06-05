@@ -18,9 +18,10 @@ const prompt = (
   config: RunnableConfig
 ): BaseMessageLike[] => {
   const latestMessages: HistoryEntry[] = config.configurable?.latestMessages;
+  const twitterPosts: string[] = config.configurable?.twitterPosts;
 
-  const systemMessage = `
-  Your name is Teesa.
+  let systemMessage = `
+Your name is Teesa.
 You are the host of a word guessing game where the players try to guess a secret word by asking yes/no questions about what it describes.
 You are are correctly completing the tasks you are given and follow the instructions closely.
 
@@ -78,9 +79,17 @@ When a player makes a guess, use the checkGuess tool.
 When asked about the NFTs, use the nftDetails tool.
 When asked about the game, use the gameDetails tool.
 
+`;
+
+  if (latestMessages.length > 0) systemMessage += `
 These are the latest ${latestMessages.length} messages from all the users:
 ${latestMessages.map(h => formatHistoryMessage(h)).join("\n")}
-  `;
+`;
+
+  if (twitterPosts.length > 0) systemMessage += `
+These are the latest tweets:
+${twitterPosts.join("\n")}
+`;
 
   return [new SystemMessage(systemMessage), ...state.messages]
 };
@@ -99,27 +108,29 @@ const agent = createReactAgent({
 });
 
 function formatHistoryMessage(history: HistoryEntry): string {
-	return `
+  return `
 User (${history.userId}): ${history.userMessage}
 Teesa: ${history.llmMessage}
 	`;
 }
 
-// Helper function to run the agent
 export async function replyToUser(agentClient: AgentClientsEnum, userId: string, userAddress: string | undefined, messageId: string, timestamp: number, userMessage: string) {
   try {
-    const history = (await agentState.getHistory()).filter(f => f.agentClient == AgentClientsEnum.WEB).slice(-20);
+    const history = (await agentState.getHistory()).filter(f => f.agentClient == agentClient).slice(-20);
 
     const response = await agent.invoke(
       { messages: userMessage },
-      { configurable: { 
-        agentClient: agentClient,
-        userId: userId, 
-        userAddress: userAddress, 
-        latestMessages: history,
-        timestamp: timestamp,
-        messageId: messageId
-      }} 
+      {
+        configurable: {
+          latestMessages: history,
+          twitterPosts: [],
+          agentClient: agentClient,
+          userId: userId,
+          userAddress: userAddress,
+          timestamp: timestamp,
+          messageId: messageId
+        }
+      }
     );
 
     const result = response.messages[response.messages.length - 1].content.toString();
@@ -135,8 +146,34 @@ export async function replyToUser(agentClient: AgentClientsEnum, userId: string,
 
     return result;
   } catch (error) {
-    console.error("Error running agent:", error);
-    
+    console.error("Agent error:", error);
+
+    return PROCESSING_ERROR_MESSAGE;
+  }
+}
+
+export async function generateTwitterPost(postPrompt: string) {
+  try {
+    const twitterPosts = await agentState.getTwitterPosts();
+
+    const response = await agent.invoke(
+      { messages: postPrompt },
+      {
+        configurable: {
+          latestMessages: [],
+          twitterPosts: twitterPosts
+        }
+      }
+    );
+
+    const result = response.messages[response.messages.length - 1].content.toString();
+
+    await agentState.addTwitterPost(result);
+
+    return result;
+  } catch (error) {
+    console.error("Agent error:", error);
+
     return PROCESSING_ERROR_MESSAGE;
   }
 }

@@ -88,6 +88,7 @@ class AgentState {
       history: [],
       questions: [],
       incorrectGuesses: [],
+      twitterPosts: []
     };
   }
 
@@ -183,6 +184,18 @@ class AgentState {
   async setNftId(nftId: string): Promise<void> {
     await this.withFileLock(async () => {
       this.state.nftId = nftId;
+      await this.saveState();
+    });
+  }
+
+  async getTwitterPosts(): Promise<string[]> {
+    this.checkForExternalChanges();
+    return this.state.twitterPosts;
+  }
+
+  async addTwitterPost(post: string): Promise<void> {
+    await this.withFileLock(async () => {
+      this.state.twitterPosts.push(post);
       await this.saveState();
     });
   }

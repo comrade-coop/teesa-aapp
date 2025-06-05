@@ -1,12 +1,12 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { agentState } from "../state/agent-state";
-import { Question } from "../state/types";
+import { AnswerResultEnum, Question } from "../state/types";
 
 function formatQuestion(question: Question): string {
   return `
 Question: ${question.question}
-Answer: ${question.answer}
+Answer: ${question.answer == AnswerResultEnum.YES ? "Yes" : question.answer == AnswerResultEnum.NO ? "No" : "Unknown"}
 	`;
 }
 
