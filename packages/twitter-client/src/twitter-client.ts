@@ -4,6 +4,7 @@ import { RequestQueue } from './request-queue';
 import { CacheManager, EventListeners, TwitterCookie, TwitterCredentials, TwitterInteraction } from './types';
 
 const AUTHENTICATION_RETRY_LIMIT = 5;
+const MAX_TWEET_LENGTH = 280;
 
 export class TwitterAuthenticationClient {
   private scraper: Scraper;
@@ -349,6 +350,11 @@ export class TwitterAuthenticationClient {
     try {
       console.log(`📝 Posting tweet: "${text}"`);
 
+      if (text.length > MAX_TWEET_LENGTH) {
+        text = text.slice(0, MAX_TWEET_LENGTH);
+        console.log(`🔍 Tweet truncated to ${text.length} characters`);
+      }
+
       await this.requestQueue.add(() =>
         this.scraper.sendTweet(text)
       );
@@ -371,6 +377,11 @@ export class TwitterAuthenticationClient {
 
     try {
       console.log(`💬 Replying to tweet ${tweetId}: "${replyText}"`);
+
+      if (replyText.length > MAX_TWEET_LENGTH) {
+        replyText = replyText.slice(0, MAX_TWEET_LENGTH);
+        console.log(`🔍 Reply truncated to ${replyText.length} characters`);
+      }
 
       await this.requestQueue.add(() =>
         this.scraper.sendTweet(replyText, tweetId)
