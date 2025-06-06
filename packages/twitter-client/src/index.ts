@@ -28,18 +28,13 @@ async function startTweetLoop() {
 
 async function postTweet() {
   const postPrompt = `
-Generate a tweet with updates about the game.
-Get the details about the game and the latest questions.
-Write a summary of what we know about the word so far.
+Get the details about the game and the latest questions and generate a tweet with updates about the game and what we know about the word so far.
 If nothing new is discovered since the last tweet, just say that the game is still ongoing and invite the players to join.
-
-THE TWEET MUST BE NO MORE THAN 280 CHARACTERS. BE SHORT AND CONCISE.
   `;
 
   const tweet = await generateTwitterPost(postPrompt);
 
   try {
-    console.log(`📝 Posting tweet: "${tweet}"`);
     await client.postTweet(tweet);
     console.log(`✅ Successfully posted tweet`);
   } catch (error) {

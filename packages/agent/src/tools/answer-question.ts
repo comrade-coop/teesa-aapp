@@ -5,7 +5,7 @@ import { sendMessageOllama } from "../llm";
 import { agentState } from "../state/agent-state";
 import { AnswerResultEnum } from "../state/types";
 
-async function answer(question: string): Promise<AnswerResultEnum> {
+async function answer(question: string): Promise<[string, AnswerResultEnum]> {
   const secretWord = agentState.getSecretWord();
 
   const prompt = `
@@ -43,7 +43,7 @@ RESPONSE:
     result = AnswerResultEnum.UNKNOWN;
   }
 
-  return result;
+  return [response, result];
 }
 
 export const answerQuestion = tool(
@@ -53,7 +53,7 @@ export const answerQuestion = tool(
     const { question } = input;
     const messageId = config.configurable?.messageId;
 
-    const answerResult = await answer(question);
+    const [answerString, answerResult] = await answer(question);
 
     await agentState.addQuestion({ 
       messageId,
@@ -61,7 +61,7 @@ export const answerQuestion = tool(
       answer: answerResult
     });
 
-    return answerResult;
+    return answerString;
   },
   {
     name: "answerQuestion",
