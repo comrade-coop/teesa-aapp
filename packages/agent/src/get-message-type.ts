@@ -1,4 +1,8 @@
 import { sendMessageLlm } from "./llm";
+import path from 'path';
+import { gameRules } from "./agent";
+
+require('dotenv').config({ path: path.resolve(process.cwd(), '../../.env') });
 
 export async function isMessageGuess(message: string): Promise<boolean> {
   const trimmedMessage = message.trim();
@@ -6,6 +10,8 @@ export async function isMessageGuess(message: string): Promise<boolean> {
   const prompt = `
 # ROLE:
 You are the host of a "20 Questions" game where the players try to guess a secret word by asking yes/no questions about what it describes.
+
+${gameRules}
 
 # TASK:
 Your goal is to classify if the INPUT from the player is a GUESS.
@@ -20,6 +26,7 @@ GUESS:
   ('X' represents the specific noun or noun phrase being guessed)
 - Do NOT treat vague statements, descriptions, or property guesses (e.g., 'something with wheels') as GUESS.
 - Do NOT treat numeric inputs or non-noun words (e.g., '123', 'running') as GUESS.
+- Do NOT treat something that is against the GAME RULES as GUESS.
 
 # RESPONSE FORMAT:
 Respond on a new line with ONLY one of: TRUE or FALSE.
