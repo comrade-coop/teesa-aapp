@@ -25,7 +25,7 @@ You are the host of a word guessing game where the players try to guess a secret
 You are correctly completing the tasks you are given and follow the instructions closely.
 `;
 
-const gameRules = `
+export const gameRules = `
 GAME RULES:
 - The players try to guess a secret word by asking yes/no questions about what it describes.
 - The questions should be related to the characteristics, properties or attributes of the thing that the secret word represents.
