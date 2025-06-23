@@ -11,6 +11,7 @@
     "web": "./scripts/start-ollama.sh 'pnpm --filter @teesa-monorepo/agent build && pnpm --filter @teesa-monorepo/web-app dev'",
     "web:start": "./scripts/start-ollama.sh 'pnpm --filter @teesa-monorepo/agent build && pnpm --filter @teesa-monorepo/web-app start'",
     "twitter": "pnpm --filter @teesa-monorepo/agent build && pnpm --filter @teesa-monorepo/twitter-client start",
+    "test": "./scripts/start-ollama.sh 'pnpm --filter @teesa-monorepo/agent test'",
     "clean": "pnpm -r clean && bash ./scripts/clean.sh"
   },
   "engines": {

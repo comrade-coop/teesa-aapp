@@ -5,7 +5,7 @@ import { sendMessageOllama } from "../llm";
 import { agentState } from "../state/agent-state";
 import { AnswerResultEnum } from "../state/types";
 
-async function answer(question: string): Promise<[string, AnswerResultEnum]> {
+export async function answer(question: string): Promise<[string, AnswerResultEnum]> {
   const secretWord = agentState.getSecretWord();
 
   const prompt = `
@@ -22,7 +22,7 @@ GUIDELINES:
 2. Do not overthink and over-analyze the question. 
 3. Avoid overly literal interpretations.
 4. Respond with ONLY the word YES or NO, without any additional text.
-5. If it is really impossible to answer the question with either YES or NO, respond with MAYBE.
+5. If it is really impossible to answer the question with either YES or NO, respond with UNKNOWN.
 
 SECRET WORD: "${secretWord}"
 QUESTION: 
@@ -43,8 +43,16 @@ RESPONSE:
     result = AnswerResultEnum.UNKNOWN;
   }
 
-  return [response, result];
+  return [normalizedResponse, result];
 }
+
+export const toolMetadata = {
+  name: "answerQuestion",
+  description: "Answer a question about the secret word. ONLY USE THIS TOOL IF THE QUESTION MEETS THE CRITERIA OF A QUESTION.",
+  schema: z.object({
+    question: z.string().describe("The question to answer"),
+  }),
+};
 
 export const answerQuestion = tool(
   async (input: { question: string }, config: RunnableConfig) => {
@@ -63,11 +71,5 @@ export const answerQuestion = tool(
 
     return answerString;
   },
-  {
-    name: "answerQuestion",
-    description: "Answer a question about the secret word",
-    schema: z.object({
-      question: z.string().describe("The question to answer"),
-    }),
-  }
+  toolMetadata
 );

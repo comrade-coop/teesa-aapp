@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/card";
 import { openExternalLink } from "@/lib/external-link-utils";
 import { ShieldCheck } from 'lucide-react';
-import { INITIAL_MESSAGE, PRIZE_AWARDED_MESSAGE, PROCESSING_ERROR_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "@teesa-monorepo/agent/src/message-const";
+import { INITIAL_MESSAGE, NO_USER_ADDRESS_MESSAGE, PRIZE_AWARDED_MESSAGE, PROCESSING_ERROR_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "@teesa-monorepo/agent/src/message-const";
 
 export function LlmChatMessage({
   message
@@ -10,7 +10,7 @@ export function LlmChatMessage({
 }) {
   const isSuccessMessage = message === WON_GAME_MESSAGE || message.startsWith(PRIZE_AWARDED_MESSAGE);
   const isWarningMessage = message === TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE;
-  const isErrorMessage = message === PROCESSING_ERROR_MESSAGE;
+  const isErrorMessage = message === PROCESSING_ERROR_MESSAGE || message === NO_USER_ADDRESS_MESSAGE;
   
   // Handle the TEE secured link
   const handleTeeSecuredClick = (e: any) => {
@@ -84,7 +84,9 @@ export function LlmChatMessage({
                     ? "Darling, I hate to be a party pooper, but I literally can't send you your well-deserved prize right now! My wallet's drier than a robot in a rainstorm. Would you be a sweetheart and help fuel up my account through the <a href='/wallet' target='_blank' class='text-blue-400 hover:underline'>/wallet</a> page? Once you do that, I'll send your prize faster than you can say \"artificial intelligence\"! I mean, what kind of hostess would I be if I couldn't properly reward my favorite humans? Let's fix this digital drought ASAP!"
                     : message == PROCESSING_ERROR_MESSAGE
                       ? "I'm sorry, I'm having trouble processing your message. Please try again."
-                      : message.startsWith(PRIZE_AWARDED_MESSAGE)
+                      : message == NO_USER_ADDRESS_MESSAGE
+                        ? "You need to connect your wallet first before making a guess. Please connect your wallet and try again!"
+                        : message.startsWith(PRIZE_AWARDED_MESSAGE)
                         ? (() => {
                             const nftUrl = message.substring(PRIZE_AWARDED_MESSAGE.length);
                             return `Oh sweetie, you just got your prize! Consider yourself officially rewarded by your favorite AI hostess. I always say digital prizes are the best prizes, especially when they're handed out by moi! You can view your NFT <a href='${nftUrl}' target='_blank' class='text-blue-400 hover:underline external-link'>here</a>. Keep being fabulous, and maybe there's more where that came from! 💅`;

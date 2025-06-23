@@ -11,6 +11,12 @@ Teesa: ${history.llmMessage}
 	`;
 }
 
+export const toolMetadata = {
+  name: "getHistoryWithCurrentUser",
+  description: "Get the chat history with the current user",
+  schema: z.object({})
+};
+
 export const getHistoryWithCurrentUser = tool(
   async (config: RunnableConfig) => {
     console.log("TOOL: getHistoryWithCurrentUser");
@@ -21,9 +27,5 @@ export const getHistoryWithCurrentUser = tool(
 
     return history.map(h => formatHistoryMessage(h)).join("\n");
   },
-  {
-    name: "getHistoryWithCurrentUser",
-    description: "Get the chat history with the current user",
-    schema: z.object({})
-  }
+  toolMetadata
 );

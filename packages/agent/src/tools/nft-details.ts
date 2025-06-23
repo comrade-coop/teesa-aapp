@@ -2,6 +2,12 @@ import { tool } from "@langchain/core/tools";
 import { getNetwork } from "@teesa-monorepo/nft";
 import { z } from "zod";
 
+export const toolMetadata = {
+  name: "nftDetails",
+  description: "Get the details for the NFT collection",
+  schema: z.object({})
+};
+
 export const nftDetails = tool(
   async () => {
     console.log("TOOL: nftDetails");
@@ -14,9 +20,5 @@ The NFTs are stored on the ${network.displayName} network.
 There is a link to the NFT collection on OpenSea in the menu.
     `;
   },
-  {
-    name: "nftDetails",
-    description: "Get the details for the NFT collection",
-    schema: z.object({})
-  }
+  toolMetadata
 );

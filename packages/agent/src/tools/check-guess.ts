@@ -4,7 +4,7 @@ import { generateNft, getNftContractAddress, getNetwork } from "@teesa-monorepo/
 import { v4 as uuidv4 } from 'uuid';
 import { z } from "zod";
 import { sendMessageLlm, sendMessageOllama } from "../llm";
-import { PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../message-const";
+import { NO_USER_ADDRESS_MESSAGE, PRIZE_AWARDED_MESSAGE, TEESA_WALLET_INSUFFICIENT_FUNDS_MESSAGE, WON_GAME_MESSAGE } from "../message-const";
 import { agentState, resetState } from "../state/agent-state";
 import { AgentClientsEnum, HistoryEntry } from "../state/types";
 import path from 'path';
@@ -50,27 +50,27 @@ function retryWithExponentialBackoff(
   })();
 }
 
-async function extractGuess(userGuessMessage: string): Promise<string> {
+export async function extractGuess(userGuessMessage: string): Promise<string> {
   const prompt = `
-  # TASK:
-  Extract the exact word being guessed from the input.
-  Respond on a new line with ONLY the guessed word, nothing else.
-  The guessed word should be a noun.
-  Respond with "NONE" if you cannot extract a specific word being guessed from the input.
-  
-  # INPUT:
-  ${userGuessMessage}
-  
-  # RESPONSE:
+# TASK:
+Extract the exact word being guessed from the input.
+Respond on a new line with ONLY the guessed word, nothing else. Don't repeat the word - write it only once.
+The guessed word should be a noun.
+Respond with "NONE" if you cannot extract a specific word being guessed from the input.
+
+# INPUT:
+${userGuessMessage}
+
+# RESPONSE:
   `;
   
   const result = await sendMessageLlm(prompt);
-  const normalizedResult = result.toLowerCase().replace(/[^a-z]/g, '');
+  const normalizedResult = result.trim().toLowerCase();
 
   return normalizedResult;
 }
 
-async function check(guess: string): Promise<boolean> {
+export async function check(guess: string): Promise<boolean> {
   const secretWord = agentState.getSecretWord();
   
   const prompt = `
@@ -178,14 +178,25 @@ function restartGame() {
   }, timeToRestart);
 }
 
+export const toolMetadata = {
+  name: "checkGuess",
+  description: "Check if a guess is correct. ONLY USE THIS TOOL IF THE GUESS MEETS THE CRITERIA OF A GUESS.",
+  schema: z.object({
+    userGuessMessage: z.string().describe("The guess to check"),
+  }),
+};
+
 export const checkGuess = tool(
-  async (input: { userGuessMessage  : string }, config: RunnableConfig) => {
+  async (input: { userGuessMessage: string }, config: RunnableConfig) => {
     console.log("TOOL: checkGuess");
 
     const agentClient = config.configurable?.agentClient;
+    const userAddress = config.configurable?.userAddress;
     
     if (agentClient == AgentClientsEnum.TWITTER) {
       return "Repond that the user can make a guess only from the game's website. This is the URL of the game's website: https://teesa.ai";
+    } else if (!userAddress) {
+      return `Respond only with '${NO_USER_ADDRESS_MESSAGE}'. Do not include any other text.`;
     }
 
     const { userGuessMessage } = input;
@@ -216,18 +227,11 @@ Respond with ONLY the comment, nothing else.
     }
 
     const userId = config.configurable?.userId;
-    const userAddress = config.configurable?.userAddress;
     const timestamp = config.configurable?.timestamp;
 
     setWinner(userId, userAddress, timestamp);
 
     return `Respond only with '${WON_GAME_MESSAGE}'. Do not include any other text.`;
   },
-  {
-    name: "checkGuess",
-    description: "Check if a guess is correct",
-    schema: z.object({
-      userGuessMessage: z.string().describe("The guess to check"),
-    }),
-  }
+  toolMetadata
 );

@@ -7,7 +7,7 @@ import { wordsList } from './words-list';
 
 require('dotenv').config({ path: path.resolve(process.cwd(), '../../.env') });
 
-const STATE_FILE_PATH = process.env.DOCKER_CLOUD_VOLUME_PATH ?
+export const STATE_FILE_PATH = process.env.DOCKER_CLOUD_VOLUME_PATH ?
   path.join(process.env.DOCKER_CLOUD_VOLUME_PATH, 'agent', 'agent-state.json') :
   path.join(process.cwd(), '../agent', 'agent-state.json');
 

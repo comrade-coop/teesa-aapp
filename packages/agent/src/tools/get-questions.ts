@@ -10,6 +10,12 @@ Answer: ${question.answer == AnswerResultEnum.YES ? "Yes" : question.answer == A
 	`;
 }
 
+export const toolMetadata = {
+  name: "getQuestions",
+  description: "Get the all the questions and their yes/no answers that have been asked so far",
+  schema: z.object({})
+};
+
 export const getQuestions = tool(
   async () => {
     console.log("TOOL: getQuestions");
@@ -18,9 +24,5 @@ export const getQuestions = tool(
 
     return questions.map(formatQuestion).join("\n");
   },
-  {
-    name: "getQuestions",
-    description: "Get the all the questions and their yes/no answers that have been asked so far",
-    schema: z.object({})
-  }
+  toolMetadata
 );
