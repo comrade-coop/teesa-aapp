@@ -146,6 +146,10 @@ RUN bash -c '\
   . "/root/.nvm/nvm.sh" && \
   corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm run build'
 
+# Copy the Next.js public directory to the build directory
+RUN cp -r packages/web-app/public packages/web-app/.next/standalone/packages/web-app/public
+RUN cp -r packages/web-app/.next/static packages/web-app/.next/standalone/packages/web-app/.next/static
+
 WORKDIR ..
 
 # Copy the setup script, the start script and the dependecies files
@@ -161,4 +165,3 @@ ENV PORT=3000
 RUN chmod +x ./start.sh
 ENV HOSTNAME="0.0.0.0"
 CMD ["./start.sh"]
-#CMD ["tail", "-f", "/dev/null"]
