@@ -113,7 +113,7 @@ async function replyToInteraction(interaction: TwitterInteraction) {
     username: process.env.TWITTER_USERNAME,
     password: process.env.TWITTER_PASSWORD,
     email: process.env.TWITTER_EMAIL,
-    twoFactorSecret: process.env.TWITTER_TWO_FACTOR_SECRET
+    twoFactorSecret: process.env.TWITTER_2FA_SECRET
   });
 
   // Handle interaction events and generate custom replies
