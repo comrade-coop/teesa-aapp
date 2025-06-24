@@ -90,6 +90,9 @@ RUN apt-get update && \
   apt-get install -y build-essential python3 make g++ && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Download and install Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
 # Install NVM (Node Version Manager)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
@@ -102,11 +105,12 @@ RUN bash -c '. "/root/.nvm/nvm.sh" && nvm install $(cat /root/.nvmrc) && nvm use
 # Install Pnpm globally
 RUN bash -c '. "/root/.nvm/nvm.sh" && npm install -g pnpm@9.15.2'
 
+# Set the working directory
+WORKDIR /workspace
 
-# Build stage
-# Set the environment variables, install dependencies and build the Next.js app
-FROM base AS build
-WORKDIR /app-build
+
+# Build the projects
+WORKDIR teesa-aapp
 
 # Copy the source code and the update-env.sh script
 COPY packages/ ./packages/
@@ -132,45 +136,29 @@ RUN bash -c '\
   . "/root/.nvm/nvm.sh" && \
   corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm --filter @teesa-monorepo/nft compile-contracts'
 
-# Build the project
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
+# Set Node and Next.js environments
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build
 RUN bash -c '\
   . "/root/.nvm/nvm.sh" && \
   corepack enable && corepack prepare pnpm@9.15.2 --activate && pnpm run build'
 
+WORKDIR ..
 
-# Start stage
-# Production image, copy all the files and start
-FROM base AS start
-WORKDIR /app-start
-
-# Download and install Ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh
-
-# Set Node and Next.js environments
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Copy the Next.js build files, the NFT contract's ABI, the .env file and the NFT assets
-COPY --from=build /app-build/packages/web-app/.next/standalone ./app
-COPY --from=build /app-build/packages/web-app/public ./app/packages/web-app/public
-COPY --from=build /app-build/packages/web-app/.next/static ./app/packages/web-app/.next/static
-COPY --from=build /app-build/packages/nft/abi/teesa-nft.json .
-COPY --from=build /app-build/.env .
-COPY --from=build /app-build/packages/nft/assets ./app/packages/nft/assets
-
-# Copy the setup script and the start script
+# Copy the setup script, the start script and the dependecies files
 COPY deploy/setup-wallet-and-nft-contract.js .
 COPY deploy/start.sh .
+RUN cp teesa-aapp/packages/nft/abi/teesa-nft.json .
+RUN cp teesa-aapp/.env .
 
 # Set the port
 EXPOSE 3000
 ENV PORT=3000
 
-# Start the Next.js app
 RUN chmod +x ./start.sh
 ENV HOSTNAME="0.0.0.0"
 CMD ["./start.sh"]
+#CMD ["tail", "-f", "/dev/null"]
