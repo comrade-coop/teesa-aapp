@@ -2,8 +2,9 @@ import { BaseMessageLike, SystemMessage } from "@langchain/core/messages";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { MessagesAnnotation } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { v4 as uuidv4 } from 'uuid';
 import { llm } from "./llm";
-import { PROCESSING_ERROR_MESSAGE } from "./message-const";
+import { PROCESSING_ERROR_MESSAGE, SUMMARY_MESSAGE_PREFIX } from "./message-const";
 import { agentState } from "./state/agent-state";
 import { AgentClientsEnum, HistoryEntry } from "./state/types";
 import { answerQuestion } from "./tools/answer-question";
@@ -128,13 +129,17 @@ TWITTER POST STYLE:
 - Don't add formatting to the response - keep it plaintext
 `;
 
-function formatLatestMessages(latestMessages: HistoryEntry[]): string {
+function formatLatestMessages(latestMessages: HistoryEntry[] | undefined): string {
+  if (!latestMessages || latestMessages.length == 0) {
+    return '';
+  }
+
   const formattedMessages = latestMessages.map(m => {
     return `
 User (${m.userId}): ${m.userMessage}
 Teesa: ${m.llmMessage}
 	`;
-  }).join("\n");
+  }).join('\n');
 
   return `
 These are the latest ${latestMessages.length} messages from all the users:
@@ -142,10 +147,14 @@ ${formattedMessages}
   `;
 }
 
-function formatLatestTweets(latestTweets: string[]): string {
+function formatLatestTweets(latestTweets: string[] | undefined): string {
+  if (!latestTweets || latestTweets.length == 0) {
+    return '';
+  }
+
   return `
 These are the latest tweets:
-${latestTweets.join("\n\n")}
+${latestTweets.join('\n\n')}
   `;
 }
 
@@ -233,7 +242,7 @@ export async function replyToUser(agentClient: AgentClientsEnum, userId: string,
 
     return result;
   } catch (error) {
-    console.error("Agent error:", error);
+    console.error('Agent error:', error);
 
     return PROCESSING_ERROR_MESSAGE;
   }
@@ -266,8 +275,46 @@ export async function generateTwitterPost(postPrompt: string) {
 
     return result;
   } catch (error) {
-    console.error("Agent error:", error);
+    console.error('Agent error:', error);
 
     return PROCESSING_ERROR_MESSAGE;
   }
+}
+
+export type GenerateSummaryConfigurable = {
+  mode: AgentMode.MESSAGE;
+}
+
+export async function generateSummary() {
+  try {
+    const prompt = `
+What do we know about the word so far?
+`;
+
+    const configurable: GenerateSummaryConfigurable = {
+      mode: AgentMode.MESSAGE
+    };
+
+    const response = await agent.invoke(
+      { messages: prompt },
+      { configurable }
+    );
+
+    const result = response.messages[response.messages.length - 1].content.toString();
+
+    const messageId = uuidv4();
+    const timestamp = Date.now();
+
+    await agentState.addToHistory({
+      id: messageId,
+      userId: undefined,
+      timestamp: timestamp,
+      userMessage: undefined,
+      llmMessage: `${SUMMARY_MESSAGE_PREFIX}${result}`,
+      agentClient: AgentClientsEnum.WEB
+    });
+  } catch (error) {
+    console.error('Agent error:', error);
+  }
+
 }

@@ -5,7 +5,6 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageType } from './_actions/check-message-type';
-import { generateSummary } from './_actions/generate-summary';
 import { getGameState } from './_actions/get-game-state';
 import { getMessages } from './_actions/get-messages';
 import { getNftDetails } from './_actions/get-nft-details';
@@ -16,7 +15,6 @@ import { MessageTabs } from './_components/message-tabs';
 import { MessagesList } from './_components/messages-list';
 import { SidePanel } from './_components/side-panel';
 import { UserChatMessage } from './_components/user-chat-message';
-import { WordSummary } from './_components/word-summary';
 import { MessageUiStateModel } from './_models/message-ui-state-model';
 
 export default function Page() {
@@ -31,8 +29,6 @@ export default function Page() {
   const [blockchainExplorerUrl, setBlockchainExplorerUrl] = useState<string>('');
   const [openseaUrl, setOpenseaUrl] = useState<string>('');
   const [scrollMessagesToBottom, setScrollMessagesToBottom] = useState<boolean>(false);
-  const [wordSummary, setWordSummary] = useState<string>('');
-  const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
   const [anonymousUserId, setAnonymousUserId] = useState<string | undefined>(undefined);
   const [showConnectWalletMessage, setShowConnectWalletMessage] = useState<boolean>(false);
   const [gameId, setGameId] = useState<string | undefined>(undefined); // Used to refresh the page when the game is restarted
@@ -72,7 +68,6 @@ export default function Page() {
     fetchGameState();
     fetchNftDetails();
     fetchNewMessages();
-    updateWordSummary();
 
     const timeoutId = setTimeout(() => {
       setLastTimestamp(getTimestamp());
@@ -148,7 +143,7 @@ export default function Page() {
           userId: m.userId,
           timestamp: m.timestamp,
           display: <>
-            <UserChatMessage timestamp={m.timestamp} locale={getLocaleClient()} message={m.userMessage} userId={m.userId} />
+            <UserChatMessage timestamp={m.timestamp} locale={getLocaleClient()} message={m.userMessage} userId={m.userId ?? ''} />
             <LlmChatMessage message={m.llmMessage} />
           </>
         };
@@ -170,26 +165,8 @@ export default function Page() {
         ...previousMessages,
         ...newMessagesAsUiState
       ]);
-
-      // Update the word summary whenever new messages are received
-      updateWordSummary();
     }
   };
-
-  async function updateWordSummary() {
-    if (isGeneratingSummary) return;
-
-    setIsGeneratingSummary(true);
-    try {
-      // The server-side function now handles caching based on message count
-      const summary = await generateSummary();
-      setWordSummary(summary);
-    } catch (error) {
-      console.error('Error updating summary:', error);
-    } finally {
-      setIsGeneratingSummary(false);
-    }
-  }
 
   async function hadleChatMessage(message: string) {
     const { gameEnded } = await getGameState();
@@ -225,16 +202,13 @@ export default function Page() {
 
     setLoading(false);
 
-    // Update the word summary after sending a message
-    updateWordSummary();
-
     setScrollMessagesToBottom(true);
   };
 
   function handleTabChange(allMessages: boolean) {
     setShowAllMesssages(allMessages);
 
-    // When switching to all messages tab, make sure to fetch latest messages and update summary
+    // When switching to all messages tab, make sure to fetch latest messages
     if (allMessages) {
       fetchNewMessages();
     }
@@ -285,11 +259,6 @@ export default function Page() {
                 </button>
               </div>
             }
-
-            <WordSummary
-              summary={wordSummary}
-              className="mx-4 my-2"
-            />
           </div>
 
           {anonymousUserId &&

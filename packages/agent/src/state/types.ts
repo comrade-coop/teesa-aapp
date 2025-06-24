@@ -22,7 +22,7 @@ export enum AgentClientsEnum {
 
 export interface HistoryEntry {
   id: string;
-  userId: string;
+  userId: string | undefined;
   timestamp: number;
   agentClient: AgentClientsEnum;
   userMessage: string | undefined;

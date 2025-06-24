@@ -12,6 +12,10 @@ export function UserChatMessage({
   message: string,
   userId: string
 }) {
+  if (!userId) {
+    userId = '';
+  }
+
   const formatedDate = timestampToFormatedDate(locale, timestamp);
   const avatarUrl = `https://api.dicebear.com/6.x/pixel-art/svg?seed=${userId}`;
   const truncatedAddress = `${userId.slice(2, 7)}...${userId.slice(-5)}`;
