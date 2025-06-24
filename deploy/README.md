@@ -31,13 +31,19 @@ The process is the following (check `setup-wallet-and-nft-contract.js` for detai
 ```bash
 docker build \
    --build-arg CLOUD_VOLUME_PATH=<cloud-volume-path> \ # The path to the aApp Toolkit Cloud Volume (check the **NFT contract** section for more details)
-   --build-arg ANTHROPIC_API_KEY=<anthropic-api-key> \ # API key for the Anthropic API
-   --build-arg ELIZA_API_URL=<eliza-api-url> \ # The URL for the Eliza API
-   --build-arg ELIZA_AGENT_ID=<eliza-agent-id> \ # The Eliza agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
+   --build-arg OLLAMA_MODEL=<ollama-model> \ # The Ollama model to use
+   --build-arg OPENROUTER_API_KEY=<openrouter-api-key> \ # API key for the OpenRouter API
+   --build-arg OPENROUTER_MODEL=<openrouter-model> \ # The OpenRouter model to use
    --build-arg PRIVYIO_APP_ID=<privyio-app-id> \ # App ID of the PrivyIO
    --build-arg PRIVYIO_APP_SECRET=<privyio-app-secret> \ # App secret of the PrivyIO
    --build-arg ATTESTATION_URL=<attestation-url> \ # Url for serving attestation verification by aApp Toolkit
-   --build-arg LANGCHAIN_TRACING_V2=false \ # Stop the LangSmith logging
+   --build-arg TWITTER_USERNAME=<twitter-username> \ # The username of the Twitter account to use
+   --build-arg TWITTER_PASSWORD=<twitter-password> \ # The password of the Twitter account to use
+   --build-arg TWITTER_EMAIL=<twitter-email> \ # The email of the Twitter account to use
+   --build-arg TWITTER_2FA_SECRET=<twitter-2fa-secret> \ # The 2FA secret of the Twitter account to use
+   --build-arg TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS=<twitter-interaction-monitoring-interval-seconds> \ # The interval in seconds to monitor the Twitter interactions
+   --build-arg TWITTER_POSTING_INTERVAL_MIN_MINUTES=<twitter-posting-interval-min-minutes> \ # The minimum interval in minutes to post to Twitter
+   --build-arg TWITTER_POSTING_INTERVAL_MAX_MINUTES=<twitter-posting-interval-max-minutes> \ # The maximum interval in minutes to post to Twitter
    --build-arg INITIAL_WALLET_PRIVATE_KEY=<initial-wallet-private-key> \ # Private key of the wallet that was used to deploy the NFT contract (check the **NFT contract** section for more details)
    --build-arg CONTRACT_NETWORK=<contract-network> \ # mainnet, sepolia, base or baseSepolia
    --build-arg RPC_URL=<rpc-url> \ # RPC URL for the network

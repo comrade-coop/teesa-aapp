@@ -8,23 +8,33 @@ FROM ubuntu:latest AS base
 # Path to the aapp-toolkit cloud volume
 ARG CLOUD_VOLUME_PATH
 #
-# Teesa build arguments
+# Agent build arguments
 #
+# The Ollama model to use
+ARG OLLAMA_MODEL
 # OpenRouter configuration
 ARG OPENROUTER_API_KEY
-ARG OPENROUTER_LOGIC_MODEL
-ARG OPENROUTER_CREATIVE_MODEL
-ARG OLLAMA_MODEL
-# The URL for the Eliza API and the agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
-ARG ELIZA_API_URL
-ARG ELIZA_AGENT_ID
+ARG OPENROUTER_MODEL
+#
+# Web app build arguments
+#
 # App ID and app secret of the PrivyIO to use in the app
 ARG PRIVYIO_APP_ID
 ARG PRIVYIO_APP_SECRET
 # Url for attestaion page provided by aapp-toolkit
 ARG ATTESTATION_URL
-# Stop the LangSmith logging
-ARG LANGCHAIN_TRACING_V2
+#
+# Twitter client build arguments
+#
+# Twitter credentials
+ARG TWITTER_USERNAME
+ARG TWITTER_PASSWORD
+ARG TWITTER_EMAIL
+ARG TWITTER_2FA_SECRET
+# Intervals
+ARG TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS
+ARG TWITTER_POSTING_INTERVAL_MIN_MINUTES
+ARG TWITTER_POSTING_INTERVAL_MAX_MINUTES
 #
 # NFT build arguments
 #
@@ -50,16 +60,19 @@ ARG NFT_CONTRACT_ADDRESS
 
 # Set environment variables that will be available at runtime
 ENV DOCKER_CLOUD_VOLUME_PATH=${CLOUD_VOLUME_PATH}
-ENV DOCKER_OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-ENV DOCKER_OPENROUTER_LOGIC_MODEL=${OPENROUTER_LOGIC_MODEL}
-ENV DOCKER_OPENROUTER_CREATIVE_MODEL=${OPENROUTER_CREATIVE_MODEL}
 ENV DOCKER_OLLAMA_MODEL=${OLLAMA_MODEL}
-ENV DOCKER_ELIZA_API_URL=${ELIZA_API_URL}
-ENV DOCKER_ELIZA_AGENT_ID=${ELIZA_AGENT_ID}
+ENV DOCKER_OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+ENV DOCKER_OPENROUTER_MODEL=${OPENROUTER_MODEL}
 ENV DOCKER_PRIVYIO_APP_ID=${PRIVYIO_APP_ID}
 ENV DOCKER_PRIVYIO_APP_SECRET=${PRIVYIO_APP_SECRET}
 ENV DOCKER_ATTESTATION_URL=${ATTESTATION_URL}
-ENV DOCKER_LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2}
+ENV DOCKER_TWITTER_USERNAME=${TWITTER_USERNAME}
+ENV DOCKER_TWITTER_PASSWORD=${TWITTER_PASSWORD}
+ENV DOCKER_TWITTER_EMAIL=${TWITTER_EMAIL}
+ENV DOCKER_TWITTER_2FA_SECRET=${TWITTER_2FA_SECRET}
+ENV DOCKER_TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS=${TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS}
+ENV DOCKER_TWITTER_POSTING_INTERVAL_MIN_MINUTES=${TWITTER_POSTING_INTERVAL_MIN_MINUTES}
+ENV DOCKER_TWITTER_POSTING_INTERVAL_MAX_MINUTES=${TWITTER_POSTING_INTERVAL_MAX_MINUTES}
 ENV DOCKER_INITIAL_WALLET_PRIVATE_KEY=${INITIAL_WALLET_PRIVATE_KEY}
 ENV DOCKER_CONTRACT_NETWORK=${CONTRACT_NETWORK}
 ENV DOCKER_RPC_URL=${RPC_URL}
@@ -142,9 +155,9 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy the Next.js build files, the NFT contract's ABI, the .env file and the NFT assets
-COPY --from=build /app-build/packages/teesa/.next/standalone ./app
-COPY --from=build /app-build/packages/teesa/public ./app/packages/teesa/public
-COPY --from=build /app-build/packages/teesa/.next/static ./app/packages/teesa/.next/static
+COPY --from=build /app-build/packages/web-app/.next/standalone ./app
+COPY --from=build /app-build/packages/web-app/public ./app/packages/web-app/public
+COPY --from=build /app-build/packages/web-app/.next/static ./app/packages/web-app/.next/static
 COPY --from=build /app-build/packages/nft/abi/teesa-nft.json .
 COPY --from=build /app-build/.env .
 COPY --from=build /app-build/packages/nft/assets ./app/packages/nft/assets

@@ -59,13 +59,15 @@ cp .env.example .env
 
 #### Twitter client environment variables
 
-- `TWITTER_USERNAME` - the username of the Twitter account to use
-- `TWITTER_PASSWORD` - the password of the Twitter account to use
-- `TWITTER_EMAIL` - the email of the Twitter account to use
-- `TWITTER_2FA_SECRET` - the 2FA secret of the Twitter account to use
-- `TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS` - the interval in seconds to monitor the Twitter interactions
-- `TWITTER_POSTING_INTERVAL_MIN_MINUTES` - the minimum interval in minutes to post to Twitter
-- `TWITTER_POSTING_INTERVAL_MAX_MINUTES` - the maximum interval in minutes to post to Twitter
+- Twitter credentials:
+  - `TWITTER_USERNAME` - the username of the Twitter account to use
+  - `TWITTER_PASSWORD` - the password of the Twitter account to use
+  - `TWITTER_EMAIL` - the email of the Twitter account to use
+  - `TWITTER_2FA_SECRET` - the 2FA secret of the Twitter account to use
+- Intervals:
+  - `TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS` - the interval in seconds to monitor the Twitter interactions
+  - `TWITTER_POSTING_INTERVAL_MIN_MINUTES` - the minimum interval in minutes to post to Twitter
+  - `TWITTER_POSTING_INTERVAL_MAX_MINUTES` - the maximum interval in minutes to post to Twitter
 
 #### NFT environment variables
 
