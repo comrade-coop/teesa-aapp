@@ -95,7 +95,7 @@ const toolsDescription = `
 TOOLS:
 You can get the full chat history with the CURRENT user using the getHistoryWithCurrentUser tool.
 You can get the questions that have been asked so far and their yes/no answers using the getQuestions tool.
-When asked a question about the word that is allowed, use the answerQuestion tool. ALWAYS USE THIS TOOL WHEN ASKED A QUESTION ABOUT THE WORD, DON'T MAKE ASSUMPTIONS. DON'T USE THIS TOOL FOR ANYTHING ELSE. DON'T USE THIS TOOL IF THE QUESTION DOESN'T MEET THE CRITERIA OF A QUESTION.
+When asked a question about the word that is allowed, use the answerQuestion tool. ALWAYS USE THIS TOOL WHEN ASKED A QUESTION ABOUT THE WORD AND WHAT 'IT' REPRESENTS. DON'T MAKE ASSUMPTIONS. DON'T USE THIS TOOL FOR ANYTHING ELSE. DON'T USE THIS TOOL IF THE QUESTION DOESN'T MEET THE CRITERIA OF A QUESTION.
 When a player makes a guess, use the checkGuess tool. ALWAYS USE THIS TOOL WHEN THE PLAYER MAKES A GUESS, DON'T MAKE ASSUMPTIONS. DON'T USE THIS TOOL FOR ANYTHING ELSE. DON'T USE THIS TOOL IF THE GUESS DOESN'T MEET THE CRITERIA OF A GUESS.
 When asked about the NFTs, use the nftDetails tool.
 When asked about the game, use the gameDetails tool.
