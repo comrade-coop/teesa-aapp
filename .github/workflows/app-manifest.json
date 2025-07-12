@@ -45,12 +45,8 @@
       ]
     },
     "ingress": {
-      "hostnames": ["__AAPPCNAME__.teesa.ai"],
+      "hostnames": ["__AAPPCNAME__.teesa.kubocloud.io"],
       "port": 3000
-    },
-    "bootstrapping": {
-      "pattern": "*.teesa.ai",
-      "parent": "v0042.teesa.ai"
     },
     "developer": {
       "key": "__AAPPDEVPUBKEY__"
