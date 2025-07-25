@@ -18,9 +18,9 @@
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.12",
-    "@types/chai": "^5.2.1",
+    "@types/chai": "4.3.16",
     "@types/mocha": "^10.0.10",
-    "chai": "^5.2.0",
+    "chai": "^4.2.0",
     "hardhat": "^2.22.17",
     "ts-node": "^10.9.2"
   },
