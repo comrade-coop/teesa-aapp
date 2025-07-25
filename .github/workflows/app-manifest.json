@@ -52,7 +52,8 @@
       "port": 3000
     },
     "bootstrapping": {
-      "pattern": "*.teesa.kubocloud.io"
+      "pattern": "*.teesa.kubocloud.io",
+      "parent": "v0044-dev6.teesa.kubocloud.io"
     },
     "developer": {
       "key": "__AAPPDEVPUBKEY__"
