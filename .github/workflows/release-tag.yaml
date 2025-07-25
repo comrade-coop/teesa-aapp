@@ -6,10 +6,11 @@ on:
       - published
 
 jobs:
-  release-trigger:
+  release-trigger-dev:
+    if: github.event.release.target_commitish == 'dev'
     runs-on: ubuntu-latest
     environment: dev
-    steps:
+    steps: &shared_steps
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -45,9 +46,9 @@ jobs:
           sed -i "s#__AAPPBUILDARGPRIVYIOAPPSECRET__#${{ secrets.AAPPBUILDARGPRIVYIOAPPSECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGATTESTATIONURL__#${{ vars.AAPPBUILDARGATTESTATIONURL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"  
           sed -i "s#__AAPPBUILDARGTWITTERUSERNAME__#${{ vars.AAPPBUILDARGTWITTERUSERNAME }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGTWITTERPASSWORD__#${{ vars.AAPPBUILDARGTWITTERPASSWORD }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGTWITTERPASSWORD__#${{ secrets.AAPPBUILDARGTWITTERPASSWORD }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTEREMAIL__#${{ vars.AAPPBUILDARGTWITTEREMAIL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGTWITTER2FASECRET__#${{ vars.AAPPBUILDARGTWITTER2FASECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGTWITTER2FASECRET__#${{ secrets.AAPPBUILDARGTWITTER2FASECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTERINTERACTIONMONITORINGINTERVALSECONDS__#${{ vars.AAPPBUILDARGTWITTERINTERACTIONMONITORINGINTERVALSECONDS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTERPOSTINGINTERVALMINMINUTES__#${{ vars.AAPPBUILDARGTWITTERPOSTINGINTERVALMINMINUTES }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTERPOSTINGINTERVALMAXMINUTES__#${{ vars.AAPPBUILDARGTWITTERPOSTINGINTERVALMAXMINUTES }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
@@ -79,3 +80,8 @@ jobs:
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           certbot_email: "dev-gen2@teesa.ai"
           current_job_url: ${{ steps.get_job_html_url.outputs.result }}
+
+  release-trigger:
+    if: github.event.release.target_commitish == 'main'
+    runs-on: ubuntu-latest
+    steps: *shared_steps
