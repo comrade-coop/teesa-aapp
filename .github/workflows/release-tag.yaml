@@ -6,11 +6,10 @@ on:
       - published
 
 jobs:
-  release-trigger-dev:
-    if: github.event.release.target_commitish == 'dev'
+  release-trigger:
     runs-on: ubuntu-latest
     environment: dev
-    steps: &shared_steps
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -80,8 +79,3 @@ jobs:
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           certbot_email: "dev-gen2@teesa.ai"
           current_job_url: ${{ steps.get_job_html_url.outputs.result }}
-
-  release-trigger:
-    if: github.event.release.target_commitish == 'main'
-    runs-on: ubuntu-latest
-    steps: *shared_steps
