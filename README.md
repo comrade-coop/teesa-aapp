@@ -15,8 +15,10 @@ Teesa plays a word guessing game with users and rewards the winners with unique 
 
 The project is organized into two packages:
 
-- `packages/teesa` - The main package for the Teesa app. Contains a NextJS app
-- `packages/teesa-nft` - The package for the Teesa NFT. Contains the NFT contract and methods for interacting with it.
+- `packages/agent` - The main package for the Teesa agent. Contain the main agent code.
+- `packages/nft` - The package for the Teesa NFT. Contains the NFT contract and methods for interacting with it.
+- `packages/twitter-client` - The package for the Teesa Twitter client.
+- `packages/web-app` - The package for the Teesa web app. Contains the NextJS app.
 
 
 ## 🛠️ Development Setup
@@ -35,23 +37,37 @@ The `.env` file is used to configure the environment variables for the project. 
 cp .env.example .env
 ```
 
-#### Teesa environment variables
+#### Agent environment variables
 
-- `ENV_MODE`- set to either `dev` for development or `prod` for production (defaults to `prod`)
-- `OLLAMA_MODEL` - the Ollama model to use (defaults to "llama3.2")
-- `ANTHROPIC_API_KEY` - your API key for accessing the Anthropic LLMs
-- Eliza Configuration:
-  - `ELIZA_API_URL`: The URL for the Eliza API
-  - `ELIZA_AGENT_ID`: The Eliza agent ID (can get it from HTTP GET: `${ELIZA_API_URL}/agents`)
-- PrivyIO Configuration - you can get the values from the PrivyIO dashboard (https://dashboard.privy.io/):
-  - `NEXT_PUBLIC_PRIVYIO_APP_ID`: Your PrivyIO app ID
-  - `PRIVYIO_APP_SECRET`: Your PrivyIO app secret
-- `NEXT_PUBLIC_ATTESTATION_URL` - URL for serving attestation verification by aApp Toolkit
+- `OLLAMA_MODEL` - the Ollama model to use (defaults to "qwen2.5:7b-instruct-q4_K_M")
+- OpenRouter Configuration:
+  - `OPENROUTER_API_KEY` - your API key for accessing the OpenRouter API
+  - `OPENROUTER_MODEL` - the OpenRouter model to use (defaults to "x-ai/grok-3-beta")
 - Langsmith Configuration (**used only in development**) - you can get the values from the Langsmith dashboard (https://smith.langchain.com/):
   - `LANGCHAIN_TRACING_V2` - defaults to `false`
   - `LANGCHAIN_ENDPOINT`
   - `LANGCHAIN_API_KEY`
   - `LANGCHAIN_PROJECT`
+
+#### Web app environment variables
+
+- `ENV_MODE`- set to either `dev` for development or `prod` for production (defaults to `prod`)
+- PrivyIO Configuration - you can get the values from the PrivyIO dashboard (https://dashboard.privy.io/):
+  - `NEXT_PUBLIC_PRIVYIO_APP_ID`: Your PrivyIO app ID
+  - `PRIVYIO_APP_SECRET`: Your PrivyIO app secret
+- `NEXT_PUBLIC_ATTESTATION_URL` - URL for serving attestation verification by aApp Toolkit
+
+#### Twitter client environment variables
+
+- Twitter credentials:
+  - `TWITTER_USERNAME` - the username of the Twitter account to use
+  - `TWITTER_PASSWORD` - the password of the Twitter account to use
+  - `TWITTER_EMAIL` - the email of the Twitter account to use
+  - `TWITTER_2FA_SECRET` - the 2FA secret of the Twitter account to use
+- Intervals:
+  - `TWITTER_INTERACTION_MONITORING_INTERVAL_SECONDS` - the interval in seconds to monitor the Twitter interactions
+  - `TWITTER_POSTING_INTERVAL_MIN_MINUTES` - the minimum interval in minutes to post to Twitter
+  - `TWITTER_POSTING_INTERVAL_MAX_MINUTES` - the maximum interval in minutes to post to Twitter
 
 #### NFT environment variables
 
@@ -84,14 +100,21 @@ cp .env.example .env
    pnpm build
    ```
 
+### Agent
+
+Refer to the [Agent README](./packages/agent/README.md) for details on how to build the agent.
+
 ### NFT contract
 
 To use the app you need to deploy the NFT contract. Refer to the [NFT README](./packages/nft/README.md) for more details.
 
-### Teesa app
+### Web app
 
-Refer to the [Teesa README](./packages/teesa/README.md) for details on how to start the app.
+Refer to the [Web app README](./packages/web-app/README.md) for details on how to start the web app.
 
+### Twitter client
+
+Refer to the [Twitter client README](./packages/twitter-client/README.md) for details on how to start the Twitter client.
 
 ## 🚀 Production Setup
 

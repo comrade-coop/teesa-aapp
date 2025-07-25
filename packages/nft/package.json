@@ -1,9 +1,10 @@
 {
   "name": "@teesa-monorepo/nft",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm compile-contracts && tsc",
     "clean": "npx hardhat clean && rm -rf ./ignition/deployments",
     "compile-contracts": "pnpm clean && npx hardhat compile-contracts",
     "deploy-contracts": "npx hardhat deploy-contracts --network $(ts-node ./scripts/get-network-name.ts)",

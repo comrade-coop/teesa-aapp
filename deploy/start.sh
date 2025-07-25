@@ -49,8 +49,36 @@ fi
 
 WALLET_PRIVATE_KEY=$(cat "$WALLET_PRIVATE_KEY_FILE_PATH")
 
-# Start the Next.js server
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
-cd /app-start/app/packages/teesa
-WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY DOCKER_CLOUD_VOLUME_PATH=$DOCKER_CLOUD_VOLUME_PATH exec node server.js 
+# Function to handle cleanup
+cleanup() {
+    echo "Shutting down services..."
+    kill $WEB_PID $TWITTER_PID 2>/dev/null
+    exit 0
+}
+
+# Set up signal handlers for graceful shutdown
+trap cleanup SIGTERM SIGINT
+
+# Function to prefix output lines
+prefix_output() {
+    local prefix="$1"
+    while IFS= read -r line; do
+        echo "[$prefix] $line"
+    done
+}
+
+# Start processes with prefixed output
+# Start the web app
+cd /workspace/teesa-aapp/packages/web-app/.next/standalone/packages/web-app
+WALLET_PRIVATE_KEY=$WALLET_PRIVATE_KEY DOCKER_CLOUD_VOLUME_PATH=$DOCKER_CLOUD_VOLUME_PATH node server.js 2>&1 | prefix_output "WEB" &
+WEB_PID=$!
+echo "Started the Web app with PID: $WEB_PID"
+# Start the Twitter client
+cd /workspace/teesa-aapp/packages/twitter-client
+node dist/index.js 2>&1 | prefix_output "TWITTER" &
+TWITTER_PID=$!
+echo "Started the Twitter client with PID: $TWITTER_PID"
+
+# Wait for both processes (container is started until both stop)
+echo "Both services started."
+wait $WEB_PID $TWITTER_PID
