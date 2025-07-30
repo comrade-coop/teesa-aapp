@@ -89,7 +89,7 @@ export function LlmChatMessage({
                     : message == PROCESSING_ERROR_MESSAGE
                       ? "I'm sorry, I'm having trouble processing your message. Please try again."
                       : message == NO_USER_ADDRESS_MESSAGE
-                        ? "You need to connect your wallet first before making a guess. Please connect your wallet and try again!"
+                        ? "You need to connect your wallet first before making a guess. Please connect your wallet and try again! If you are using a mobile device, you should open <a href='https://teesa.ai' target='_blank' class='text-blue-400 hover:underline external-link'>teesa.ai</a> in a wallet app."
                         : message.startsWith(PRIZE_AWARDED_MESSAGE)
                           ? (() => {
                             const nftUrl = message.substring(PRIZE_AWARDED_MESSAGE.length);
