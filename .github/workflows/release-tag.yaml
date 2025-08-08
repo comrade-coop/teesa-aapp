@@ -73,7 +73,7 @@ jobs:
           vm_name: "teesa-${{ env.AAPP_CNAME }}"
           vm_disk_size: "30"
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
-          vm_ssh_enabled: "true"
+          vm_ssh_enabled: "false"
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           certbot_email: "dev-gen2@teesa.ai"
