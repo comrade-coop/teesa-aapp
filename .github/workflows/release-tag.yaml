@@ -8,6 +8,7 @@ on:
 jobs:
   release-trigger:
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -44,9 +45,9 @@ jobs:
           sed -i "s#__AAPPBUILDARGPRIVYIOAPPSECRET__#${{ secrets.AAPPBUILDARGPRIVYIOAPPSECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGATTESTATIONURL__#${{ vars.AAPPBUILDARGATTESTATIONURL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"  
           sed -i "s#__AAPPBUILDARGTWITTERUSERNAME__#${{ vars.AAPPBUILDARGTWITTERUSERNAME }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGTWITTERPASSWORD__#${{ vars.AAPPBUILDARGTWITTERPASSWORD }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGTWITTERPASSWORD__#${{ secrets.AAPPBUILDARGTWITTERPASSWORD }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTEREMAIL__#${{ vars.AAPPBUILDARGTWITTEREMAIL }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
-          sed -i "s#__AAPPBUILDARGTWITTER2FASECRET__#${{ vars.AAPPBUILDARGTWITTER2FASECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
+          sed -i "s#__AAPPBUILDARGTWITTER2FASECRET__#${{ secrets.AAPPBUILDARGTWITTER2FASECRET }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTERINTERACTIONMONITORINGINTERVALSECONDS__#${{ vars.AAPPBUILDARGTWITTERINTERACTIONMONITORINGINTERVALSECONDS }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTERPOSTINGINTERVALMINMINUTES__#${{ vars.AAPPBUILDARGTWITTERPOSTINGINTERVALMINMINUTES }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           sed -i "s#__AAPPBUILDARGTWITTERPOSTINGINTERVALMAXMINUTES__#${{ vars.AAPPBUILDARGTWITTERPOSTINGINTERVALMAXMINUTES }}#g" "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
@@ -73,7 +74,7 @@ jobs:
           vm_name: "teesa-${{ env.AAPP_CNAME }}"
           vm_disk_size: "30"
           vm_network_id: ${{ secrets.AZURE_VM_NETWORK_ID }}
-          vm_ssh_enabled: "false"
+          vm_ssh_enabled: "true"
           vm_dev_key: ${{ secrets.AZURE_VM_SSH_KEY }}
           aapp_manifest: "${GITHUB_WORKSPACE}/.github/workflows/app-manifest.json"
           certbot_email: "dev-gen2@teesa.ai"
