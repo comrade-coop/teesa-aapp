@@ -5,7 +5,7 @@ set -e
 
 # Start Ollama
 ollama serve > /dev/null 2>&1 &
-sleep 5
+sleep 60
 
 # Load OLLAMA_MODEL from .env file
 if [ ! -f "./.env" ]; then
