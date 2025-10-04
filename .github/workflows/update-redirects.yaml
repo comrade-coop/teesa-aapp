@@ -17,5 +17,6 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
           api_location: .github/workflows/landing-site/api
+          app_location: .github/workflows/landing-site/app
           config_file_location: .github/workflows/landing-site
           skip_app_build: true
