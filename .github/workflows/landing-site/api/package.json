@@ -1,0 +1,7 @@
+{
+  "name": "teesa-landing-page",
+  "version": "1.0.0",
+  "description": "Teesa landing page - handling redirect.",
+  "main": "index.js",
+  "dependencies": {}
+}
